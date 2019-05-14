@@ -1,9 +1,12 @@
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
-from PyQt5.QtWidgets import *
-from testPackage import *
+from PyQt5.QtWidgets import QMainWindow,QGraphicsItem,QGraphicsScene,QGraphicsView
+from Ui_mainWindow import *
 import curve
-
+from mixin import MainMixin
+class GraphicView(QGraphicsView):
+    def __init__(self,parent=None):
+        super(GraphicView, self).__init__(parent)
 class GraphicsScene(QGraphicsScene):
     def __init__(self, parent=None):
         QGraphicsScene.__init__(self, parent)
@@ -12,28 +15,30 @@ class GraphicsScene(QGraphicsScene):
         self.isDrawing = False
         self.opt = ""
         self.currentItem = None
+
     def setOption(self, opt):
         self.opt = opt
+
     def mousePressEvent(self, event):
         super().mousePressEvent(event)
         if self.isDrawing == False:
-            if event.button() == Qt.LeftButton :
-                if self.opt=="QuadBezier":
+            if event.button() == Qt.LeftButton:
+                if self.opt == "QuadBezier":
                     self.isDrawing = True
                     p = curve.QuadBezierCurve(parent=self)
                     self.addItem(p)
                     self.currentItem = p
-                elif self.opt=="CubicBezier":
+                elif self.opt == "CubicBezier":
                     self.isDrawing = True
                     p = curve.CubicBeizerCurve(parent=self)
                     self.addItem(p)
                     self.currentItem = p
-                elif self.opt=="MultiBezier":
+                elif self.opt == "MultiBezier":
                     self.isDrawing = True
                     p = curve.MultiBeizerCurve(parent=self)
                     self.addItem(p)
                     self.currentItem = p
-                elif self.opt=="Select":
+                elif self.opt == "Select":
                     pass
             elif event.button() == Qt.RightButton:
                 print("Remove item")
@@ -44,6 +49,7 @@ class GraphicsScene(QGraphicsScene):
             if self.currentItem.isDrawingComplete:
                 self.resetData()
         self.update()
+
     def mouseMoveEvent(self, event):
         super().mouseMoveEvent(event)
         self.lastPoint = event.scenePos()
@@ -51,9 +57,10 @@ class GraphicsScene(QGraphicsScene):
 
     def mouseReleaseEvent(self, event):
         super().mouseReleaseEvent(event)
-        if self.isDrawing and self.currentItem.isDrawingComplete==False:
+        if self.isDrawing and self.currentItem.isDrawingComplete == False:
             self.currentItem.addPoint(event.scenePos())
         self.update()
+
     def resetData(self):
         self.opt = ""
         self.lastPoint = None
@@ -65,9 +72,14 @@ class GraphicsScene(QGraphicsScene):
         if event.key() == Qt.Key_Escape:
             print("scene Esc")
 
-class mainWindow(QtWidgets.QMainWindow):
-    def __init__(self):
-        super().__init__()
+
+class MainWindow(QMainWindow,MainMixin):
+    name = 'Curve System GUI'
+    org='NTU FYP'
+    def __init__(self,parent=None):
+        super(MainWindow,self).__init__(parent)
+        MainMixin.__init__(self)
+        #self.setWindowIcon()
         self.setupUI()
 
     def setupUI(self):
@@ -77,6 +89,14 @@ class mainWindow(QtWidgets.QMainWindow):
         self.mousePos = None
 
         self.scene = GraphicsScene()
+
+        #customize QgraphicView UI
+        self.ui.horizontalLayout.removeWidget(self.ui.graphicsView)
+        self.ui.graphicsView.close()
+        self.ui.graphicsView=GraphicView(self.ui.centralwidget)
+        self.ui.horizontalLayout.addWidget(self.ui.graphicsView)
+        self.ui.horizontalLayout.update()
+
         self.ui.graphicsView.setScene(self.scene)
         self.ui.graphicsView.setBackgroundBrush(QBrush(Qt.white))
         # push button signal
@@ -100,7 +120,4 @@ class mainWindow(QtWidgets.QMainWindow):
 
 
 if __name__ == '__main__':
-    app = QtWidgets.QApplication([])
-    window = mainWindow()
-    window.show()
-    app.exec_()
+    pass
