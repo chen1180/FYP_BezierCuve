@@ -43,8 +43,6 @@ class GraphicsScene(QGraphicsScene):
         else:
             if self.currentItem.isDrawingComplete:
                 self.resetData()
-
-
         self.update()
     def mouseMoveEvent(self, event):
         super().mouseMoveEvent(event)

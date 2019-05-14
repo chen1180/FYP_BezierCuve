@@ -2,7 +2,7 @@ from PyQt5.QtWidgets import *
 from PyQt5 import QtCore,QtGui
 class Point(QGraphicsItem):
     def __init__(self, rect=(0, 0, 250, 250), tooltip='No tip here',point=None, parent=None):
-        super(Point, self).__init__()
+        super(Point, self).__init__(parent)
         #saved data
         self.point=point
         #default setting
@@ -12,7 +12,7 @@ class Point(QGraphicsItem):
         self.setFlag(QGraphicsItem.ItemSendsGeometryChanges, True)
         self.setFlag(QGraphicsItem.ItemIsFocusable, True)
         #painting method
-        self.pen_point = QtGui.QPen(QtCore.Qt.green)
+        self.pen_point = QtGui.QPen(QtCore.Qt.blue,2)
         self.pen = QtGui.QPen(QtCore.Qt.blue, 1)
         pw = self.pen.widthF()
         self.brush = QtGui.QBrush(QtCore.Qt.blue)
@@ -49,9 +49,9 @@ class Curve(QGraphicsItem):
         self.isHover=False
         #painting method
         self.parent = parent
-        self.pen_point = QtGui.QPen(QtCore.Qt.green, 5)
-        self.pen_line = QtGui.QPen(QtCore.Qt.gray, QtCore.Qt.DotLine, 5)
-        self.pen_curve = QtGui.QPen(QtCore.Qt.black, 2, QtCore.Qt.SolidLine)
+        self.pen_point = QtGui.QPen(QtCore.Qt.blue, 5)
+        self.pen_line = QtGui.QPen(QtCore.Qt.blue, 2,QtCore.Qt.SolidLine)
+        self.pen_curve = QtGui.QPen(QtCore.Qt.red,3, QtCore.Qt.SolidLine)
         self.pen = QtGui.QPen(QtCore.Qt.blue, 1)
         pw = self.pen.widthF()
         self.brush = QtGui.QBrush(QtCore.Qt.blue)
@@ -86,11 +86,9 @@ class Curve(QGraphicsItem):
 
     def hoverEnterEvent(self, event: 'QGraphicsSceneHoverEvent') -> None:
         self.isHover=True
-        print("hover")
 
     def hoverLeaveEvent(self, event: 'QGraphicsSceneHoverEvent') -> None:
         self.isHover=False
-        print("leave")
 
     def keyPressEvent(self, event: QtGui.QKeyEvent) -> None:
         super().keyPressEvent(event)
