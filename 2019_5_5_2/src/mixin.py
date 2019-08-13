@@ -4,7 +4,6 @@ from functools import reduce
 class MainMixin(object):
     name='Main'
     org='NTU FYP'
-
     components={}
     docks={}
     preferences=None
