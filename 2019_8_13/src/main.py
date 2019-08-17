@@ -16,41 +16,102 @@ class MainWindow(QtWidgets.QMainWindow):
         self.glWidget=glWidget(self)
         self.ui.openGLWidget.close()
         self.ui.horizontalLayout_2.replaceWidget(self.ui.openGLWidget,self.glWidget)
+        self.ui.clearBtn.clicked.connect(lambda state, x=0: self.glWidget.changeStatus(x))
         self.ui.drawBtn.clicked.connect(lambda state,x=1:self.glWidget.changeStatus(x))
         self.ui.splitBtn.clicked.connect(lambda state,x=2:self.glWidget.changeStatus(x))
         self.ui.drawSurfaceBtn.clicked.connect(lambda state,x=3:self.glWidget.changeStatus(x))
+        self.ui.pushButton.clicked.connect(lambda state,x=4:self.glWidget.changeStatus(x))
 class glWidget(QGLWidget):
-
+    xRotationChanged = QtCore.pyqtSignal(int)
+    yRotationChanged = QtCore.pyqtSignal(int)
+    zRotationChanged = QtCore.pyqtSignal(int)
     def __init__(self, parent):
         QGLWidget.__init__(self, parent)
         self.status=0
         self.control_points = [point(-0.25, 0, 0), point(0, 0.25, 0), point(0.25, 0.25, 0), point(0.5, -0.5, 0)]
+        self.xRot = 0
+        self.yRot = 0
+        self.zRot = 0
+        self.xTrans=0
+        self.yTrans=0
+        self.fov=45.0
+        self.lastPos = QtCore.QPoint()
 
+    def setXRotation(self, angle):
+        angle = self.normalizeAngle(angle)
+        if angle != self.xRot:
+            self.xRot = angle
+            self.xRotationChanged.emit(angle)
+            self.update()
+
+    def setYRotation(self, angle):
+        angle = self.normalizeAngle(angle)
+        if angle != self.yRot:
+            self.yRot = angle
+            self.yRotationChanged.emit(angle)
+            self.update()
+
+    def setZRotation(self, angle):
+        angle = self.normalizeAngle(angle)
+        if angle != self.zRot:
+            self.zRot = angle
+            self.zRotationChanged.emit(angle)
+            self.update()
+    def mousePressEvent(self, event):
+        self.lastPos = event.pos()
+
+    def mouseMoveEvent(self, event):
+        dx = event.x() - self.lastPos.x()
+        dy = event.y() - self.lastPos.y()
+        self.fov+=dx
+        if event.buttons() & QtCore.Qt.LeftButton:
+            self.setXRotation(self.xRot + 8 * dy)
+            self.setYRotation(self.yRot + 8 * dx)
+        elif event.buttons() & QtCore.Qt.RightButton:
+            self.xTrans+=dx*0.01
+            self.yTrans += dy*0.01
+        self.lastPos = event.pos()
+        self.update()
+    def normalizeAngle(self, angle):
+        while angle < 0:
+            angle += 360 * 16
+        while angle > 360 * 16:
+            angle -= 360 * 16
+        return angle
     def initializeGL(self):
         glClearDepth(1.0)
         glDepthFunc(GL_LESS)
         glEnable(GL_DEPTH_TEST)
+        glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST)
         glShadeModel(GL_SMOOTH)
-
         glMatrixMode(GL_PROJECTION)
         glLoadIdentity()
-        #gluPerspective(45.0,1.33,0.1, 100.0)
+        gluPerspective(self.fov, self.width() / self.height(), 0.1, 20)
         glMatrixMode(GL_MODELVIEW)
-    def paintGL(self):
+        #gluOrtho2D(0,self.width(),0,self.height())
 
+    def paintGL(self):
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
+        self.drawCoordinateAxis()
         glLoadIdentity()
-        #glTranslatef(-2.5, 0.5, -6.0)
-        glPolygonMode(GL_FRONT, GL_FILL)
-        if self.status==1:
+        glRotated(self.xRot / 16.0, 1.0, 0.0, 0.0)
+        glRotated(self.yRot / 16.0, 0.0, 1.0, 0.0)
+        glRotated(self.zRot / 16.0, 0.0, 0.0, 1.0)
+        glTranslated(self.xTrans, self.xTrans, 0.0)
+        if self.status==0:
+            self.clearScreen()
+        elif self.status==1:
             self.drawCurve(self.control_points)
         elif self.status==2:
             self.splitCurve(self.control_points)
         elif self.status==3:
             self.drawBeizerSurface()
+        elif self.status==4:
+            self.drawBezierCircle()
         else:
             self.update()
         glFlush()
+
     def changeStatus(self,newStatus=0):
         self.status=newStatus
         self.update()
@@ -105,47 +166,91 @@ class glWidget(QGLWidget):
         glFlush()
 
     def drawBeizerSurface(self):
-        glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT)
         glMatrixMode(GL_MODELVIEW)
+        glColor3f(0.5,0.5,0.5)
         glPushMatrix()
-        glRotatef(45.0,-10.0,1.0,-10.0)
-        control_points=[[[  -0.25, 0.0, 0.0],[ 0, 0, 0.0],[  0.25, -0.2, 0.0],[  0.5, 0.2, 0.0]],
+        #glRotatef(45.0,-10.0,1.0,-10.0)
+        control_points=[[[  -0.25, 0.0, -0.5],[ 0, 0, 0.0],[  0.25, -0.2, 0.0],[  0.5, 0.2, 0.0]],
 [[  -0.5, -0.5, 0.0],[ 0, -0.9, 0.0],[  0.25, -0.2, 0.0],[  0.5, -0.6, 0.0]]]
         glMap2f(GL_MAP2_VERTEX_3,0,1,0,1,control_points)
         glEnable(GL_MAP2_VERTEX_3)
-        glMapGrid2f(10,0,1,10,0,1)
-        glEvalMesh2(GL_LINE,0,10,0,10)
+        glMapGrid2f(50,0,1,50,0,1)
+        glEvalMesh2(GL_LINE,0,50,0,50)
         glPointSize(5)
-        glColor3f(1, 0, 0)
+        glColor3f(1, 1, 1)
         glBegin(GL_POINTS)
         for line in control_points:
             for point in line:
                 glVertex3f(point[0], point[1], point[2])
         glEnd()
-        glFlush()
         glPopMatrix()
-
-        '''
-    def drawBeizerSurface(self):
-        glClear(GL_COLOR_BUFFER_BIT)
-        control_points = [(-0.25, 0, 0), (0, 0.25, 0),(0.25, 0.25, 0), (0.5, -0.5, 0)]
-        glMap1f(GL_MAP1_VERTEX_3, 0, 1, control_points)
-        glEnable(GL_MAP1_VERTEX_3)
-        glColor3f(1, 0, 0)
-        glBegin(GL_POINTS)
-        for i in range(31):
-            glEvalCoord1f(float(i) / 31)
-        glEnd()
-        glPointSize(5)
-        glColor3f(1, 0, 0)
-        glBegin(GL_POINTS)
-        for point in control_points:
-            glVertex3f(point[0],point[1],point[2])
-        glEnd()
+    def clearScreen(self):
         glFlush()
-        '''
+    def drawCoordinateAxis(self):
+        lx=1
+        ly=1
+        #x axis
+        glColor3f(1,0,0)
+        glBegin(GL_LINES)
+        glVertex3f(0,0,0)
+        glVertex3f(1,0,0)
+        glEnd()
+        #y axis
+        glColor3f(0, 1, 0)
+        glBegin(GL_LINES)
+        glVertex3f(0, 0, 0)
+        glVertex3f(0, 1, 0)
+        glEnd()
+        #z axis
+        glColor3f(0, 0, 1)
+        glBegin(GL_LINES)
+        glVertex3f(0, 0, 0)
+        glVertex3f(0, 0, 1)
+        glEnd()
+        #x-y plane
+        glColor3f(0.1, 0.1, 0.1)
+        glBegin(GL_QUADS)
+        glVertex3f(-lx/2,0,-ly/2)
+        glVertex3f(lx / 2, 0, -ly / 2)
+        glVertex3f(lx / 2, 0, ly / 2)
+        glVertex3f(-lx / 2, 0, ly / 2)
+        glEnd()
+    def resizeGL(self, width, height):
+        side = min(width, height)
+        if side < 0:
+            return
+        glViewport((width - side) // 2, (height - side) // 2, side, side)
+        glMatrixMode(GL_PROJECTION)
+        glLoadIdentity()
+        gluPerspective(45.0, self.width() / self.height(), 0.1, 100)
+    def drawBezierCircle(self,center=point(0.0,0,0.0),radius=0.5):
+        #Bezier curve approximation constant
+        #reference: https://www.jianshu.com/p/5198d8aa80c1
+        C_MAGIC_NUMNER= 0.552284749831
 
-
+        difference=C_MAGIC_NUMNER*radius
+        c_x=center[0]
+        c_y=center[1]
+        c_z=center[2]
+        p0=point(c_x,c_y+radius, c_z)
+        c1 = point(c_x+difference,c_y+radius,c_z)
+        c2 = point(c_x+radius, c_y+difference, c_z)
+        p1=point(c_x+radius,c_y,c_z)
+        c3 = point(c_x+radius,c_y-difference,c_z)
+        c4 =point(c_x+difference,c_y-radius,c_z)
+        p2=point(c_x,c_y-radius, c_z)
+        c5 = point(c_x-difference,c_y-radius, c_z)
+        c6 = point(c_x-radius,c_y-difference, c_z)
+        p3=point(c_x-radius,c_y, c_z)
+        c7=point(c_x-radius,c_y+difference, c_z)
+        c8 = point(c_x-difference,c_y+radius, c_z)
+        self.drawCurve([p0,c1,c2,p1])
+        self.drawCurve([p1, c3, c4, p2])
+        self.drawCurve([p2, c5, c6, p3])
+        self.drawCurve([p3, c7, c8, p0])
+    def wheelEvent(self, a0: QtGui.QWheelEvent) -> None:
+        if a0.angleDelta():
+            print(a0.angleDelta())
 if __name__ == '__main__':
     app = QtWidgets.QApplication(['Yo'])
     window = MainWindow()
