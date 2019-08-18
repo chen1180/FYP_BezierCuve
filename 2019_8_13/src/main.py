@@ -21,6 +21,8 @@ class MainWindow(QtWidgets.QMainWindow):
         self.ui.splitBtn.clicked.connect(lambda state,x=2:self.glWidget.changeStatus(x))
         self.ui.drawSurfaceBtn.clicked.connect(lambda state,x=3:self.glWidget.changeStatus(x))
         self.ui.pushButton.clicked.connect(lambda state,x=4:self.glWidget.changeStatus(x))
+        #toobar
+        self.ui.actionSelect_mode.triggered.connect(self.glWidget.changeMode)
 class glWidget(QGLWidget):
     xRotationChanged = QtCore.pyqtSignal(int)
     yRotationChanged = QtCore.pyqtSignal(int)
@@ -35,6 +37,7 @@ class glWidget(QGLWidget):
         self.xTrans=0
         self.yTrans=0
         self.fov=45.0
+        self.selectionMode=False
         self.lastPos = QtCore.QPoint()
 
     def setXRotation(self, angle):
@@ -62,14 +65,18 @@ class glWidget(QGLWidget):
 
     def mouseMoveEvent(self, event):
         dx = event.x() - self.lastPos.x()
-        dy = event.y() - self.lastPos.y()
-        self.fov+=dx
-        if event.buttons() & QtCore.Qt.LeftButton:
-            self.setXRotation(self.xRot + 8 * dy)
-            self.setYRotation(self.yRot + 8 * dx)
-        elif event.buttons() & QtCore.Qt.RightButton:
-            self.xTrans+=dx*0.01
-            self.yTrans += dy*0.01
+        dy =  self.lastPos.y()-event.y()
+        if self.selectionMode==False:
+            if event.buttons() & QtCore.Qt.LeftButton:
+                self.setXRotation(self.xRot + 8 * dy)
+                self.setYRotation(self.yRot + 8 * dx)
+            elif event.buttons() & QtCore.Qt.RightButton:
+                self.xTrans-=dx*0.01
+                self.yTrans = dy*0.01
+        else:
+            if event.buttons() & QtCore.Qt.LeftButton:
+                self.control_points[0].x+=0.001*dx
+                self.control_points[0].y+=0.001*dy
         self.lastPos = event.pos()
         self.update()
     def normalizeAngle(self, angle):
@@ -91,6 +98,7 @@ class glWidget(QGLWidget):
         #gluOrtho2D(0,self.width(),0,self.height())
 
     def paintGL(self):
+        print(self.status)
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
         self.drawCoordinateAxis()
         glLoadIdentity()
@@ -112,9 +120,14 @@ class glWidget(QGLWidget):
             self.update()
         glFlush()
 
+
     def changeStatus(self,newStatus=0):
         self.status=newStatus
         self.update()
+    def changeMode(self):
+        self.selectionMode= not self.selectionMode
+        self.update()
+
     def drawCurve(self,control_points,c_color=(1,1,1)):
         glColor3f(c_color[0], c_color[1], c_color[2])
         glPointSize(5.0)
@@ -222,7 +235,7 @@ class glWidget(QGLWidget):
         glViewport((width - side) // 2, (height - side) // 2, side, side)
         glMatrixMode(GL_PROJECTION)
         glLoadIdentity()
-        gluPerspective(45.0, self.width() / self.height(), 0.1, 100)
+        gluPerspective(self.fov, self.width() / self.height(), 0.1, 100)
     def drawBezierCircle(self,center=point(0.0,0,0.0),radius=0.5):
         #Bezier curve approximation constant
         #reference: https://www.jianshu.com/p/5198d8aa80c1
@@ -250,7 +263,8 @@ class glWidget(QGLWidget):
         self.drawCurve([p3, c7, c8, p0])
     def wheelEvent(self, a0: QtGui.QWheelEvent) -> None:
         if a0.angleDelta():
-            print(a0.angleDelta())
+            self.fov+=a0.angleDelta().y()*0.01
+            print(self.fov)
 if __name__ == '__main__':
     app = QtWidgets.QApplication(['Yo'])
     window = MainWindow()
