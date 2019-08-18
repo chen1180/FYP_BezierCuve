@@ -5,6 +5,7 @@ from PyQt5.QtOpenGL import *
 import numpy as np
 import tmp
 from geometry import point
+import sys
 class MainWindow(QtWidgets.QMainWindow):
     def __init__(self):
         super(MainWindow, self).__init__()
@@ -22,7 +23,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.ui.drawSurfaceBtn.clicked.connect(lambda state,x=3:self.glWidget.changeStatus(x))
         self.ui.pushButton.clicked.connect(lambda state,x=4:self.glWidget.changeStatus(x))
         #toobar
-        self.ui.actionSelect_mode.triggered.connect(self.glWidget.changeMode)
+        #self.ui.actionSelect_mode.triggered.connect(self.glWidget.changeMode)
 class glWidget(QGLWidget):
     xRotationChanged = QtCore.pyqtSignal(int)
     yRotationChanged = QtCore.pyqtSignal(int)
@@ -34,10 +35,8 @@ class glWidget(QGLWidget):
         self.xRot = 0
         self.yRot = 0
         self.zRot = 0
-        self.xTrans=0
-        self.yTrans=0
         self.fov=45.0
-        self.selectionMode=False
+        self.zoomScale=1.0
         self.lastPos = QtCore.QPoint()
 
     def setXRotation(self, angle):
@@ -64,19 +63,11 @@ class glWidget(QGLWidget):
         self.lastPos = event.pos()
 
     def mouseMoveEvent(self, event):
-        dx = event.x() - self.lastPos.x()
-        dy =  self.lastPos.y()-event.y()
-        if self.selectionMode==False:
-            if event.buttons() & QtCore.Qt.LeftButton:
-                self.setXRotation(self.xRot + 8 * dy)
-                self.setYRotation(self.yRot + 8 * dx)
-            elif event.buttons() & QtCore.Qt.RightButton:
-                self.xTrans-=dx*0.01
-                self.yTrans = dy*0.01
-        else:
-            if event.buttons() & QtCore.Qt.LeftButton:
-                self.control_points[0].x+=0.001*dx
-                self.control_points[0].y+=0.001*dy
+        if event.buttons() & QtCore.Qt.MiddleButton:
+            dx = event.x() - self.lastPos.x()
+            dy =  self.lastPos.y()-event.y()
+            self.setXRotation(self.xRot + 8 * dy)
+            self.setYRotation(self.yRot + 8 * dx)
         self.lastPos = event.pos()
         self.update()
     def normalizeAngle(self, angle):
@@ -93,19 +84,18 @@ class glWidget(QGLWidget):
         glShadeModel(GL_SMOOTH)
         glMatrixMode(GL_PROJECTION)
         glLoadIdentity()
-        gluPerspective(self.fov, self.width() / self.height(), 0.1, 20)
+        gluPerspective(self.fov, self.width() / self.height(), 0.1, 100)
         glMatrixMode(GL_MODELVIEW)
         #gluOrtho2D(0,self.width(),0,self.height())
 
     def paintGL(self):
-        print(self.status)
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
         self.drawCoordinateAxis()
         glLoadIdentity()
+        glScaled(self.zoomScale,self.zoomScale,self.zoomScale)
         glRotated(self.xRot / 16.0, 1.0, 0.0, 0.0)
         glRotated(self.yRot / 16.0, 0.0, 1.0, 0.0)
         glRotated(self.zRot / 16.0, 0.0, 0.0, 1.0)
-        glTranslated(self.xTrans, self.xTrans, 0.0)
         if self.status==0:
             self.clearScreen()
         elif self.status==1:
@@ -262,11 +252,26 @@ class glWidget(QGLWidget):
         self.drawCurve([p2, c5, c6, p3])
         self.drawCurve([p3, c7, c8, p0])
     def wheelEvent(self, a0: QtGui.QWheelEvent) -> None:
-        if a0.angleDelta():
-            self.fov+=a0.angleDelta().y()*0.01
-            print(self.fov)
+        ###http://goldsequence.blogspot.com/2016/04/how-to-zoom-in-in-opengl-qt.html
+        degree=a0.angleDelta().y()
+        print(degree)
+        if degree<0:
+            self.zoomScale/=1.1
+        if degree>0:
+            self.zoomScale*=1.1
+        self.update()
+sys._excepthook = sys.excepthook
+def my_exception_hook(exctype, value, traceback):
+    # Print the error and traceback
+    print(exctype, value, traceback)
+    # Call the normal Exception hook after
+    sys._excepthook(exctype, value, traceback)
+    sys.exit(1)
+
+# Set the exception hook to our wrapping function
+sys.excepthook = my_exception_hook
 if __name__ == '__main__':
     app = QtWidgets.QApplication(['Yo'])
     window = MainWindow()
     window.show()
-    app.exec_()
+    sys.exit(app.exec_())

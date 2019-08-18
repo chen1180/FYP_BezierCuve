@@ -5,21 +5,8 @@ from PyQt5.QtOpenGL import *
 import numpy as np
 import tmp
 from geometry import point
-import py_findFacesClass
 import sys
-class Camera(QtCore.QThread):
-    updateCoordinate=QtCore.pyqtSignal(list)
-    def __init__(self,parent=None):
-        super(Camera, self).__init__(parent)
-        self.video1 = py_findFacesClass.FacesInVideo()
-    def run(self) -> None:
-        while True:
-            location1 = self.video1.findFacesAndEyes()
-            self.updateCoordinate.emit(location1)
 
-        self.video1.releaseCamera()
-    def __del__(self):
-        self.wait()
 class MainWindow(QtWidgets.QMainWindow):
     def __init__(self):
         super(MainWindow, self).__init__()
@@ -52,9 +39,6 @@ class glWidget(QGLWidget):
         self.pitch=0
         self.fov=45.0
         self.lastPos =point(self.width()/2,self.height()/2,0)
-        self.thread=Camera()
-        self.thread.updateCoordinate.connect(self.cameraCoordinate)
-        self.thread.start()
         self.cameraPos=point(0,0,-1)
         self.cameraFront=point(0.0,0.0,1)
         self.cameraUp=point(0.0,1.0,0.0)
@@ -115,14 +99,9 @@ class glWidget(QGLWidget):
     def paintGL(self):
         #print(self.pos)
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
-        glMatrixMode(GL_PROJECTION)
-        glLoadIdentity()
-        gluPerspective(self.fov, self.width() / self.height(), 0.1, 20)
         cameraLook = self.cameraPos + self.cameraFront
         gluLookAt(self.cameraPos[0], self.cameraPos[1], self.cameraPos[2], cameraLook[0], cameraLook[1], cameraLook[2],
                   self.cameraUp[0], self.cameraUp[1], self.cameraUp[2])
-        glMatrixMode(GL_MODELVIEW)
-        glLoadIdentity()
         self.drawCoordinateAxis()
         if self.status==0:
             self.clearScreen()
@@ -247,13 +226,15 @@ class glWidget(QGLWidget):
         glVertex3f(-lx / 2, 0, ly / 2)
         glEnd()
     def resizeGL(self, width, height):
-        side = min(width, height)
-        if side < 0:
-            return
-        glViewport((width - side) // 2, (height - side) // 2, side, side)
+        glViewport(0, 0, width, height)
         glMatrixMode(GL_PROJECTION)
         glLoadIdentity()
-        gluPerspective(self.fov, self.width() / self.height(), 0.1, 100)
+        gluPerspective(self.fov, width / height, 0.1, 100)
+        glMatrixMode(GL_MODELVIEW)
+        glLoadIdentity()
+        cameraLook = self.cameraPos + self.cameraFront
+        gluLookAt(self.cameraPos[0], self.cameraPos[1], self.cameraPos[2], cameraLook[0], cameraLook[1], cameraLook[2],
+                  self.cameraUp[0], self.cameraUp[1], self.cameraUp[2])
     def drawBezierCircle(self,center=point(0.0,0,0.0),radius=0.5):
         #Bezier curve approximation constant
         #reference: https://www.jianshu.com/p/5198d8aa80c1
