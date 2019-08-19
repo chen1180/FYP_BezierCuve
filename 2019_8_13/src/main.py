@@ -22,6 +22,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.ui.splitBtn.clicked.connect(lambda state,x=2:self.glWidget.changeStatus(x))
         self.ui.drawSurfaceBtn.clicked.connect(lambda state,x=3:self.glWidget.changeStatus(x))
         self.ui.pushButton.clicked.connect(lambda state,x=4:self.glWidget.changeStatus(x))
+        self.ui.horizontalSlider.valueChanged.connect(self.glWidget.changeT)
         #toobar
         #self.ui.actionSelect_mode.triggered.connect(self.glWidget.changeMode)
 class glWidget(QGLWidget):
@@ -35,9 +36,16 @@ class glWidget(QGLWidget):
         self.xRot = 0
         self.yRot = 0
         self.zRot = 0
+        self.xTrans=0
+        self.yTrans=0
+        self.zTrans=0
         self.fov=45.0
         self.zoomScale=1.0
         self.lastPos = QtCore.QPoint()
+        self.t=0.5
+    def changeT(self,t):
+        self.t=t/100.0
+        self.update()
     def setXRotation(self, angle):
         angle = self.normalizeAngle(angle)
         if angle != self.xRot:
@@ -62,60 +70,46 @@ class glWidget(QGLWidget):
         self.lastPos = event.pos()
 
     def mouseMoveEvent(self, event:QtGui.QMouseEvent):
+        dx = event.x() - self.lastPos.x()
+        dy = self.lastPos.y() - event.y()
+        print(dx,dy)
         if event.buttons() & QtCore.Qt.MiddleButton:
-            dx = event.x() - self.lastPos.x()
-            dy =  self.lastPos.y()-event.y()
-            self.setXRotation(self.xRot + 8 * dy)
-            self.setYRotation(self.yRot + 8 * dx)
+            self.setXRotation(self.xRot + 8*dy)
+            self.setYRotation(self.yRot + 8*dx)
         if event.buttons() & QtCore.Qt.LeftButton:
-            self.makeCurrent()
-
-            # store and cleare projection matrix
-            glMatrixMode(GL_PROJECTION)
-            glPushMatrix()
-            glLoadIdentity()
-
-            # s4t render mode and pick matrix
-            selectBuffer = glSelectBuffer(10)
-            glRenderMode(GL_SELECT)
-            glInitNames()
-            glPushName(245)
-            self.drawCurve(self.control_points)
-            glPushName(666)
-            self.drawBeizerSurface()
-            print(selectBuffer)
-            viewport = glGetIntegerv(GL_VIEWPORT)
-            gluPickMatrix(event.x(), viewport[            3] - event.y(), 10.0, 10.0, viewport)
-
-            # multiply projection matrix
-            gluPerspective(45.0, self.width()/self.height(), 0.1, 100.0)
-            # store and set current view matrix
-            glMatrixMode(GL_MODELVIEW)
-            glPushMatrix()
-            #self.setView()
-            # draw
-            self.drawCurve(self.control_points)
-
-            # restore current matrices
-            glMatrixMode(GL_PROJECTION)
-            glPopMatrix()
-            glMatrixMode(GL_MODELVIEW)
-            glPopMatrix()
-
-            glFlush()
-
-            hits = glRenderMode(GL_RENDER)
-            if hits:
-                print([x.names for x in hits])
-
-            self.doneCurrent()
+            pass
         self.lastPos = event.pos()
         self.update()
-    def stopPicking(self):
+    def selectObject(self,x,y):
         #picking mode reference:
         #https://blog.csdn.net/lcphoenix/article/details/6588033
         #https://stackoverflow.com/questions/56755950/why-object-selection-using-mouse-click-by-glselect-is-not-working-after-moving-c
-        pass
+        # s4t render mode and pick matrix
+        viewport = glGetIntegerv(GL_VIEWPORT)
+        selectBuffer = glSelectBuffer(100)
+
+        glRenderMode(GL_SELECT)
+        glInitNames()
+        glPushName(0)
+        # render object
+        glMatrixMode(GL_PROJECTION)
+        glPushMatrix()
+        glLoadIdentity()
+
+        gluPickMatrix(x, viewport[3] - y, 10.0, 10.0, viewport)
+        # multiply projection matrix
+        gluPerspective(45.0, self.width() / self.height(), 0.1, 100.0)
+        glMatrixMode(GL_PROJECTION)
+        glPopMatrix()
+        glLoadName(1)
+        self.drawCurve(self.control_points)
+        glLoadName(2)
+        self.drawBeizerSurface()
+        glFlush()
+        hits = glRenderMode(GL_RENDER)
+        if hits:
+            print([x.names for x in hits])
+        self.updateGL()
     def normalizeAngle(self, angle):
         while angle < 0:
             angle += 360 * 16
@@ -147,7 +141,7 @@ class glWidget(QGLWidget):
         elif self.status==1:
             self.drawCurve(self.control_points)
         elif self.status==2:
-            self.splitCurve(self.control_points)
+            self.splitCurve(self.control_points,self.t)
         elif self.status==3:
             self.drawBeizerSurface()
         elif self.status==4:
@@ -155,7 +149,6 @@ class glWidget(QGLWidget):
         else:
             self.update()
         glFlush()
-
 
     def changeStatus(self,newStatus=0):
         self.status=newStatus
@@ -168,10 +161,9 @@ class glWidget(QGLWidget):
         glColor3f(c_color[0], c_color[1], c_color[2])
         glPointSize(5.0)
         glBegin(GL_POINTS)
-        for p in control_points:
+        for i,p in enumerate(control_points):
             p.glVertex3()
         glEnd()
-        glColor3f(1.0, 1.0, 1.0)
         glBegin(GL_LINE_STRIP)
         for t in np.linspace(0, 1, 10):
             p = self.decasteljau(control_points[0], control_points[1], control_points[2],control_points[3], t)
@@ -257,13 +249,13 @@ class glWidget(QGLWidget):
         glVertex3f(0, 0, 1)
         glEnd()
         #x-y plane
-        glColor3f(0.5, 0.5, 0.5)
-        glBegin(GL_QUADS)
-        glVertex3f(-lx/2,0,-ly/2)
-        glVertex3f(lx / 2, 0, -ly / 2)
-        glVertex3f(lx / 2, 0, ly / 2)
-        glVertex3f(-lx / 2, 0, ly / 2)
-        glEnd()
+        # glColor3f(0.5, 0.5, 0.5)
+        # glBegin(GL_QUADS)
+        # glVertex3f(-lx/2,0,-ly/2)
+        # glVertex3f(lx / 2, 0, -ly / 2)
+        # glVertex3f(lx / 2, 0, ly / 2)
+        # glVertex3f(-lx / 2, 0, ly / 2)
+        # glEnd()
     def resizeGL(self, width, height):
         side = min(width, height)
         print(width,height)

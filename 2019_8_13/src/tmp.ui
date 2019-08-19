@@ -47,6 +47,19 @@
          </widget>
         </item>
         <item>
+         <widget class="QSlider" name="horizontalSlider">
+          <property name="maximum">
+           <number>99</number>
+          </property>
+          <property name="singleStep">
+           <number>1</number>
+          </property>
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
+          </property>
+         </widget>
+        </item>
+        <item>
          <widget class="QPushButton" name="drawSurfaceBtn">
           <property name="text">
            <string>Bezier surface</string>
