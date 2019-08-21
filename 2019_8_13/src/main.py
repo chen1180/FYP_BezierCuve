@@ -33,52 +33,64 @@ class glWidget(QGLWidget):
         QGLWidget.__init__(self, parent)
         self.status=0
         self.control_points = [point(-0.25, 0, 0), point(0, 0.25, 0), point(0.25, 0.25, 0), point(0.5, -0.5, 0)]
-        self.xRot = 0
-        self.yRot = 0
-        self.zRot = 0
-        self.xTrans=0
-        self.yTrans=0
-        self.zTrans=0
         self.fov=45.0
+        self.phi=45
+        self.theta=45
         self.zoomScale=1.0
-        self.lastPos = QtCore.QPoint()
+        self.lastPos = point(0,0,0)
+        self.cameraPos = point(1, 1, -1)
+        self.cameraFront = point(0.0, 0.0, -1)
+        self.cameraUp = point(0.0, 1.0, 0.0)
+        self.radius=1
         self.t=0.5
     def changeT(self,t):
         self.t=t/100.0
         self.update()
-    def setXRotation(self, angle):
-        angle = self.normalizeAngle(angle)
-        if angle != self.xRot:
-            self.xRot = angle
-            self.xRotationChanged.emit(angle)
-            self.update()
-
-    def setYRotation(self, angle):
-        angle = self.normalizeAngle(angle)
-        if angle != self.yRot:
-            self.yRot = angle
-            self.yRotationChanged.emit(angle)
-            self.update()
-
-    def setZRotation(self, angle):
-        angle = self.normalizeAngle(angle)
-        if angle != self.zRot:
-            self.zRot = angle
-            self.zRotationChanged.emit(angle)
-            self.update()
+    def cross(self,p1,p2):
+        p=np.cross(p1.components(),p2.components())
+        return point.with_components(p)
+    def normalize(self,p):
+        l = (p[0] ** 2 + p[1] ** 2 + p[2] ** 2) ** 0.5
+        return p*(1/l)
+    def keyPressEvent(self, event):
+        if event.key() == QtCore.Qt.Key_W:
+            self.cameraPos += 0.1 * self.cameraFront
+        elif event.key() == QtCore.Qt.Key_S:
+            self.cameraPos -= 0.1 * self.cameraFront
+        elif event.key() == QtCore.Qt.Key_A:
+            self.cameraPos -= 0.1 * self.normalize(self.cross(self.cameraFront, self.cameraUp))
+        elif event.key() == QtCore.Qt.Key_D:
+            self.cameraPos += 0.1 * self.normalize(self.cross(self.cameraFront, self.cameraUp))
+        print(self.cameraPos)
+        self.update()
     def mousePressEvent(self, event):
-        self.lastPos = event.pos()
 
-    def mouseMoveEvent(self, event:QtGui.QMouseEvent):
-        dx = event.x() - self.lastPos.x()
-        dy = self.lastPos.y() - event.y()
-        print(dx,dy)
-        if event.buttons() & QtCore.Qt.MiddleButton:
-            self.setXRotation(self.xRot + 8*dy)
-            self.setYRotation(self.yRot + 8*dx)
+        self.lastPos = point(event.x(), event.y(), 0)
+        self.update()
+    def mouseMoveEvent(self, event):
+        #https://community.khronos.org/t/orbit-around-object/66465/4
+        #PAN FUNCTION:https://computergraphics.stackovernet.com/cn/q/58
+        if event.buttons()&QtCore.Qt.MiddleButton:
+            dx = event.x() - self.lastPos.x
+            dy = self.lastPos.y-event.y()
+            self.phi += dx*0.1
+            self.theta += dy*0.1
+            print(self.phi,self.theta)
+        self.cameraPos.x = self.radius * (np.cos(np.radians(self.theta))) * np.cos(np.radians(self.phi))
+        self.cameraPos.y = self.radius * np.sin(np.radians(self.theta))
+        self.cameraPos.z = self.radius * (np.cos(np.radians(self.theta))) * np.sin(np.radians(self.phi))
         if event.buttons() & QtCore.Qt.LeftButton:
-            pass
-        self.lastPos = event.pos()
+            dx = event.x() - self.lastPos.x
+            dy = self.lastPos.y - event.y()
+            look=self.normalize(self.cameraPos)
+            right=self.cross(look,self.cameraUp)
+            up=self.cross(look,right)
+            self.cameraFront+=right*dx*0.01+up*dy*0.01
+            print(self.cameraFront)
+            glMatrixMode(GL_PROJECTION)
+            glLoadIdentity()
+            gluPerspective(self.fov, self.width() / self.height(), 0.1, 1000)
+        self.lastPos = point(event.x(), event.y(), 0)
         self.update()
     def selectObject(self,x,y):
         #picking mode reference:
@@ -110,31 +122,25 @@ class glWidget(QGLWidget):
         if hits:
             print([x.names for x in hits])
         self.updateGL()
-    def normalizeAngle(self, angle):
-        while angle < 0:
-            angle += 360 * 16
-        while angle > 360 * 16:
-            angle -= 360 * 16
-        return angle
     def initializeGL(self):
         self.setFocusPolicy(QtCore.Qt.StrongFocus)
+        self.setMouseTracking(True)
         glClearDepth(1.0)
-        glDepthFunc(GL_LESS)
+        glDepthFunc(GL_ALWAYS)
         glEnable(GL_DEPTH_TEST)
         #glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST)
         glShadeModel(GL_SMOOTH)
         glMatrixMode(GL_PROJECTION)
         glLoadIdentity()
-        gluPerspective(self.fov, self.width() / self.height(), 0.1, 100)
+        gluPerspective(self.fov, self.width() / self.height(), 0.1, 1000)
         glMatrixMode(GL_MODELVIEW)
         #gluOrtho2D(0,self.widt h(),0,self.height())
     def paintGL(self):
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
         glLoadIdentity()
-        glScaled(self.zoomScale,self.zoomScale,self.zoomScale)
-        glRotated(self.xRot / 16.0, 1.0, 0.0, 0.0)
-        glRotated(self.yRot / 16.0, 0.0, 1.0, 0.0)
-        glRotated(self.zRot / 16.0, 0.0, 0.0, 1.0)
+        self.cameraPos=self.cameraPos+self.cameraFront
+        gluLookAt(self.cameraPos[0], self.cameraPos[1], self.cameraPos[2],self.cameraFront[0], self.cameraFront[1], self.cameraFront[2],
+                  self.cameraUp[0], self.cameraUp[1], self.cameraUp[2])
         self.drawCoordinateAxis()
         if self.status==0:
             self.clearScreen()
@@ -228,8 +234,8 @@ class glWidget(QGLWidget):
     def clearScreen(self):
         glFlush()
     def drawCoordinateAxis(self):
-        lx=10
-        ly=10
+        lx=1
+        ly=1
         #x axis
         glColor3f(1,0,0)
         glBegin(GL_LINES)
@@ -294,7 +300,6 @@ class glWidget(QGLWidget):
     def wheelEvent(self, a0: QtGui.QWheelEvent) -> None:
         ###http://goldsequence.blogspot.com/2016/04/how-to-zoom-in-in-opengl-qt.html
         degree=a0.angleDelta().y()
-        print(degree)
         if degree<0:
             self.zoomScale/=1.1
         if degree>0:
