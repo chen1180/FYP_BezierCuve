@@ -6,6 +6,7 @@ import numpy as np
 import tmp
 from geometry import point
 import sys
+import camera
 class MainWindow(QtWidgets.QMainWindow):
     def __init__(self):
         super(MainWindow, self).__init__()
@@ -34,37 +35,14 @@ class glWidget(QGLWidget):
         self.status=0
         self.control_points = [point(-0.25, 0, 0), point(0, 0.25, 0), point(0.25, 0.25, 0), point(0.5, -0.5, 0)]
         self.fov=45.0
-        self.phi=45
-        self.theta=45
-        self.zoomScale=1.0
         self.lastPos = point(0,0,0)
-        self.cameraPos = point(1, 1, -1)
-        self.cameraFront = point(0.0, 0.0, -1)
-        self.cameraUp = point(0.0, 1.0, 0.0)
-        self.radius=1
         self.t=0.5
+        self.zoomScale=1.0
+        self.camera=camera.Camera()
     def changeT(self,t):
         self.t=t/100.0
         self.update()
-    def cross(self,p1,p2):
-        p=np.cross(p1.components(),p2.components())
-        return point.with_components(p)
-    def normalize(self,p):
-        l = (p[0] ** 2 + p[1] ** 2 + p[2] ** 2) ** 0.5
-        return p*(1/l)
-    def keyPressEvent(self, event):
-        if event.key() == QtCore.Qt.Key_W:
-            self.cameraPos += 0.1 * self.cameraFront
-        elif event.key() == QtCore.Qt.Key_S:
-            self.cameraPos -= 0.1 * self.cameraFront
-        elif event.key() == QtCore.Qt.Key_A:
-            self.cameraPos -= 0.1 * self.normalize(self.cross(self.cameraFront, self.cameraUp))
-        elif event.key() == QtCore.Qt.Key_D:
-            self.cameraPos += 0.1 * self.normalize(self.cross(self.cameraFront, self.cameraUp))
-        print(self.cameraPos)
-        self.update()
     def mousePressEvent(self, event):
-
         self.lastPos = point(event.x(), event.y(), 0)
         self.update()
     def mouseMoveEvent(self, event):
@@ -72,24 +50,12 @@ class glWidget(QGLWidget):
         #PAN FUNCTION:https://computergraphics.stackovernet.com/cn/q/58
         if event.buttons()&QtCore.Qt.MiddleButton:
             dx = event.x() - self.lastPos.x
-            dy = self.lastPos.y-event.y()
-            self.phi += dx*0.1
-            self.theta += dy*0.1
-            print(self.phi,self.theta)
-        self.cameraPos.x = self.radius * (np.cos(np.radians(self.theta))) * np.cos(np.radians(self.phi))
-        self.cameraPos.y = self.radius * np.sin(np.radians(self.theta))
-        self.cameraPos.z = self.radius * (np.cos(np.radians(self.theta))) * np.sin(np.radians(self.phi))
-        if event.buttons() & QtCore.Qt.LeftButton:
-            dx = event.x() - self.lastPos.x
             dy = self.lastPos.y - event.y()
-            look=self.normalize(self.cameraPos)
-            right=self.cross(look,self.cameraUp)
-            up=self.cross(look,right)
-            self.cameraFront+=right*dx*0.01+up*dy*0.01
-            print(self.cameraFront)
-            glMatrixMode(GL_PROJECTION)
-            glLoadIdentity()
-            gluPerspective(self.fov, self.width() / self.height(), 0.1, 1000)
+            self.camera.rotate(dx,dy)
+        if event.buttons() & QtCore.Qt.LeftButton:
+            dTheta = (self.lastPos.x-event.x())/10
+            dPhi = (self.lastPos.y-event.y())/10
+            self.camera.pan(dTheta,dPhi)
         self.lastPos = point(event.x(), event.y(), 0)
         self.update()
     def selectObject(self,x,y):
@@ -132,15 +98,13 @@ class glWidget(QGLWidget):
         glShadeModel(GL_SMOOTH)
         glMatrixMode(GL_PROJECTION)
         glLoadIdentity()
-        gluPerspective(self.fov, self.width() / self.height(), 0.1, 1000)
-        glMatrixMode(GL_MODELVIEW)
+        gluPerspective(self.fov, self.width() / self.height(), 0.1, 100)
         #gluOrtho2D(0,self.widt h(),0,self.height())
     def paintGL(self):
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
+        glMatrixMode(GL_MODELVIEW)
         glLoadIdentity()
-        self.cameraPos=self.cameraPos+self.cameraFront
-        gluLookAt(self.cameraPos[0], self.cameraPos[1], self.cameraPos[2],self.cameraFront[0], self.cameraFront[1], self.cameraFront[2],
-                  self.cameraUp[0], self.cameraUp[1], self.cameraUp[2])
+        self.camera.updateViewMatrix()
         self.drawCoordinateAxis()
         if self.status==0:
             self.clearScreen()
@@ -300,10 +264,7 @@ class glWidget(QGLWidget):
     def wheelEvent(self, a0: QtGui.QWheelEvent) -> None:
         ###http://goldsequence.blogspot.com/2016/04/how-to-zoom-in-in-opengl-qt.html
         degree=a0.angleDelta().y()
-        if degree<0:
-            self.zoomScale/=1.1
-        if degree>0:
-            self.zoomScale*=1.1
+        self.camera.zoom(degree/1000)
         self.update()
 sys._excepthook = sys.excepthook
 def my_exception_hook(exctype, value, traceback):
