@@ -1,17 +1,20 @@
 from geometry import point
-from OpenGL.GLU import gluLookAt
+from OpenGL.GLU import gluLookAt,gluPerspective
 from numpy import cos,sin,radians,cross
 class Camera:
     #Arcball camera setup
-    def __init__(self,_targetPos=point(0,0,0),_up=1.0,_theta=0,_phi=0,radius=1.0):
+    def __init__(self,_targetPos=point(0,0,0),_up=1.0,_theta=0,_phi=45,radius=1.0,_fov=45):
         self.targetPos=_targetPos
         self.up=_up
         self.radius=radius
         self.theta=_theta
         self.phi=_phi
         self.viewNeedUpdate=False
+        self.fov=_fov
     def updateViewMatrix(self):
         gluLookAt(self.getCameraPosition().x, self.getCameraPosition().y, self.getCameraPosition().z,self.targetPos.x, self.targetPos.y, self.targetPos.z,0, self.up, 0)
+    def updateProjectionMatrix(self,width,height,znear=0.1,zfar=100):
+        gluPerspective(self.fov,width/height,znear,zfar )
     def getView(self):
         if self.viewNeedUpdate:
             self.updateViewMatrix()
