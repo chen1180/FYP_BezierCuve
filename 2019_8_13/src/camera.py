@@ -3,7 +3,7 @@ from OpenGL.GLU import gluLookAt,gluPerspective
 from numpy import cos,sin,radians,cross
 class Camera:
     #Arcball camera setup
-    def __init__(self,_targetPos=point(0,0,0),_up=1.0,_theta=0,_phi=45,radius=1.0,_fov=45):
+    def __init__(self,_targetPos=point(0,0,0),_up=1.0,_theta=90,_phi=45,radius=1.0,_fov=45):
         self.targetPos=_targetPos
         self.up=_up
         self.radius=radius

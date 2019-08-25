@@ -6,7 +6,7 @@ import tmp
 from geometry import point
 import sys
 import camera
-from curve import BezierCurve
+from curve import BezierCurve,BSpline
 class MainWindow(QtWidgets.QMainWindow):
     def __init__(self):
         super(MainWindow, self).__init__()
@@ -33,7 +33,8 @@ class glWidget(QGLWidget):
     def __init__(self, parent):
         QGLWidget.__init__(self, parent)
         self.status=0
-        self.control_points = [point(-0.25, 0, 0), point(0, 0.25, 0), point(0.25, 0.25, 0), point(0.5, -0.5, 0)]
+        self.control_points = [point(-0,-0.5, 0), point(-0.4, -0.4, 0), point(0, 0.3, 0), point(0.2, 0.2, 0), point(0.2, -0.2, 0), point(-0.15, -0.15, 0), point(0.1, 0.1, 0),point(0.1,0,0)]
+        #self.control_points = [point(-0.5, -0.5, 0), point(-0.4, 0.4, 0), point(-0.0, -0.3, 0), point(0.2, 0.2, 0),point(0.5, -0.2, 0)]
         self.lastPos = point(0,0,0)
         self.t=0.5
         self.zoomScale=1.0
@@ -108,7 +109,8 @@ class glWidget(QGLWidget):
         if self.status==0:
             self.clearScreen()
         elif self.status==1:
-            BezierCurve().drawCurve(self.control_points)
+            BezierCurve().drawMultiBeizerCurve(self.control_points)
+            BSpline().drawBSplineCurve(self.control_points)
         elif self.status==2:
             BezierCurve().splitCurve(self.control_points,self.t)
         elif self.status==3:

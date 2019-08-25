@@ -5,13 +5,19 @@ class BezierCurve:
     def __init__(self):
         pass
     @classmethod
-    def decasteljau(cls,p1,p2,p3,p4,t):
+    def decasteljauCubic(cls,p1,p2,p3,p4,t):
         p12=(1 - t) * p1 + t * p2
         p23 = (1 - t) * p2 + t * p3
         p34 = (1 - t) * p3 + t * p4
         p1223 = (1 - t) * p12 + t * p23
         p2334 = (1 - t) * p23 + t * p34
         return (1-t)*p1223+t*p2334
+
+    @classmethod
+    def decasteljauQuad(cls,p1,p2,p3,t):
+        p12=(1 - t) * p1 + t * p2
+        p23 = (1 - t) * p2 + t * p3
+        return (1 - t) * p12 + t * p23
     @classmethod
     def decasteljau_split(cls,p1,p2,p3,p4,t):
         p12 = (1 - t) * p1 + t * p2
@@ -31,7 +37,7 @@ class BezierCurve:
         glEnd()
         glBegin(GL_LINE_STRIP)
         for t in np.linspace(0, 1, 10):
-            p = cls.decasteljau(control_points[0], control_points[1], control_points[2], control_points[3], t)
+            p = cls.decasteljauCubic(control_points[0], control_points[1], control_points[2], control_points[3], t)
             p.glVertex3()
         glEnd()
     @classmethod
@@ -57,13 +63,39 @@ class BezierCurve:
         cls.drawCurve(curve2, c_color=c2_color)
         glFlush()
     @classmethod
+    def drawMultiBeizerCurve(cls,control_points):
+        glColor3f(1, 1, 1)
+        glPointSize(5.0)
+        glBegin(GL_POINTS)
+        for i, p in enumerate(control_points):
+            p.glVertex3()
+        glEnd()
+        glColor3f(0, 1, 0)
+        glLineWidth(5)
+        glBegin(GL_LINE_STRIP)
+        start_point = control_points[0]
+        ctrl_point = control_points[1]
+        end_point = (control_points[1] + control_points[2]) * 0.5
+        for t in np.linspace(0, 1, 10):
+            p = cls.decasteljauQuad(start_point, ctrl_point, end_point, t)
+            p.glVertex3()
+        for index in range(1, len(control_points) - 2):
+            start_point = (control_points[index] + control_points[index+1]) * 0.5
+            ctrl_point = control_points[index+1]
+            end_point = (control_points[index+1] + control_points[index+2]) * 0.5
+            for t in np.linspace(0, 1, 10):
+                p = cls.decasteljauQuad(start_point, ctrl_point, end_point, t)
+                p.glVertex3()
+        control_points[-1].glVertex3()
+        glEnd()
+    @classmethod
     def drawBeizerSurface(cls):
         glMatrixMode(GL_MODELVIEW)
         glColor3f(0.5, 0.5, 0.5)
         glPushMatrix()
         # glRotatef(45.0,-10.0,1.0,-10.0)
         control_points = [[[-0.25, 0.0, -0.5], [0, 0, 0.0], [0.25, -0.2, 0.0], [0.5, 0.2, 0.0]],
-                          [[-0.5, -0.5, 0.0], [0, -0.9, 0.0], [0.25, -0.2, 0.0], [0.5, -0.6, 0.0]]]
+                          [[-0.5, -0.5, 0.0], [0, -0.9, 0.0], [0.25, -0.2, 2.0], [0.5, -0.6, 0.0]]]
         glMap2f(GL_MAP2_VERTEX_3, 0, 1, 0, 1, control_points)
         glEnable(GL_MAP2_VERTEX_3)
         glMapGrid2f(50, 0, 1, 50, 0, 1)
@@ -102,3 +134,95 @@ class BezierCurve:
         cls.drawCurve([p1, c3, c4, p2])
         cls.drawCurve([p2, c5, c6, p3])
         cls.drawCurve([p3, c7, c8, p0])
+class BSpline:
+    def __init__(self):
+        pass
+    @classmethod
+    # B样条基函数
+    # i: 控制点计数
+    # k: 次数
+    # t: 节点
+    # knots: 节点向量，用来分段
+    def deBoor_Cox(cls,i,k,t,knots):
+        if k==0:
+            if t>=knots[i] and t<knots[i+1]:
+                return 1.0
+            else:
+                return 0.0
+        den1=knots[i+k]-knots[i]
+        den2=knots[i+k+1]-knots[i+1]
+        a=0
+        b=0
+        if den1==0 and den2==0:
+            a,b=1,1
+        elif den1!=0 and den2==0:
+            a=(t-knots[i])/den1
+            b=1
+        elif den1 == 0 and den2 != 0:
+            a=1
+            b=knots[i+k+1]-t
+        else:
+            a = (t - knots[i]) / den1
+            b = (knots[i + k + 1] - t)/den2
+        return a*cls.deBoor_Cox(i,k-1,t,knots)+b*cls.deBoor_Cox(i+1,k-1,t,knots)
+
+    @classmethod
+    def createOpenUniformKnots(cls,n,k):
+        nKnots=n+k+1
+        knots=[None]*nKnots
+        for i in range(nKnots):
+            if i <k:
+                knots[i]=0
+            elif i>=k and i <nKnots-k+1:
+                knots[i]=knots[i-1]+1
+            else:
+                knots[i]=knots[i-1]
+        return knots
+
+    @classmethod
+    def createClampedKnots(cls, n, k):
+        nKnots = n + k + 2
+        knots = [None] * nKnots
+        for i in range(nKnots):
+            if i < k+1:
+                knots[i] = 0
+            elif i >= k+1 and i < nKnots - k :
+                knots[i] = knots[i - 1] + 1
+            elif i >=nKnots-k:
+                knots[i] = knots[i - 1]
+        return knots
+    @classmethod
+    def createUniformKnots(cls, n, k):
+        nKnots = n + k + 1
+        knots = [None] * nKnots
+        for i in range(nKnots):
+            knots[i]=i+1
+        return knots
+    @classmethod
+    def drawBSplineCurve(cls,controlPoints=[],order=2):
+        glColor3f(1.0,1.0,0.0)
+        glLineWidth(3.0)
+        glBegin(GL_LINE_STRIP)
+        knots = cls.createClampedKnots(len(controlPoints),order)
+        tmin=knots[order]
+        tmax=knots[len(controlPoints)]
+        insertNum = 100
+        steps=(tmax-tmin)/(insertNum-1)
+        for i in range(insertNum):
+            t=tmin+i*steps
+            p=point(0,0,0)
+            for j,c_p in enumerate(controlPoints):
+                Nik=cls.deBoor_Cox(j,order,t,knots)
+                p+=Nik*c_p
+            glVertex3f(p.x,p.y,p.z)
+        glEnd()
+        glColor3f(1.0, 1.0, 1.0)
+        glLineWidth(1)
+        glBegin(GL_LINE_STRIP)
+        for p in controlPoints:
+            p.glVertex3()
+        glEnd()
+
+
+
+
