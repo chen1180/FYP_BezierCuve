@@ -3,25 +3,12 @@
   <component name="ChangeListManager">
     <list default="true" id="6a09952a-ec81-4d01-8f36-3024081bb193" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.ipynb_checkpoints/Untitled-checkpoint.ipynb" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/2019_4_17/main.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/2019_4_18/Icons/exit.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/2019_4_18/Icons/qt-unified-windows-x86-3.1.0-online.exe" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/2019_4_18/main.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/2019_4_18/mainWindow.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/2019_4_20/Icons/exit.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/2019_4_20/Icons/qt-unified-windows-x86-3.1.0-online.exe" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/2019_4_20/mainWindow.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/2019_4_20/testPackage.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/2019_4_20/testPackage.ui" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/2019_4_28/Icons/exit.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/2019_4_28/Icons/qt-unified-windows-x86-3.1.0-online.exe" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/2019_4_28/mainWindow.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/2019_4_28/testPackage.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/2019_4_28/testPackage.ui" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/2019_8_13/src/camera.py" beforeDir="false" afterPath="$PROJECT_DIR$/2019_8_13/src/camera.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/2019_8_13/src/curve.py" beforeDir="false" afterPath="$PROJECT_DIR$/2019_8_13/src/curve.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/2019_8_13/src/demo.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/2019_8_13/src/geometry.py" beforeDir="false" afterPath="$PROJECT_DIR$/2019_8_13/src/geometry.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/2019_8_13/src/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/2019_8_13/src/main.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/2019_8_13/src/tmp.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/2019_8_13/src/tmp.ui" beforeDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -59,16 +46,16 @@
     </option>
   </component>
   <component name="RecentsManager">
-    <key name="CopyFile.RECENT_KEYS">
-      <recent name="C:\Users\Chen Baocheng\Documents\GitHub\FYP_BezierCuver" />
-      <recent name="D:\Study\FYP" />
-    </key>
     <key name="MoveFile.RECENT_KEYS">
       <recent name="C:\Users\Chen Baocheng\Documents\GitHub\FYP_BezierCuver\2019_8_13\src" />
       <recent name="D:\Study\FYP\2019_5_5_2\src" />
       <recent name="D:\Study\FYP\2019_5_5_2\UI" />
       <recent name="D:\Study\FYP\2019_4_20" />
       <recent name="D:\Study\FYP\2019_4_20\ui" />
+    </key>
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="C:\Users\Chen Baocheng\Documents\GitHub\FYP_BezierCuver" />
+      <recent name="D:\Study\FYP" />
     </key>
   </component>
   <component name="RunDashboard">
@@ -280,11 +267,6 @@
           <url>file://$PROJECT_DIR$/2019_4_17/main.py</url>
           <line>88</line>
           <option name="timeStamp" value="7" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/2019_8_13/src/demo.py</url>
-          <line>60</line>
-          <option name="timeStamp" value="8" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>

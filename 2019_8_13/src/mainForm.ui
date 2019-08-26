@@ -14,7 +14,7 @@
    <string>MainWindow</string>
   </property>
   <widget class="QWidget" name="centralwidget">
-   <layout class="QHBoxLayout" name="horizontalLayout_3" stretch="0,6,0">
+   <layout class="QHBoxLayout" name="horizontalLayout_3" stretch="1,6">
     <item>
      <widget class="QTabWidget" name="drawWidget">
       <property name="currentIndex">
@@ -79,6 +79,41 @@
        <attribute name="title">
         <string>B-Spline</string>
        </attribute>
+       <layout class="QFormLayout" name="formLayout_2">
+        <item row="0" column="0">
+         <widget class="QLabel" name="knotlabel">
+          <property name="text">
+           <string>Knots</string>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="1">
+         <widget class="QComboBox" name="knotTypecomboBox">
+          <item>
+           <property name="text">
+            <string>Clamped</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>Open</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>Closed</string>
+           </property>
+          </item>
+         </widget>
+        </item>
+        <item row="1" column="0" colspan="2">
+         <widget class="QPushButton" name="bSplineBtn">
+          <property name="text">
+           <string>Draw B spline</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
       </widget>
      </widget>
     </item>
@@ -88,9 +123,6 @@
        <widget class="QOpenGLWidget" name="openGLWidget"/>
       </item>
      </layout>
-    </item>
-    <item>
-     <layout class="QFormLayout" name="formLayout"/>
     </item>
    </layout>
   </widget>
@@ -116,6 +148,7 @@
     <bool>false</bool>
    </attribute>
    <addaction name="actionSelect_mode"/>
+   <addaction name="actionPencil"/>
   </widget>
   <action name="actionSelect_mode">
    <property name="checkable">
@@ -127,6 +160,18 @@
    </property>
    <property name="text">
     <string>Select mode</string>
+   </property>
+  </action>
+  <action name="actionPencil">
+   <property name="icon">
+    <iconset>
+     <normaloff>../Icons/pencil.png</normaloff>../Icons/pencil.png</iconset>
+   </property>
+   <property name="text">
+    <string>Pencil</string>
+   </property>
+   <property name="toolTip">
+    <string>Draw point</string>
    </property>
   </action>
  </widget>

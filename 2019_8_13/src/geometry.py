@@ -14,6 +14,8 @@ class point:
         return [self.x,self.y,self.z]
     def glVertex3(self):
         glVertex3f(self.x,self.y,self.z)
+    def getLength(self):
+        return (self.x**2+self.y**2+self.z**2)**0.5
     def plus(self,offset):
         return point(self.x+offset.x,self.y+offset.y,self.z+offset.z)
     def minus(self, other):

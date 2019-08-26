@@ -2,7 +2,7 @@ from OpenGL.GL import *
 from OpenGL.GLU import *
 from PyQt5 import QtGui,QtWidgets,QtCore
 from PyQt5.QtOpenGL import *
-import tmp
+import mainForm
 from geometry import point
 import sys
 import camera
@@ -12,7 +12,7 @@ class MainWindow(QtWidgets.QMainWindow):
         super(MainWindow, self).__init__()
         self.setupUi()
     def setupUi(self):
-        self.ui=tmp.Ui_MainWindow()
+        self.ui=mainForm.Ui_MainWindow()
         self.ui.setupUi(self)
         self.ui.openGLWidget.close()
         self.glWidget=glWidget(self)
@@ -24,21 +24,20 @@ class MainWindow(QtWidgets.QMainWindow):
         self.ui.drawSurfaceBtn.clicked.connect(lambda state,x=3:self.glWidget.changeStatus(x))
         self.ui.pushButton.clicked.connect(lambda state,x=4:self.glWidget.changeStatus(x))
         self.ui.horizontalSlider.valueChanged.connect(self.glWidget.changeT)
+        self.ui.bSplineBtn.clicked.connect(lambda state,x=5:self.glWidget.changeStatus(x))
         #toobar
         #self.ui.actionSelect_mode.triggered.connect(self.glWidget.changeMode)
 class glWidget(QGLWidget):
-    xRotationChanged = QtCore.pyqtSignal(int)
-    yRotationChanged = QtCore.pyqtSignal(int)
-    zRotationChanged = QtCore.pyqtSignal(int)
+    knotsTypeChanged = QtCore.pyqtSignal(str)
     def __init__(self, parent):
         QGLWidget.__init__(self, parent)
-        self.status=0
-        self.control_points = [point(-0,-0.5, 0), point(-0.4, -0.4, 0), point(0, 0.3, 0), point(0.2, 0.2, 0), point(0.2, -0.2, 0), point(-0.15, -0.15, 0), point(0.1, 0.1, 0),point(0.1,0,0)]
-        #self.control_points = [point(-0.5, -0.5, 0), point(-0.4, 0.4, 0), point(-0.0, -0.3, 0), point(0.2, 0.2, 0),point(0.5, -0.2, 0)]
+        self.status=[]
+        self.control_points = [point(-0,-0.5, 0), point(-0.4, -0.4, 0), point(0, 0.3, 0), point(0.2, 0.2, 0), point(0.2, -0.2, 0), point(-0.15, -0.15, 0), point(-0.3, 0.2, 0), point(-0.5, 0.2, 0)]
         self.lastPos = point(0,0,0)
         self.t=0.5
         self.zoomScale=1.0
         self.camera=camera.Camera()
+        self.parent=parent
     def changeT(self,t):
         self.t=t/100.0
         self.update()
@@ -106,22 +105,26 @@ class glWidget(QGLWidget):
         glLoadIdentity()
         self.camera.updateViewMatrix()
         self.drawCoordinateAxis()
-        if self.status==0:
-            self.clearScreen()
-        elif self.status==1:
-            BezierCurve().drawMultiBeizerCurve(self.control_points)
-            BSpline().drawBSplineCurve(self.control_points)
-        elif self.status==2:
-            BezierCurve().splitCurve(self.control_points,self.t)
-        elif self.status==3:
-            BezierCurve().drawBeizerSurface()
-        elif self.status==4:
-            BezierCurve().drawBezierCircle()
-        else:
-            self.update()
+        self.renderObject()
         glFlush()
+    def renderObject(self):
+        for status in self.status:
+            if status==0:
+                self.clearScreen()
+            elif status==1:
+                BezierCurve().drawMultiBeizerCurve(self.control_points)
+            elif status==2:
+                BezierCurve().splitCurve(self.control_points,self.t)
+            elif status==3:
+                BezierCurve().drawBeizerSurface()
+            elif status==4:
+                BezierCurve().drawBezierCircle()
+            elif status==5:
+                BSpline().drawBSplineCurve(self.control_points, order=3,knots_type=self.parent.ui.knotTypecomboBox.currentText())
+            else:
+                self.update()
     def changeStatus(self,newStatus=0):
-        self.status=newStatus
+        self.status.append(newStatus)
         self.update()
     def changeMode(self):
         self.selectionMode= not self.selectionMode
@@ -129,6 +132,8 @@ class glWidget(QGLWidget):
 
     def clearScreen(self):
         glFlush()
+        self.status.clear()
+        self.update()
     def drawCoordinateAxis(self):
         lx=1
         ly=1

@@ -71,7 +71,6 @@ class BezierCurve:
             p.glVertex3()
         glEnd()
         glColor3f(0, 1, 0)
-        glLineWidth(5)
         glBegin(GL_LINE_STRIP)
         start_point = control_points[0]
         ctrl_point = control_points[1]
@@ -143,69 +142,85 @@ class BSpline:
     # k: 次数
     # t: 节点
     # knots: 节点向量，用来分段
-    def deBoor_Cox(cls,i,k,t,knots):
-        if k==0:
-            if t>=knots[i] and t<knots[i+1]:
-                return 1.0
-            else:
-                return 0.0
-        den1=knots[i+k]-knots[i]
-        den2=knots[i+k+1]-knots[i+1]
-        a=0
-        b=0
-        if den1==0 and den2==0:
-            a,b=1,1
-        elif den1!=0 and den2==0:
-            a=(t-knots[i])/den1
-            b=1
-        elif den1 == 0 and den2 != 0:
-            a=1
-            b=knots[i+k+1]-t
+    def deBoor_Cox(cls,j,k,i,t,controlPoints,knots):
+        if j==0:
+            return controlPoints[i]
         else:
-            a = (t - knots[i]) / den1
-            b = (knots[i + k + 1] - t)/den2
-        return a*cls.deBoor_Cox(i,k-1,t,knots)+b*cls.deBoor_Cox(i+1,k-1,t,knots)
+            param=(t-knots[i])/(knots[i+k-j]-knots[i])
+
+            return (1-param)*cls.deBoor_Cox(j-1,k,i-1,t,controlPoints,knots)+(1-param)*cls.deBoor_Cox(j-1,k,i,t,controlPoints,knots)
 
     @classmethod
+    #https://www.cnblogs.com/nobodyzhou/p/5451528.html
     def createOpenUniformKnots(cls,n,k):
-        nKnots=n+k+1
-        knots=[None]*nKnots
+        nKnots = n + k + 1
+        knots = [None] * nKnots
         for i in range(nKnots):
-            if i <k:
-                knots[i]=0
-            elif i>=k and i <nKnots-k+1:
-                knots[i]=knots[i-1]+1
-            else:
-                knots[i]=knots[i-1]
+            knots[i] = i
         return knots
 
     @classmethod
-    def createClampedKnots(cls, n, k):
-        nKnots = n + k + 2
+    def createClampedUniformKnots(cls, n, k):
+        nKnots = n + k
         knots = [None] * nKnots
         for i in range(nKnots):
-            if i < k+1:
+            if i < k:
                 knots[i] = 0
-            elif i >= k+1 and i < nKnots - k :
+            elif i < nKnots - k+1:
                 knots[i] = knots[i - 1] + 1
-            elif i >=nKnots-k:
+            else:
                 knots[i] = knots[i - 1]
         return knots
     @classmethod
-    def createUniformKnots(cls, n, k):
+    def createClosedUniformKnots(cls, n, k):
         nKnots = n + k + 1
         knots = [None] * nKnots
         for i in range(nKnots):
             knots[i]=i+1
         return knots
     @classmethod
-    def drawBSplineCurve(cls,controlPoints=[],order=2):
+    def getBSpline(cls,detail,controlPoints,order=-1):
+        points=[]
+        if (order == -1 or order < 4):
+            order =len(controlPoints)-1 if len(controlPoints) <= 4 else 4
+        # generate knots
+        knots=cls.createClampedUniformKnots(len(controlPoints), order)
+        # 根据[k - 1, n + 1)这个区间长度和采样的线段点detail个数生成t的增量
+        tJump = (knots[len(knots) - order] - knots[order - 1]) / (detail - 1);
+        for i in range(0,detail):
+            if i==detail-1:
+                point=controlPoints[-1]
+            else:
+                t = knots[order - 1] + i * tJump
+                tInt=cls.whichInterval(t,knots)
+                if tInt>=len(controlPoints):
+                    continue
+                point=cls.deBoor_Cox(order-1,order,tInt,t,controlPoints,knots)
+            points.append(point)
+        return points
+
+    @classmethod
+    def whichInterval(cls,t,knots):
+        for i in range(1,len(knots)-1):
+            if t<knots[i]:
+                return i-1
+            elif t==knots[-2]:
+                return -2
+        return -1
+    @classmethod
+    def drawBSplineCurve(cls,controlPoints=[],order=2,knots_type="clamped"):
         glColor3f(1.0,1.0,0.0)
         glLineWidth(3.0)
         glBegin(GL_LINE_STRIP)
-        knots = cls.createClampedKnots(len(controlPoints),order)
-        tmin=knots[order]
-        tmax=knots[len(controlPoints)]
+        if knots_type=="Clamped":
+            knots = cls.createClampedUniformKnots(len(controlPoints),order)
+        elif knots_type=="Open":
+            knots = cls.createOpenUniformKnots(len(controlPoints), order)
+        elif knots_type=="Closed":
+            knots=cls.createClosedUniformKnots(len(controlPoints),order)
+        print(knots)
+        tmin=knots[0]
+        tmax=knots[-1]
         insertNum = 100
         steps=(tmax-tmin)/(insertNum-1)
         for i in range(insertNum):
