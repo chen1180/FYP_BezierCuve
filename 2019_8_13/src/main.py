@@ -32,7 +32,7 @@ class glWidget(QGLWidget):
     def __init__(self, parent):
         QGLWidget.__init__(self, parent)
         self.status=[]
-        self.control_points = [point(-0,-0.5, 0), point(-0.4, -0.4, 0), point(0, 0.3, 0), point(0.2, 0.2, 0), point(0.2, -0.2, 0), point(-0.15, -0.15, 0), point(-0.3, 0.2, 0), point(-0.5, 0.2, 0)]
+        self.control_points = [point(-0,-0.5, 0), point(-0.4, -0.4, 0), point(0, 0.3, 0), point(0.2, 0.2, 0), point(0.2, -0.2, 0), point(-0.15, -0.15, 0), point(-0.3, 0.2, 0), point(-0.5, 0.2, 0), point(-0.6, -0.2, 0),point(-0.4, -0.5, 0),point(-0.6, -0.8, 0)]
         self.lastPos = point(0,0,0)
         self.t=0.5
         self.zoomScale=1.0
@@ -120,7 +120,7 @@ class glWidget(QGLWidget):
             elif status==4:
                 BezierCurve().drawBezierCircle()
             elif status==5:
-                BSpline().drawBSplineCurve(self.control_points, order=3,knots_type=self.parent.ui.knotTypecomboBox.currentText())
+                BSpline().drawBSplineCurve(self.control_points, order=2,knots_type=self.parent.ui.knotTypecomboBox.currentText())
             else:
                 self.update()
     def changeStatus(self,newStatus=0):

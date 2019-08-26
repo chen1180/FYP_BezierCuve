@@ -58,6 +58,7 @@ class Ui_MainWindow(object):
         self.knotTypecomboBox.addItem("")
         self.knotTypecomboBox.addItem("")
         self.knotTypecomboBox.addItem("")
+        self.knotTypecomboBox.addItem("")
         self.formLayout_2.setWidget(0, QtWidgets.QFormLayout.FieldRole, self.knotTypecomboBox)
         self.bSplineBtn = QtWidgets.QPushButton(self.tab)
         self.bSplineBtn.setObjectName("bSplineBtn")
@@ -98,7 +99,7 @@ class Ui_MainWindow(object):
         self.toolBar.addAction(self.actionPencil)
 
         self.retranslateUi(MainWindow)
-        self.drawWidget.setCurrentIndex(0)
+        self.drawWidget.setCurrentIndex(1)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
     def retranslateUi(self, MainWindow):
@@ -112,8 +113,9 @@ class Ui_MainWindow(object):
         self.drawWidget.setTabText(self.drawWidget.indexOf(self.BezierCurve), _translate("MainWindow", "Bezier"))
         self.knotlabel.setText(_translate("MainWindow", "Knots"))
         self.knotTypecomboBox.setItemText(0, _translate("MainWindow", "Clamped"))
-        self.knotTypecomboBox.setItemText(1, _translate("MainWindow", "Open"))
-        self.knotTypecomboBox.setItemText(2, _translate("MainWindow", "Closed"))
+        self.knotTypecomboBox.setItemText(1, _translate("MainWindow", "Bezier"))
+        self.knotTypecomboBox.setItemText(2, _translate("MainWindow", "Open"))
+        self.knotTypecomboBox.setItemText(3, _translate("MainWindow", "Closed"))
         self.bSplineBtn.setText(_translate("MainWindow", "Draw B spline"))
         self.drawWidget.setTabText(self.drawWidget.indexOf(self.tab), _translate("MainWindow", "B-Spline"))
         self.toolBar.setWindowTitle(_translate("MainWindow", "toolBar"))

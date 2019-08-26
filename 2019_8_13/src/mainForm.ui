@@ -18,7 +18,7 @@
     <item>
      <widget class="QTabWidget" name="drawWidget">
       <property name="currentIndex">
-       <number>0</number>
+       <number>1</number>
       </property>
       <widget class="QWidget" name="BezierCurve">
        <attribute name="title">
@@ -92,6 +92,11 @@
           <item>
            <property name="text">
             <string>Clamped</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>Bezier</string>
            </property>
           </item>
           <item>
