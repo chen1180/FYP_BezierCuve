@@ -1,7 +1,5 @@
-from random import random
-from math import sqrt,pi,sin,cos,acos
 from OpenGL.GL import *
-
+import numpy as np
 class point:
     def __init__(self,_x,_y,_z):
         self.x=_x
@@ -45,10 +43,45 @@ class point:
     __repr__=__str__
     def __getitem__(self, item):
         return (self.components())[item]
+class curve:
+    def __init__(self):
+        pass
+    @classmethod
+    def generateMatrix(cls,range=[-1,1],dim=[6,3]):
+        mat=np.random.uniform(range[0],range[1],[dim[0],3])
+        controlPoints=[]
+        for row in mat:
+            controlPoints.append(point.with_components(row))
+        print(controlPoints)
+        return controlPoints
+class surface:
+    def __init__(self):
+        pass
+    @classmethod
+    def generateRandomMatrix(cls,range=[-1,1],dim=[4,4]):
+        mat=np.random.uniform(range[0],range[1],[dim[0],dim[1],3])
+        controlPoints=[]
+        for row in mat:
+            controlPointsRow=[]
+            for column in row:
+                controlPointsRow.append(point.with_components(column))
+            controlPoints.append(controlPointsRow)
+        print(controlPoints)
+        return controlPoints
 
+    @classmethod
+    def convertListToPoint(self,mat):
+        controlPoints = []
+        for row in mat:
+            controlPointsRow = []
+            for column in row:
+                controlPointsRow.append(point.with_components(column))
+            controlPoints.append(controlPointsRow)
+        return controlPoints
 if __name__ == '__main__':
     test=point(0,1,2)
     test2=point(3,4,5)
     print(test)
     print(test+test2)
-
+    a=surface.generateMatrix()
+    print(a)

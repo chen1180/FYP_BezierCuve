@@ -3,7 +3,7 @@ from OpenGL.GLU import *
 from PyQt5 import QtGui,QtWidgets,QtCore
 from PyQt5.QtOpenGL import *
 import mainForm
-from geometry import point
+from geometry import point,surface,curve
 import sys
 import camera
 from curve import BezierCurve,BSpline
@@ -13,6 +13,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.setupUi()
     def setupUi(self):
         self.ui=mainForm.Ui_MainWindow()
+        self.setWindowState(QtCore.Qt.WindowMaximized)
         self.ui.setupUi(self)
         self.ui.openGLWidget.close()
         self.glWidget=glWidget(self)
@@ -32,7 +33,11 @@ class glWidget(QGLWidget):
     def __init__(self, parent):
         QGLWidget.__init__(self, parent)
         self.status=[]
-        self.control_points = [point(-0,-0.5, 0), point(-0.4, -0.4, 0), point(0, 0.3, 0), point(0.2, 0.2, 0), point(0.2, -0.2, 0), point(-0.15, -0.15, 0), point(-0.3, 0.2, 0), point(-0.5, 0.2, 0), point(-0.6, -0.2, 0),point(-0.4, -0.5, 0),point(-0.6, -0.8, 0)]
+        self.control_points =curve.generateMatrix(dim=[7,3])
+        self.surface=surface.convertListToPoint([[[-0.25, 0.0, -0.5], [0, 0, 0.0], [0.25, -0.2, 0.0], [0.5, 0.2, 0.0]],
+                                                 [[-0.5, -0.5, 0.0], [0, -0.2, 0.0], [0.15, -0.1, 2.0], [0.5, -0.6, 0.0]],
+                                                 [[-0.7, -0.7, 0.0], [-0.2, -0.5, 0.0], [0.1, -0.3, 2.0], [0.4, -0.7, 0.0]],
+                                                 [[-0.8, -0.7, 0.0], [0.3, -0.5, 0.0], [-0.2, -0.3, 2.0], [0.4, -0.9, 0.0]]])
         self.lastPos = point(0,0,0)
         self.t=0.5
         self.zoomScale=1.0
@@ -116,11 +121,12 @@ class glWidget(QGLWidget):
             elif status==2:
                 BezierCurve().splitCurve(self.control_points,self.t)
             elif status==3:
-                BezierCurve().drawBeizerSurface()
+                #BezierCurve().drawBeizerSurface()
+                BezierCurve().drawBezierSurface_DelCasteljau(self.surface)
             elif status==4:
                 BezierCurve().drawBezierCircle()
             elif status==5:
-                BSpline().drawBSplineCurve(self.control_points, order=2,knots_type=self.parent.ui.knotTypecomboBox.currentText())
+                BSpline().drawBSplineCurve(self.control_points, order=3,knots_type=self.parent.ui.knotTypecomboBox.currentText())
             else:
                 self.update()
     def changeStatus(self,newStatus=0):

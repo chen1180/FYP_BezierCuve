@@ -1,6 +1,6 @@
 from OpenGL.GL import *
 import numpy as np
-from geometry import point
+from geometry import point,surface
 class BezierCurve:
     def __init__(self):
         pass
@@ -12,7 +12,6 @@ class BezierCurve:
         p1223 = (1 - t) * p12 + t * p23
         p2334 = (1 - t) * p23 + t * p34
         return (1-t)*p1223+t*p2334
-
     @classmethod
     def decasteljauQuad(cls,p1,p2,p3,t):
         p12=(1 - t) * p1 + t * p2
@@ -78,14 +77,20 @@ class BezierCurve:
         for t in np.linspace(0, 1, 10):
             p = cls.decasteljauQuad(start_point, ctrl_point, end_point, t)
             p.glVertex3()
-        for index in range(1, len(control_points) - 2):
+        for index in range(1, len(control_points) - 3):
             start_point = (control_points[index] + control_points[index+1]) * 0.5
             ctrl_point = control_points[index+1]
             end_point = (control_points[index+1] + control_points[index+2]) * 0.5
             for t in np.linspace(0, 1, 10):
                 p = cls.decasteljauQuad(start_point, ctrl_point, end_point, t)
                 p.glVertex3()
-
+            if index==len(control_points) - 4:
+                start_point = end_point
+                ctrl_point = control_points[index + 2]
+                end_point = control_points[index + 3]
+                for t in np.linspace(0, 1, 10):
+                    p = cls.decasteljauQuad(start_point, ctrl_point, end_point, t)
+                    p.glVertex3()
         glEnd()
     @classmethod
     def drawBeizerSurface(cls):
@@ -107,6 +112,32 @@ class BezierCurve:
                 glVertex3f(point[0], point[1], point[2])
         glEnd()
         glPopMatrix()
+    @classmethod
+    def drawBezierSurface_DelCasteljau(cls,controlPoints):
+        #https://pages.mtu.edu/~shene/COURSES/cs3621/NOTES/surface/bezier-de-casteljau.html
+        glPointSize(5.0)
+        for u in np.linspace(0,1,20):
+            p=[]
+            for v in np.linspace(0,1,20):
+                q = []
+                glBegin(GL_LINE_STRIP)
+                for row in controlPoints:
+                    q_i = cls.decasteljauCubic(row[0], row[1], row[2], row[3], v)
+                    q_i.glVertex3()
+                    q.append(q_i)
+                glEnd()
+                p_u_v=cls.decasteljauCubic(q[0],q[1],q[2],q[3],u)
+                p.append(p_u_v)
+            glBegin(GL_LINE_STRIP)
+            for i in  p:
+                i.glVertex3()
+            glEnd()
+
+
+
+
+
+
     @classmethod
     def drawBezierCircle(cls,center=point(0.0,0,0.0),radius=0.5):
         #Bezier curve approximation constant
@@ -137,11 +168,6 @@ class BSpline:
     def __init__(self):
         pass
     @classmethod
-    # B样条基函数
-    # i: 控制点计数
-    # k: 次数
-    # t: 节点
-    # knots: 节点向量，用来分段
     def deBoor_Cox(cls, i, k, t, knots):
         if k == 0:
             if t >= knots[i] and t < knots[i + 1]:
@@ -197,8 +223,8 @@ class BSpline:
     @classmethod
     def createBezierKnots(cls, n, k):
         nKnots=(n+k+1)
-        knots = [0] * (nKnots//2)
-        knots+=[1]*(nKnots//2)
+        knots = [0] * (k+1)
+        knots+=[1]*(k+1)
         return knots
     @classmethod
     def drawBSplineCurve(cls,controlPoints=[],order=2,knots_type="clamped"):
@@ -212,18 +238,21 @@ class BSpline:
         elif knots_type=="Closed":
             knots=cls.createClosedUniformKnots(len(controlPoints),order)
         elif knots_type=="Bezier":
+            order=len(controlPoints)-1
             knots=cls.createBezierKnots(len(controlPoints),order)
         print(knots)
         tmin=knots[order]
         tmax=knots[len(controlPoints)]
         insertNum = 100
-        steps=(tmax-tmin)/(insertNum-1)
-        for i in range(insertNum-1):
+        steps=(tmax-tmin)/(insertNum)
+        for i in range(insertNum):
             t=tmin+i*steps
             p=point(0,0,0)
             for j,c_p in enumerate(controlPoints):
                 Nik=cls.deBoor_Cox(j,order,t,knots)
                 p+=Nik*c_p
+            if i==insertNum-1 and knots_type!="Open":
+                p=controlPoints[-1]
             glVertex3f(p.x,p.y,p.z)
         glEnd()
         glColor3f(1.0, 1.0, 1.0)
