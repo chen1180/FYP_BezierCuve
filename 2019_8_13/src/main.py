@@ -124,7 +124,9 @@ class glWidget(QGLWidget):
             else:
                 self.update()
     def changeStatus(self,newStatus=0):
-        self.status.append(newStatus)
+        if newStatus  not in self.status:
+            self.status.append(newStatus)
+        print(self.status)
         self.update()
     def changeMode(self):
         self.selectionMode= not self.selectionMode
