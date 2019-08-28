@@ -2,8 +2,8 @@ from OpenGL.GL import *
 import numpy as np
 from geometry import point,surface
 class BezierCurve:
-    def __init__(self):
-        pass
+    def __init__(self,controlPoints):
+        self.controlPoints=controlPoints
     @classmethod
     def decasteljauCubic(cls,p1,p2,p3,p4,t):
         p12=(1 - t) * p1 + t * p2
@@ -26,25 +26,23 @@ class BezierCurve:
         p2334 = (1 - t) * p23 + t * p34
         p=(1-t)*p1223+t*p2334
         return [p1,p12,p1223,p],[p,p2334,p34,p4]
-    @classmethod
-    def drawCurve(cls, control_points, c_color=(1, 1, 1)):
+    def drawCurve(self,controlPoints, c_color=(1, 1, 1)):
         glColor3f(c_color[0], c_color[1], c_color[2])
         glPointSize(5.0)
         glBegin(GL_POINTS)
-        for i, p in enumerate(control_points):
+        for i, p in enumerate(controlPoints):
             p.glVertex3()
         glEnd()
         glBegin(GL_LINE_STRIP)
         for t in np.linspace(0, 1, 10):
-            p = cls.decasteljauCubic(control_points[0], control_points[1], control_points[2], control_points[3], t)
+            p = self.decasteljauCubic(controlPoints[0], controlPoints[1], controlPoints[2], controlPoints[3], t)
             p.glVertex3()
         glEnd()
-    @classmethod
-    def splitCurve(cls,control_points,t=0.2,c1_color=(1,0,0),c2_color=(0,0,1)):
-        curve1, curve2 = cls.decasteljau_split(control_points[0],
-                                                control_points[1],
-                                                control_points[2],
-                                                control_points[3],
+    def splitCurve(self,t=0.2,c1_color=(1,0,0),c2_color=(0,0,1)):
+        curve1, curve2 = self.decasteljau_split(self.controlPoints[0],
+                                                self.controlPoints[1],
+                                                self.controlPoints[2],
+                                                self.controlPoints[3],
                                                 t)
         glColor3f(c1_color[0], c1_color[1], c1_color[2])
         glPointSize(5.0)
@@ -58,40 +56,67 @@ class BezierCurve:
         for point in curve2:
             point.glVertex3()
         glEnd()
-        cls.drawCurve(curve1, c_color=c1_color)
-        cls.drawCurve(curve2, c_color=c2_color)
+        self.drawCurve(self.controlPoints,c_color=c1_color)
+        self.drawCurve(self.controlPoints, c_color=c2_color)
         glFlush()
-    @classmethod
-    def drawMultiBeizerCurve(cls,control_points):
+    def drawMultiBeizerCurve(self):
         glColor3f(1, 1, 1)
         glPointSize(5.0)
         glBegin(GL_POINTS)
-        for i, p in enumerate(control_points):
+        for i, p in enumerate(self.controlPoints):
             p.glVertex3()
         glEnd()
         glColor3f(0, 1, 0)
         glBegin(GL_LINE_STRIP)
-        start_point = control_points[0]
-        ctrl_point = control_points[1]
-        end_point = (control_points[1] + control_points[2]) * 0.5
+        start_point = self.controlPoints[0]
+        ctrl_point = self.controlPoints[1]
+        end_point = (self.controlPoints[1] + self.controlPoints[2]) * 0.5
         for t in np.linspace(0, 1, 10):
-            p = cls.decasteljauQuad(start_point, ctrl_point, end_point, t)
+            p = self.decasteljauQuad(start_point, ctrl_point, end_point, t)
             p.glVertex3()
-        for index in range(1, len(control_points) - 3):
-            start_point = (control_points[index] + control_points[index+1]) * 0.5
-            ctrl_point = control_points[index+1]
-            end_point = (control_points[index+1] + control_points[index+2]) * 0.5
+        for index in range(1, len(self.controlPoints) - 3):
+            start_point = (self.controlPoints[index] + self.controlPoints[index+1]) * 0.5
+            ctrl_point = self.controlPoints[index+1]
+            end_point = (self.controlPoints[index+1] + self.controlPoints[index+2]) * 0.5
             for t in np.linspace(0, 1, 10):
-                p = cls.decasteljauQuad(start_point, ctrl_point, end_point, t)
+                p = self.decasteljauQuad(start_point, ctrl_point, end_point, t)
                 p.glVertex3()
-            if index==len(control_points) - 4:
+            if index==len(self.controlPoints) - 4:
                 start_point = end_point
-                ctrl_point = control_points[index + 2]
-                end_point = control_points[index + 3]
+                ctrl_point = self.controlPoints[index + 2]
+                end_point = self.controlPoints[index + 3]
                 for t in np.linspace(0, 1, 10):
-                    p = cls.decasteljauQuad(start_point, ctrl_point, end_point, t)
+                    p = self.decasteljauQuad(start_point, ctrl_point, end_point, t)
                     p.glVertex3()
         glEnd()
+    def drawBezierCircle(self,center=point(0.0,0,0.0),radius=0.5):
+        #Bezier curve approximation constant
+        #reference: https://www.jianshu.com/p/5198d8aa80c1
+        C_MAGIC_NUMNER= 0.552284749831
+        difference=C_MAGIC_NUMNER*radius
+        c_x=center[0]
+        c_y=center[1]
+        c_z=center[2]
+        p0=point(c_x,c_y+radius, c_z)
+        c1 = point(c_x+difference,c_y+radius,c_z)
+        c2 = point(c_x+radius, c_y+difference, c_z)
+        p1=point(c_x+radius,c_y,c_z)
+        c3 = point(c_x+radius,c_y-difference,c_z)
+        c4 =point(c_x+difference,c_y-radius,c_z)
+        p2=point(c_x,c_y-radius, c_z)
+        c5 = point(c_x-difference,c_y-radius, c_z)
+        c6 = point(c_x-radius,c_y-difference, c_z)
+        p3=point(c_x-radius,c_y, c_z)
+        c7=point(c_x-radius,c_y+difference, c_z)
+        c8 = point(c_x-difference,c_y+radius, c_z)
+        self.drawCurve([p0,c1,c2,p1])
+        self.drawCurve([p1, c3, c4, p2])
+        self.drawCurve([p2, c5, c6, p3])
+        self.drawCurve([p3, c7, c8, p0])
+class BeizerSurface(BezierCurve):
+    def __init__(self,controlPoints):
+        self.controlPoints=controlPoints
+        self.row,self.column=self.BezierSurfaceEvaluator()
     @classmethod
     def drawBeizerSurface(cls):
         glMatrixMode(GL_MODELVIEW)
@@ -112,58 +137,37 @@ class BezierCurve:
                 glVertex3f(point[0], point[1], point[2])
         glEnd()
         glPopMatrix()
-    @classmethod
-    def drawBezierSurface_DelCasteljau(cls,controlPoints):
-        #https://pages.mtu.edu/~shene/COURSES/cs3621/NOTES/surface/bezier-de-casteljau.html
-        glPointSize(5.0)
-        for u in np.linspace(0,1,20):
+    def BezierSurfaceEvaluator(self):
+        curveInRow=[]
+        curveInColumn=[]
+        for u in np.linspace(0,1,10):
             p=[]
-            for v in np.linspace(0,1,20):
+            for v in np.linspace(0,1,10):
                 q = []
-                glBegin(GL_LINE_STRIP)
-                for row in controlPoints:
-                    q_i = cls.decasteljauCubic(row[0], row[1], row[2], row[3], v)
-                    q_i.glVertex3()
+                for row in self.controlPoints:
+                    q_i = self.decasteljauCubic(row[0], row[1], row[2], row[3], v)
                     q.append(q_i)
-                glEnd()
-                p_u_v=cls.decasteljauCubic(q[0],q[1],q[2],q[3],u)
+                curveInRow.append(q)
+                p_u_v=self.decasteljauCubic(q[0],q[1],q[2],q[3],u)
                 p.append(p_u_v)
+            curveInColumn.append(p)
+        return curveInRow,curveInColumn
+    def drawBezierSurface_DelCasteljau(self):
+        #https://pages.mtu.edu/~shene/COURSES/cs3621/NOTES/surface/bezier-de-casteljau.html
+
+        for row in self.row:
             glBegin(GL_LINE_STRIP)
-            for i in  p:
-                i.glVertex3()
+            for u in row:
+                u.glVertex3()
+            glEnd()
+
+        for column in self.column:
+            glBegin(GL_LINE_STRIP)
+            for v in column:
+                v.glVertex3()
             glEnd()
 
 
-
-
-
-
-    @classmethod
-    def drawBezierCircle(cls,center=point(0.0,0,0.0),radius=0.5):
-        #Bezier curve approximation constant
-        #reference: https://www.jianshu.com/p/5198d8aa80c1
-        C_MAGIC_NUMNER= 0.552284749831
-
-        difference=C_MAGIC_NUMNER*radius
-        c_x=center[0]
-        c_y=center[1]
-        c_z=center[2]
-        p0=point(c_x,c_y+radius, c_z)
-        c1 = point(c_x+difference,c_y+radius,c_z)
-        c2 = point(c_x+radius, c_y+difference, c_z)
-        p1=point(c_x+radius,c_y,c_z)
-        c3 = point(c_x+radius,c_y-difference,c_z)
-        c4 =point(c_x+difference,c_y-radius,c_z)
-        p2=point(c_x,c_y-radius, c_z)
-        c5 = point(c_x-difference,c_y-radius, c_z)
-        c6 = point(c_x-radius,c_y-difference, c_z)
-        p3=point(c_x-radius,c_y, c_z)
-        c7=point(c_x-radius,c_y+difference, c_z)
-        c8 = point(c_x-difference,c_y+radius, c_z)
-        cls.drawCurve([p0,c1,c2,p1])
-        cls.drawCurve([p1, c3, c4, p2])
-        cls.drawCurve([p2, c5, c6, p3])
-        cls.drawCurve([p3, c7, c8, p0])
 class BSpline:
     def __init__(self):
         pass
@@ -261,6 +265,18 @@ class BSpline:
         for p in controlPoints:
             p.glVertex3()
         glEnd()
+if __name__ == '__main__':
+    surface_controlPoints=BeizerSurface(surface.convertListToPoint([[[-0.25, 0.0, -0.5], [0, 0, 0.0], [0.25, -0.2, 0.0], [0.5, 0.2, 0.0]],
+                                                 [[-0.5, -0.5, 0.0], [0, -0.2, 0.0], [0.15, -0.1, 2.0], [0.5, -0.6, 0.0]],
+                                                 [[-0.7, -0.7, 0.0], [-0.2, -0.5, 0.0], [0.1, -0.3, 2.0], [0.4, -0.7, 0.0]],
+                                                 [[-0.8, -0.7, 0.0], [0.3, -0.5, 0.0], [-0.2, -0.3, 2.0], [0.4, -0.9, 0.0]]]))
+    print("row")
+    for row in surface_controlPoints.row:
+        print(row)
+    print("column")
+    for column in surface_controlPoints.column:
+        print(column)
+
 
 
 
