@@ -122,7 +122,7 @@ class glWidget(QGLWidget):
             elif status==2:
                 self.curve.splitCurve(self.t)
             elif status==3:
-                #BezierCurve().drawBeizerSurface()
+                BeizerSurface.drawBeizerSurface()
                 #BezierCurve().drawBezierSurface_DelCasteljau(self.surface)
                 self.surface.drawBezierSurface_DelCasteljau()
             elif status==4:

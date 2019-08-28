@@ -122,13 +122,12 @@ class BeizerSurface(BezierCurve):
         glMatrixMode(GL_MODELVIEW)
         glColor3f(0.5, 0.5, 0.5)
         glPushMatrix()
-        # glRotatef(45.0,-10.0,1.0,-10.0)
         control_points = [[[-0.25, 0.0, -0.5], [0, 0, 0.0], [0.25, -0.2, 0.0], [0.5, 0.2, 0.0]],
                           [[-0.5, -0.5, 0.0], [0, -0.9, 0.0], [0.25, -0.2, 2.0], [0.5, -0.6, 0.0]]]
         glMap2f(GL_MAP2_VERTEX_3, 0, 1, 0, 1, control_points)
         glEnable(GL_MAP2_VERTEX_3)
-        glMapGrid2f(50, 0, 1, 50, 0, 1)
-        glEvalMesh2(GL_LINE, 0, 50, 0, 50)
+        # glMapGrid2f(50, 0, 1, 50, 0, 1)
+        # glEvalMesh2(GL_LINE, 0, 50, 0, 50)
         glPointSize(5)
         glColor3f(1, 1, 1)
         glBegin(GL_POINTS)
@@ -154,19 +153,23 @@ class BeizerSurface(BezierCurve):
         return curveInRow,curveInColumn
     def drawBezierSurface_DelCasteljau(self):
         #https://pages.mtu.edu/~shene/COURSES/cs3621/NOTES/surface/bezier-de-casteljau.html
-
         for row in self.row:
             glBegin(GL_LINE_STRIP)
             for u in row:
                 u.glVertex3()
             glEnd()
-
         for column in self.column:
             glBegin(GL_LINE_STRIP)
             for v in column:
                 v.glVertex3()
             glEnd()
+        glBegin(GL_LINE_STRIP)
+        self.controlPoints[0][0].glVertex3()
+        self.controlPoints[1][0].glVertex3()
+        self.controlPoints[2][0].glVertex3()
+        self.controlPoints[3][0].glVertex3()
 
+        glEnd()
 
 class BSpline:
     def __init__(self):
