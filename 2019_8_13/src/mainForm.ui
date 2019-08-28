@@ -14,40 +14,148 @@
    <string>MainWindow</string>
   </property>
   <widget class="QWidget" name="centralwidget">
-   <layout class="QHBoxLayout" name="horizontalLayout_3" stretch="1,6">
+   <layout class="QHBoxLayout" name="horizontalLayout_3" stretch="0,6">
     <item>
      <widget class="QTabWidget" name="drawWidget">
       <property name="currentIndex">
-       <number>1</number>
+       <number>0</number>
       </property>
       <widget class="QWidget" name="BezierCurve">
        <attribute name="title">
         <string>Bezier</string>
        </attribute>
-       <layout class="QVBoxLayout" name="verticalLayout_3">
-        <item>
-         <widget class="QPushButton" name="drawBtn">
+       <layout class="QFormLayout" name="formLayout">
+        <item row="0" column="0">
+         <widget class="QLabel" name="degreeBezierlabel">
           <property name="text">
-           <string>Draw curve</string>
+           <string>Degree</string>
           </property>
          </widget>
         </item>
-        <item>
-         <widget class="QPushButton" name="clearBtn">
+        <item row="0" column="1">
+         <widget class="QComboBox" name="degreeBeziercomboBox">
+          <item>
+           <property name="text">
+            <string>Quadratic</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>Cubic</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>N-degree</string>
+           </property>
+          </item>
+         </widget>
+        </item>
+        <item row="1" column="0">
+         <widget class="QLabel" name="stepsBeizerlabel">
           <property name="text">
-           <string>Clear</string>
+           <string>Steps</string>
           </property>
          </widget>
         </item>
-        <item>
-         <widget class="QPushButton" name="splitBtn">
-          <property name="text">
-           <string>Split curve</string>
+        <item row="1" column="1">
+         <widget class="QSpinBox" name="stepsBeizerspinBox">
+          <property name="minimum">
+           <number>1</number>
+          </property>
+          <property name="value">
+           <number>10</number>
           </property>
          </widget>
         </item>
-        <item>
+        <item row="3" column="0" colspan="2">
+         <widget class="Line" name="line_2">
+          <property name="lineWidth">
+           <number>1</number>
+          </property>
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
+          </property>
+         </widget>
+        </item>
+        <item row="4" column="0">
+         <widget class="QLabel" name="degreeMultiBezierlabel">
+          <property name="text">
+           <string>Degree</string>
+          </property>
+         </widget>
+        </item>
+        <item row="4" column="1">
+         <widget class="QComboBox" name="degreeMultiBeziercomboBox">
+          <item>
+           <property name="text">
+            <string>Quadratic</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>Cubic</string>
+           </property>
+          </item>
+         </widget>
+        </item>
+        <item row="2" column="0" colspan="2">
+         <widget class="QPushButton" name="drawBezierBtn">
+          <property name="text">
+           <string>Draw Bezier Curve</string>
+          </property>
+         </widget>
+        </item>
+        <item row="6" column="1">
+         <widget class="QSpinBox" name="stepsMultiBezierspinBox">
+          <property name="minimum">
+           <number>1</number>
+          </property>
+          <property name="value">
+           <number>10</number>
+          </property>
+         </widget>
+        </item>
+        <item row="6" column="0">
+         <widget class="QLabel" name="stepsMultiBezierlabel">
+          <property name="text">
+           <string>Steps</string>
+          </property>
+         </widget>
+        </item>
+        <item row="7" column="0" colspan="2">
+         <widget class="QPushButton" name="drawMultiBezierBtn">
+          <property name="text">
+           <string>Draw Multi-Bezier</string>
+          </property>
+         </widget>
+        </item>
+        <item row="8" column="0" colspan="2">
+         <widget class="Line" name="line">
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
+          </property>
+         </widget>
+        </item>
+        <item row="9" column="0">
+         <widget class="QLabel" name="steps_uBezierSurfacelabel">
+          <property name="text">
+           <string>Steps-u</string>
+          </property>
+         </widget>
+        </item>
+        <item row="10" column="0">
+         <widget class="QLabel" name="steps_vBezierSurfacelabel">
+          <property name="text">
+           <string>Steps-v</string>
+          </property>
+         </widget>
+        </item>
+        <item row="16" column="1">
          <widget class="QSlider" name="horizontalSlider">
+          <property name="layoutDirection">
+           <enum>Qt::LeftToRight</enum>
+          </property>
           <property name="maximum">
            <number>99</number>
           </property>
@@ -59,14 +167,65 @@
           </property>
          </widget>
         </item>
-        <item>
-         <widget class="QPushButton" name="drawSurfaceBtn">
+        <item row="19" column="1">
+         <widget class="QPushButton" name="clearBtn">
           <property name="text">
-           <string>Bezier surface</string>
+           <string>Clear</string>
           </property>
          </widget>
         </item>
-        <item>
+        <item row="9" column="1">
+         <widget class="QSpinBox" name="steps_uBezierSurfacespinBox">
+          <property name="minimum">
+           <number>1</number>
+          </property>
+          <property name="value">
+           <number>10</number>
+          </property>
+         </widget>
+        </item>
+        <item row="10" column="1">
+         <widget class="QSpinBox" name="steps_vBezierSurfacespinBox">
+          <property name="minimum">
+           <number>1</number>
+          </property>
+          <property name="value">
+           <number>10</number>
+          </property>
+         </widget>
+        </item>
+        <item row="11" column="1">
+         <widget class="QCheckBox" name="displayMeshcheckBox">
+          <property name="layoutDirection">
+           <enum>Qt::RightToLeft</enum>
+          </property>
+          <property name="text">
+           <string>Display Mesh</string>
+          </property>
+         </widget>
+        </item>
+        <item row="12" column="0" colspan="2">
+         <widget class="QPushButton" name="drawBezierSurfaceBtn">
+          <property name="text">
+           <string>Draw Bezier Surface</string>
+          </property>
+         </widget>
+        </item>
+        <item row="13" column="0" colspan="2">
+         <widget class="Line" name="line_3">
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
+          </property>
+         </widget>
+        </item>
+        <item row="17" column="1">
+         <widget class="QPushButton" name="splitBtn">
+          <property name="text">
+           <string>Split curve</string>
+          </property>
+         </widget>
+        </item>
+        <item row="18" column="1">
          <widget class="QPushButton" name="pushButton">
           <property name="text">
            <string>Bezier circle</string>

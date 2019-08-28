@@ -1,9 +1,15 @@
 from OpenGL.GL import *
 import numpy as np
 from geometry import point,surface
+import math
 class BezierCurve:
-    def __init__(self,controlPoints):
+    def __init__(self,controlPoints,type,divs=10):
         self.controlPoints=controlPoints
+        self.divs=divs
+        self.type=type
+    @classmethod
+    def combination(cls,n,r):
+        return math.factorial(n)/math.factorial(n-r)/math.factorial(r)
     @classmethod
     def decasteljauCubic(cls,p1,p2,p3,p4,t):
         p12=(1 - t) * p1 + t * p2
@@ -26,18 +32,52 @@ class BezierCurve:
         p2334 = (1 - t) * p23 + t * p34
         p=(1-t)*p1223+t*p2334
         return [p1,p12,p1223,p],[p,p2334,p34,p4]
-    def drawCurve(self,controlPoints, c_color=(1, 1, 1)):
-        glColor3f(c_color[0], c_color[1], c_color[2])
+    def bersteinPolynomial(self,t):
+        c=point(0,0,0)
+        n=len(self.controlPoints)-1
+        for r in range(len(self.controlPoints)):
+            c+=self.combination(n,r)*((1-t)**(n-r))*(t**r)*self.controlPoints[r]
+        return c
+    def drawHighDegreeBezier(self,divs=10):
+        glColor3f(1, 1, 1)
         glPointSize(5.0)
         glBegin(GL_POINTS)
-        for i, p in enumerate(controlPoints):
+        for  p in self.controlPoints:
             p.glVertex3()
         glEnd()
         glBegin(GL_LINE_STRIP)
-        for t in np.linspace(0, 1, 10):
-            p = self.decasteljauCubic(controlPoints[0], controlPoints[1], controlPoints[2], controlPoints[3], t)
+        for t in np.linspace(0, 1, divs):
+            p = self.bersteinPolynomial(t)
             p.glVertex3()
         glEnd()
+    def drawCurve(self, c_color=(1, 1, 1)):
+        glColor3f(c_color[0], c_color[1], c_color[2])
+        glPointSize(5.0)
+        glBegin(GL_POINTS)
+        for i, p in enumerate(self.controlPoints):
+            p.glVertex3()
+        glEnd()
+        if self.type=="Quadratic":
+            for i in range(0,len(self.controlPoints)-3,3):
+                glBegin(GL_LINE_STRIP)
+                for t in np.linspace(0, 1, self.divs):
+                    p = self.decasteljauQuad(self.controlPoints[i],self.controlPoints[i+1],self.controlPoints[i+2],t)
+                    p.glVertex3()
+                glEnd()
+        elif self.type=="Cubic":
+            for i in range(0, len(self.controlPoints) - 4, 4):
+                glBegin(GL_LINE_STRIP)
+                for t in np.linspace(0, 1, self.divs):
+                    p = self.decasteljauCubic(self.controlPoints[i], self.controlPoints[i + 1],
+                                             self.controlPoints[i + 2],self.controlPoints[i + 3], t)
+                    p.glVertex3()
+                glEnd()
+        else:
+            glBegin(GL_LINE_STRIP)
+            for t in np.linspace(0, 1, self.divs):
+                p = self.bersteinPolynomial(t)
+                p.glVertex3()
+            glEnd()
     def splitCurve(self,t=0.2,c1_color=(1,0,0),c2_color=(0,0,1)):
         curve1, curve2 = self.decasteljau_split(self.controlPoints[0],
                                                 self.controlPoints[1],
@@ -71,21 +111,21 @@ class BezierCurve:
         start_point = self.controlPoints[0]
         ctrl_point = self.controlPoints[1]
         end_point = (self.controlPoints[1] + self.controlPoints[2]) * 0.5
-        for t in np.linspace(0, 1, 10):
+        for t in np.linspace(0, 1, self.divs):
             p = self.decasteljauQuad(start_point, ctrl_point, end_point, t)
             p.glVertex3()
         for index in range(1, len(self.controlPoints) - 3):
             start_point = (self.controlPoints[index] + self.controlPoints[index+1]) * 0.5
             ctrl_point = self.controlPoints[index+1]
             end_point = (self.controlPoints[index+1] + self.controlPoints[index+2]) * 0.5
-            for t in np.linspace(0, 1, 10):
+            for t in np.linspace(0, 1,self.divs):
                 p = self.decasteljauQuad(start_point, ctrl_point, end_point, t)
                 p.glVertex3()
             if index==len(self.controlPoints) - 4:
                 start_point = end_point
                 ctrl_point = self.controlPoints[index + 2]
                 end_point = self.controlPoints[index + 3]
-                for t in np.linspace(0, 1, 10):
+                for t in np.linspace(0, 1, self.divs):
                     p = self.decasteljauQuad(start_point, ctrl_point, end_point, t)
                     p.glVertex3()
         glEnd()
@@ -114,9 +154,13 @@ class BezierCurve:
         self.drawCurve([p2, c5, c6, p3])
         self.drawCurve([p3, c7, c8, p0])
 class BeizerSurface(BezierCurve):
-    def __init__(self,controlPoints):
+    def __init__(self,controlPoints,divs,showPolygon):
         self.controlPoints=controlPoints
         self.row,self.column=self.BezierSurfaceEvaluator()
+        self.dlbPatch=None
+        self.showPolygon=showPolygon
+        self.divs=divs
+        self.texture=0
     @classmethod
     def drawBeizerSurface(cls):
         glMatrixMode(GL_MODELVIEW)
@@ -168,8 +212,54 @@ class BeizerSurface(BezierCurve):
         self.controlPoints[1][0].glVertex3()
         self.controlPoints[2][0].glVertex3()
         self.controlPoints[3][0].glVertex3()
-
         glEnd()
+    def genBezierSurface(self):
+        drawList=glGenLists(1)
+        last=[None]*(self.divs+1)
+        if self.dlbPatch:
+            glDeleteLists(self.dlbPatch,1)
+        temp=[row[3] for row in self.controlPoints]
+        for v in range(self.divs+1):
+            px=v/self.divs
+            last[v]=self.decasteljauCubic(temp[0],temp[1],temp[2],temp[3],px)
+        glNewList(drawList,GL_COMPILE)
+        glBindTexture(GL_TEXTURE_2D,self.texture)
+        for u in range(1,self.divs+1):
+            py=u/self.divs
+            pyold=(u-1)/self.divs
+            temp[0]=self.decasteljauCubic(self.controlPoints[0][3],self.controlPoints[0][2],self.controlPoints[0][1],self.controlPoints[0][0],py)
+            temp[1] = self.decasteljauCubic(self.controlPoints[1][3],self.controlPoints[1][2],self.controlPoints[1][1],self.controlPoints[1][0],py)
+            temp[2] = self.decasteljauCubic(self.controlPoints[2][3],self.controlPoints[2][2],self.controlPoints[2][1],self.controlPoints[2][0],py)
+            temp[3] = self.decasteljauCubic(self.controlPoints[3][3],self.controlPoints[3][2],self.controlPoints[3][1],self.controlPoints[3][0],py)
+            glBegin(GL_TRIANGLE_STRIP)
+            for v in range(self.divs+1):
+                px = v / self.divs
+                glTexCoord2f(pyold,px)
+                glVertex3f(last[v].x,last[v].y,last[v].z)
+                last[v]=self.decasteljauCubic(temp[0],temp[1],temp[2],temp[3],px)
+                glTexCoord2f(py,px)
+                glVertex3f(last[v].x,last[v].y,last[v].z)
+            glEnd()
+        glEndList()
+        del last
+        print(drawList)
+        return drawList
+    def genMesh(self):
+        if self.showPolygon==True:
+            glDisable(GL_TEXTURE_2D)
+            for i in range(0,4):
+                glBegin(GL_LINE_STRIP)
+                for j in range(0,4):
+                    glVertex3f(self.controlPoints[i][j].x,self.controlPoints[i][j].y,self.controlPoints[i][j].z)
+                glEnd()
+            for i in range(0,4):
+                glBegin(GL_LINE_STRIP)
+                for j in range(0,4):
+                    glVertex3f(self.controlPoints[j][i].x,self.controlPoints[j][i].y,self.controlPoints[j][i].z)
+                glEnd()
+            glEnable(GL_TEXTURE_2D)
+    def changeDivs(self,new_divs):
+        self.divs=new_divs
 
 class BSpline:
     def __init__(self):
@@ -280,6 +370,7 @@ if __name__ == '__main__':
     for column in surface_controlPoints.column:
         print(column)
 
+    print(BezierCurve.combination(3,0),BezierCurve.combination(3,1),BezierCurve.combination(3,2),BezierCurve.combination(3,3))
 
 
 

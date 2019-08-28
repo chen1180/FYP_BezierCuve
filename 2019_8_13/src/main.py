@@ -20,25 +20,23 @@ class MainWindow(QtWidgets.QMainWindow):
         self.ui.openGLWidget.close()
         self.ui.horizontalLayout_2.replaceWidget(self.ui.openGLWidget,self.glWidget)
         self.ui.clearBtn.clicked.connect(lambda state, x=0: self.glWidget.changeStatus(x))
-        self.ui.drawBtn.clicked.connect(lambda state,x=1:self.glWidget.changeStatus(x))
+        self.ui.drawBezierBtn.clicked.connect(lambda state,x=1:self.glWidget.changeStatus(x))
         self.ui.splitBtn.clicked.connect(lambda state,x=2:self.glWidget.changeStatus(x))
-        self.ui.drawSurfaceBtn.clicked.connect(lambda state,x=3:self.glWidget.changeStatus(x))
+        self.ui.drawBezierSurfaceBtn.clicked.connect(lambda state,x=3:self.glWidget.changeStatus(x))
         self.ui.pushButton.clicked.connect(lambda state,x=4:self.glWidget.changeStatus(x))
         self.ui.horizontalSlider.valueChanged.connect(self.glWidget.changeT)
         self.ui.bSplineBtn.clicked.connect(lambda state,x=5:self.glWidget.changeStatus(x))
+        self.ui.drawMultiBezierBtn.clicked.connect(lambda state, x=6: self.glWidget.changeStatus(x))
+        self.ui.degreeBeziercomboBox.currentText()
+        self.ui.displayMeshcheckBox.isChecked()
+        self.ui.steps_uBezierSurfacespinBox.value()
         #toobar
         #self.ui.actionSelect_mode.triggered.connect(self.glWidget.changeMode)
 class glWidget(QGLWidget):
     knotsTypeChanged = QtCore.pyqtSignal(str)
     def __init__(self, parent):
         QGLWidget.__init__(self, parent)
-        self.status=[]
-        self.control_points =curve.generateMatrix(dim=[7,3])
-        self.curve=BezierCurve(self.control_points)
-        self.surface=BeizerSurface(surface.convertListToPoint([[[-0.25, 0.0, -0.5], [0, 0, 0.0], [0.25, -0.2, 0.0], [0.5, 0.2, 0.0]],
-                                                 [[-0.5, -0.5, 0.0], [0, -0.2, 0.0], [0.15, -0.1, 2.0], [0.5, -0.6, 0.0]],
-                                                 [[-0.7, -0.7, 0.0], [-0.2, -0.5, 0.0], [0.1, -0.3, 2.0], [0.4, -0.7, 0.0]],
-                                                 [[-0.8, -0.7, 0.0], [0.3, -0.5, 0.0], [-0.2, -0.3, 2.0], [0.4, -0.9, 0.0]]]))
+        self.status=100
         self.lastPos = point(0,0,0)
         self.t=0.5
         self.zoomScale=1.0
@@ -101,40 +99,82 @@ class glWidget(QGLWidget):
         glEnable(GL_DEPTH_TEST)
         #glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST)
         glShadeModel(GL_SMOOTH)
+        glEnable(GL_TEXTURE_2D)
+
         glMatrixMode(GL_PROJECTION)
         glLoadIdentity()
         self.camera.updateProjectionMatrix(self.width(),self.height())
         #gluOrtho2D(0,self.widt h(),0,self.height())
+        #Define data structure for drawing
+        self.surface=surface.convertListToPoint(
+            [[[-0.75, -0.75, -0.50], [-0.25, -0.75, 0.00], [0.25, -0.75, 0.00], [0.75, -0.75, -0.50]],
+             [[-0.75, -0.25, -0.75], [-0.25, -0.25, 0.50], [0.25, -0.25, 0.50], [0.75, -0.25, -0.75]],
+             [[-0.75, 0.25, 0.00], [-0.25, 0.25, -0.50], [0.25, 0.25, -0.50], [0.75, 0.25, 0.00]],
+             [[-0.75, 0.75, -0.50], [-0.25, 0.75, -1.00], [0.25, 0.75, -1.00], [0.75, 0.75, -0.50]]])
+        # self.surface=surface.generateRandomMatrix(dim=[4,4,3])
+        self.control_points = curve.generateMatrix(dim=[8, 3])
+        self.element=[]
     def paintGL(self):
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
         glMatrixMode(GL_MODELVIEW)
         glLoadIdentity()
         self.camera.updateViewMatrix()
         self.drawCoordinateAxis()
+        self.decideObject()
         self.renderObject()
         glFlush()
+    def decideObject(self):
+        if self.status==0:
+            self.clearScreen()
+        elif self.status==1:
+            bezier=BezierCurve(self.control_points,self.parent.ui.degreeBeziercomboBox.currentText(),self.parent.ui.stepsBeizerspinBox.value())
+            self.element.append([self.status, bezier])
+        elif self.status==2:
+            self.curve.splitCurve(self.t)
+        elif self.status==3:
+            showPolygon=self.parent.ui.displayMeshcheckBox.isChecked()
+            divs= self.parent.ui.steps_uBezierSurfacespinBox.value()
+            curves=BeizerSurface(self.surface,divs,showPolygon)
+            curves.dlbPatch=curves.genBezierSurface()
+            self.element.append([self.status, curves])
+        elif self.status==4:
+            self.curve.drawBezierCircle()
+        elif self.status==5:
+            BSpline().drawBSplineCurve(self.control_points, order=3,knots_type=self.parent.ui.knotTypecomboBox.currentText())
+        elif self.status==6:
+            bezier = BezierCurve(self.control_points, self.parent.ui.degreeMultiBeziercomboBox.currentText(),
+                                 self.parent.ui.stepsMultiBezierspinBox.value())
+            self.element.append([self.status, bezier])
+        else:
+            self.update()
+        self.status=100
     def renderObject(self):
-        for status in self.status:
-            if status==0:
-                self.clearScreen()
-            elif status==1:
-                self.curve.drawMultiBeizerCurve()
-            elif status==2:
-                self.curve.splitCurve(self.t)
-            elif status==3:
-                BeizerSurface.drawBeizerSurface()
-                #BezierCurve().drawBezierSurface_DelCasteljau(self.surface)
-                self.surface.drawBezierSurface_DelCasteljau()
-            elif status==4:
-                self.curve.drawBezierCircle()
-            elif status==5:
-                BSpline().drawBSplineCurve(self.control_points, order=3,knots_type=self.parent.ui.knotTypecomboBox.currentText())
-            else:
-                self.update()
+        print(self.element)
+        if self.element:
+            for ele in self.element:
+                status=ele[0]
+                shape=ele[1]
+                if status == 0:
+                    self.clearScreen()
+                elif status == 1:
+                    shape.drawCurve()
+                elif status == 2:
+                    self.curve.splitCurve(self.t)
+                elif status == 3:
+                    glCallList(shape.dlbPatch)
+                    shape.genMesh()
+                elif status == 4:
+                    self.curve.drawBezierCircle()
+                elif status == 5:
+                    BSpline().drawBSplineCurve(self.control_points, order=3,
+                                                   knots_type=self.parent.ui.knotTypecomboBox.currentText())
+                elif status== 6:
+                    shape.drawMultiBeizerCurve()
+                else:
+                    self.update()
+
     def changeStatus(self,newStatus=0):
-        if newStatus  not in self.status:
-            self.status.append(newStatus)
-        print(self.status)
+        self.status=newStatus
         self.update()
     def changeMode(self):
         self.selectionMode= not self.selectionMode
@@ -142,7 +182,8 @@ class glWidget(QGLWidget):
 
     def clearScreen(self):
         glFlush()
-        self.status.clear()
+        self.status=100
+        self.element.clear()
         self.update()
     def drawCoordinateAxis(self):
         lx=1
