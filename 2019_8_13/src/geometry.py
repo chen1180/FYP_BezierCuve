@@ -81,7 +81,6 @@ class surface:
 if __name__ == '__main__':
     test=point(0,1,2)
     test2=point(3,4,5)
-    print(test)
+    print(type(test))
     print(test+test2)
-    a=surface.generateMatrix()
-    print(a)
+

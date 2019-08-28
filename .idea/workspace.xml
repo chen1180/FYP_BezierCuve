@@ -1,58 +1,115 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="6a09952a-ec81-4d01-8f36-3024081bb193" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/2019_8_13/src/curve.py" beforeDir="false" afterPath="$PROJECT_DIR$/2019_8_13/src/curve.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/2019_8_13/src/geometry.py" beforeDir="false" afterPath="$PROJECT_DIR$/2019_8_13/src/geometry.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/2019_8_13/src/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/2019_8_13/src/main.py" afterDir="false" />
-    </list>
+    <list default="true" id="7e4bd2b0-cccb-4b4b-9232-f6ac4c513c44" name="Default" comment="" />
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
+    <option name="TRACKING_ENABLED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
     <option name="LAST_RESOLUTION" value="IGNORE" />
   </component>
-  <component name="FileTemplateManagerImpl">
-    <option name="RECENT_TEMPLATES">
+  <component name="FileEditorManager">
+    <leaf>
+      <file leaf-file-name="curve.py" pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/2019_8_13/src/curve.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="160">
+              <caret line="152" column="39" lean-forward="true" selection-start-line="152" selection-start-column="39" selection-end-line="152" selection-end-column="39" />
+              <folding>
+                <element signature="e#0#23#0" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="geometry.py" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/2019_8_13/src/geometry.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="1420">
+              <caret line="72" column="24" lean-forward="true" selection-start-line="72" selection-start-column="24" selection-end-line="72" selection-end-column="24" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="main.py" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/2019_8_13/src/main.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="360">
+              <caret line="132" column="29" lean-forward="true" selection-start-line="132" selection-start-column="29" selection-end-line="132" selection-end-column="29" />
+              <folding>
+                <element signature="e#0#23#0" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+    </leaf>
+  </component>
+  <component name="FindInProjectRecents">
+    <findStrings>
+      <find>control_points</find>
+      <find>drawCurve</find>
+    </findStrings>
+    <replaceStrings>
+      <replace>self.controlPoints</replace>
+    </replaceStrings>
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="IdeDocumentHistory">
+    <option name="CHANGED_PATHS">
       <list>
-        <option value="Python Script" />
+        <option value="$PROJECT_DIR$/2019_8_13/src/geometry.py" />
+        <option value="$PROJECT_DIR$/2019_8_13/src/main.py" />
+        <option value="$PROJECT_DIR$/2019_8_13/src/curve.py" />
       </list>
     </option>
   </component>
-  <component name="Git.Settings">
-    <option name="UPDATE_TYPE" value="MERGE" />
-    <option name="ROOT_SYNC" value="DONT_SYNC" />
-    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  <component name="ProjectFrameBounds" extendedState="6">
+    <option name="x" value="2018" />
+    <option name="y" value="86" />
+    <option name="width" value="1400" />
+    <option name="height" value="1000" />
   </component>
-  <component name="ProjectId" id="1PEspPno679wlSQXlGhGNtGDMeA" />
-  <component name="ProjectLevelVcsManager" settingsEditedManually="true">
-    <ConfirmationsSetting value="2" id="Add" />
+  <component name="ProjectView">
+    <navigator proportions="" version="1">
+      <foldersAlwaysOnTop value="true" />
+    </navigator>
+    <panes>
+      <pane id="Scope" />
+      <pane id="ProjectPane">
+        <subPane>
+          <expand>
+            <path>
+              <item name="FYP_BezierCuve" type="b2602c69:ProjectViewProjectNode" />
+              <item name="FYP_BezierCuve" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="FYP_BezierCuve" type="b2602c69:ProjectViewProjectNode" />
+              <item name="FYP_BezierCuve" type="462c0819:PsiDirectoryNode" />
+              <item name="2019_8_13" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="FYP_BezierCuve" type="b2602c69:ProjectViewProjectNode" />
+              <item name="FYP_BezierCuve" type="462c0819:PsiDirectoryNode" />
+              <item name="2019_8_13" type="462c0819:PsiDirectoryNode" />
+              <item name="src" type="462c0819:PsiDirectoryNode" />
+            </path>
+          </expand>
+          <select />
+        </subPane>
+      </pane>
+    </panes>
   </component>
   <component name="PropertiesComponent">
-    <property name="SHARE_PROJECT_CONFIGURATION_FILES" value="true" />
     <property name="last_opened_file_path" value="$PROJECT_DIR$" />
-    <property name="settings.editor.selected.configurable" value="preferences.externalTools" />
-  </component>
-  <component name="PyConsoleOptionsProvider">
-    <option name="myPythonConsoleState">
-      <console-settings module-name="FYP" is-module-sdk="true">
-        <option name="myUseModuleSdk" value="true" />
-        <option name="myModuleName" value="FYP" />
-      </console-settings>
-    </option>
+    <property name="settings.editor.selected.configurable" value="editor.preferences.fonts.default" />
   </component>
   <component name="RecentsManager">
     <key name="MoveFile.RECENT_KEYS">
-      <recent name="C:\Users\Chen Baocheng\Documents\GitHub\FYP_BezierCuver\2019_8_13\src" />
-      <recent name="D:\Study\FYP\2019_5_5_2\src" />
-      <recent name="D:\Study\FYP\2019_5_5_2\UI" />
-      <recent name="D:\Study\FYP\2019_4_20" />
-      <recent name="D:\Study\FYP\2019_4_20\ui" />
-    </key>
-    <key name="CopyFile.RECENT_KEYS">
-      <recent name="C:\Users\Chen Baocheng\Documents\GitHub\FYP_BezierCuver" />
-      <recent name="D:\Study\FYP" />
+      <recent name="C:\Users\chen1180\Documents\GitHub\FYP_BezierCuve" />
     </key>
   </component>
   <component name="RunDashboard">
@@ -69,7 +126,7 @@
   </component>
   <component name="RunManager" selected="Python.main">
     <configuration name="curve" type="PythonConfigurationType" factoryName="Python" temporary="true">
-      <module name="FYP" />
+      <module name="FYP_BezierCuve" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
       <envs>
@@ -85,12 +142,9 @@
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
       <option name="MODULE_MODE" value="false" />
-      <option name="REDIRECT_INPUT" value="false" />
-      <option name="INPUT_FILE" value="" />
-      <method v="2" />
     </configuration>
     <configuration name="geometry" type="PythonConfigurationType" factoryName="Python" temporary="true">
-      <module name="FYP" />
+      <module name="FYP_BezierCuve" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
       <envs>
@@ -106,12 +160,9 @@
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
       <option name="MODULE_MODE" value="false" />
-      <option name="REDIRECT_INPUT" value="false" />
-      <option name="INPUT_FILE" value="" />
-      <method v="2" />
     </configuration>
     <configuration name="main" type="PythonConfigurationType" factoryName="Python" temporary="true">
-      <module name="FYP" />
+      <module name="FYP_BezierCuve" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
       <envs>
@@ -127,59 +178,17 @@
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
       <option name="MODULE_MODE" value="false" />
-      <option name="REDIRECT_INPUT" value="false" />
-      <option name="INPUT_FILE" value="" />
-      <method v="2" />
     </configuration>
-    <configuration name="mainWindow (1)" type="PythonConfigurationType" factoryName="Python" temporary="true">
-      <module name="FYP" />
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <envs>
-        <env name="PYTHONUNBUFFERED" value="1" />
-      </envs>
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/2019_4_28" />
-      <option name="IS_MODULE_SDK" value="true" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/2019_4_28/mainWindow.py" />
-      <option name="PARAMETERS" value="" />
-      <option name="SHOW_COMMAND_LINE" value="false" />
-      <option name="EMULATE_TERMINAL" value="false" />
-      <option name="MODULE_MODE" value="false" />
-      <option name="REDIRECT_INPUT" value="false" />
-      <option name="INPUT_FILE" value="" />
-      <method v="2" />
-    </configuration>
-    <configuration name="mainWindow (2)" type="PythonConfigurationType" factoryName="Python" temporary="true">
-      <module name="FYP" />
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <envs>
-        <env name="PYTHONUNBUFFERED" value="1" />
-      </envs>
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/2019_5_2" />
-      <option name="IS_MODULE_SDK" value="true" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/2019_5_2/mainWindow.py" />
-      <option name="PARAMETERS" value="" />
-      <option name="SHOW_COMMAND_LINE" value="false" />
-      <option name="EMULATE_TERMINAL" value="false" />
-      <option name="MODULE_MODE" value="false" />
-      <option name="REDIRECT_INPUT" value="false" />
-      <option name="INPUT_FILE" value="" />
-      <method v="2" />
-    </configuration>
+    <list>
+      <item itemvalue="Python.main" />
+      <item itemvalue="Python.curve" />
+      <item itemvalue="Python.geometry" />
+    </list>
     <recent_temporary>
       <list>
         <item itemvalue="Python.main" />
         <item itemvalue="Python.curve" />
         <item itemvalue="Python.geometry" />
-        <item itemvalue="Python.mainWindow (2)" />
-        <item itemvalue="Python.mainWindow (1)" />
       </list>
     </recent_temporary>
   </component>
@@ -188,84 +197,73 @@
   </component>
   <component name="TaskManager">
     <task active="true" id="Default" summary="Default task">
-      <changelist id="6a09952a-ec81-4d01-8f36-3024081bb193" name="Default Changelist" comment="" />
-      <created>1555511986522</created>
+      <changelist id="7e4bd2b0-cccb-4b4b-9232-f6ac4c513c44" name="Default" comment="" />
+      <created>1566964047305</created>
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
-      <updated>1555511986522</updated>
+      <updated>1566964047305</updated>
     </task>
-    <task id="LOCAL-00001" summary="add Bezier surface">
-      <created>1565704953334</created>
-      <option name="number" value="00001" />
-      <option name="presentableId" value="LOCAL-00001" />
-      <option name="project" value="LOCAL" />
-      <updated>1565704953334</updated>
-    </task>
-    <task id="LOCAL-00002" summary="split curve function added">
-      <created>1565751832989</created>
-      <option name="number" value="00002" />
-      <option name="presentableId" value="LOCAL-00002" />
-      <option name="project" value="LOCAL" />
-      <updated>1565751832989</updated>
-    </task>
-    <task id="LOCAL-00003" summary="split curve function">
-      <created>1565751849408</created>
-      <option name="number" value="00003" />
-      <option name="presentableId" value="LOCAL-00003" />
-      <option name="project" value="LOCAL" />
-      <updated>1565751849408</updated>
-    </task>
-    <option name="localTasksCounter" value="4" />
     <servers />
   </component>
-  <component name="Vcs.Log.History.Properties">
-    <option name="COLUMN_ORDER">
-      <list>
-        <option value="0" />
-        <option value="2" />
-        <option value="3" />
-        <option value="1" />
-      </list>
-    </option>
+  <component name="ToolWindowManager">
+    <frame x="1912" y="67" width="1936" height="1056" extended-state="6" />
+    <layout>
+      <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.18020834" />
+      <window_info anchor="bottom" id="TODO" order="6" />
+      <window_info anchor="bottom" id="Event Log" side_tool="true" />
+      <window_info anchor="bottom" id="Run" order="2" weight="0.3103082" />
+      <window_info anchor="bottom" id="Version Control" />
+      <window_info anchor="bottom" id="Python Console" />
+      <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
+      <window_info anchor="bottom" id="Terminal" />
+      <window_info anchor="bottom" id="Debug" order="3" weight="0.4" />
+      <window_info id="Favorites" side_tool="true" />
+      <window_info anchor="bottom" id="Find" order="1" />
+      <window_info anchor="right" id="Commander" internal_type="SLIDING" order="0" type="SLIDING" weight="0.4" />
+      <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
+      <window_info anchor="right" content_ui="combo" id="Hierarchy" order="2" weight="0.25" />
+      <window_info anchor="right" id="Ant Build" order="1" weight="0.25" />
+      <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
+      <window_info anchor="bottom" id="Message" order="0" />
+    </layout>
   </component>
-  <component name="Vcs.Log.Tabs.Properties">
-    <option name="TAB_STATES">
-      <map>
-        <entry key="MAIN">
-          <value>
-            <State>
-              <option name="COLUMN_ORDER" />
-            </State>
-          </value>
-        </entry>
-      </map>
-    </option>
+  <component name="VcsContentAnnotationSettings">
+    <option name="myLimit" value="2678400000" />
   </component>
-  <component name="VcsManagerConfiguration">
-    <MESSAGE value="add Bezier surface" />
-    <MESSAGE value="split curve function added" />
-    <MESSAGE value="split curve function" />
-    <option name="LAST_COMMIT_MESSAGE" value="split curve function" />
-  </component>
-  <component name="XDebuggerManager">
-    <breakpoint-manager>
-      <breakpoints>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/2019_4_17/main.py</url>
-          <line>89</line>
-          <option name="timeStamp" value="5" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/2019_4_17/main.py</url>
-          <line>90</line>
-          <option name="timeStamp" value="6" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/2019_4_17/main.py</url>
-          <line>88</line>
-          <option name="timeStamp" value="7" />
-        </line-breakpoint>
-      </breakpoints>
-    </breakpoint-manager>
+  <component name="editorHistoryManager">
+    <entry file="file://C:/ProgramData/Anaconda3/Lib/site-packages/OpenGL/GL/exceptional.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-3339">
+          <caret line="87" column="4" selection-start-line="87" selection-start-column="4" selection-end-line="87" selection-end-column="4" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/2019_8_13/src/geometry.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="1420">
+          <caret line="72" column="24" lean-forward="true" selection-start-line="72" selection-start-column="24" selection-end-line="72" selection-end-column="24" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/2019_8_13/src/main.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="360">
+          <caret line="132" column="29" lean-forward="true" selection-start-line="132" selection-start-column="29" selection-end-line="132" selection-end-column="29" />
+          <folding>
+            <element signature="e#0#23#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/2019_8_13/src/curve.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="160">
+          <caret line="152" column="39" lean-forward="true" selection-start-line="152" selection-start-column="39" selection-end-line="152" selection-end-column="39" />
+          <folding>
+            <element signature="e#0#23#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
   </component>
 </project>

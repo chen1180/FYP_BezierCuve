@@ -6,7 +6,7 @@ import mainForm
 from geometry import point,surface,curve
 import sys
 import camera
-from curve import BezierCurve,BSpline
+from curve import BezierCurve,BSpline,BeizerSurface
 class MainWindow(QtWidgets.QMainWindow):
     def __init__(self):
         super(MainWindow, self).__init__()
@@ -34,10 +34,11 @@ class glWidget(QGLWidget):
         QGLWidget.__init__(self, parent)
         self.status=[]
         self.control_points =curve.generateMatrix(dim=[7,3])
-        self.surface=surface.convertListToPoint([[[-0.25, 0.0, -0.5], [0, 0, 0.0], [0.25, -0.2, 0.0], [0.5, 0.2, 0.0]],
+        self.curve=BezierCurve(self.control_points)
+        self.surface=BeizerSurface(surface.convertListToPoint([[[-0.25, 0.0, -0.5], [0, 0, 0.0], [0.25, -0.2, 0.0], [0.5, 0.2, 0.0]],
                                                  [[-0.5, -0.5, 0.0], [0, -0.2, 0.0], [0.15, -0.1, 2.0], [0.5, -0.6, 0.0]],
                                                  [[-0.7, -0.7, 0.0], [-0.2, -0.5, 0.0], [0.1, -0.3, 2.0], [0.4, -0.7, 0.0]],
-                                                 [[-0.8, -0.7, 0.0], [0.3, -0.5, 0.0], [-0.2, -0.3, 2.0], [0.4, -0.9, 0.0]]])
+                                                 [[-0.8, -0.7, 0.0], [0.3, -0.5, 0.0], [-0.2, -0.3, 2.0], [0.4, -0.9, 0.0]]]))
         self.lastPos = point(0,0,0)
         self.t=0.5
         self.zoomScale=1.0
@@ -117,14 +118,15 @@ class glWidget(QGLWidget):
             if status==0:
                 self.clearScreen()
             elif status==1:
-                BezierCurve().drawMultiBeizerCurve(self.control_points)
+                self.curve.drawMultiBeizerCurve()
             elif status==2:
-                BezierCurve().splitCurve(self.control_points,self.t)
+                self.curve.splitCurve(self.t)
             elif status==3:
-                #BezierCurve().drawBeizerSurface()
-                BezierCurve().drawBezierSurface_DelCasteljau(self.surface)
+                BeizerSurface.drawBeizerSurface()
+                #BezierCurve().drawBezierSurface_DelCasteljau(self.surface)
+                self.surface.drawBezierSurface_DelCasteljau()
             elif status==4:
-                BezierCurve().drawBezierCircle()
+                self.curve.drawBezierCircle()
             elif status==5:
                 BSpline().drawBSplineCurve(self.control_points, order=3,knots_type=self.parent.ui.knotTypecomboBox.currentText())
             else:
