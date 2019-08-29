@@ -11,7 +11,7 @@ class BezierCurve:
     def combination(cls,n,r):
         return math.factorial(n)/math.factorial(n-r)/math.factorial(r)
     @classmethod
-    def decasteljauCubic(cls,p1,p2,p3,p4,t):
+    def deCasteljauCubic(cls,p1,p2,p3,p4,t):
         p12=(1 - t) * p1 + t * p2
         p23 = (1 - t) * p2 + t * p3
         p34 = (1 - t) * p3 + t * p4
@@ -19,12 +19,12 @@ class BezierCurve:
         p2334 = (1 - t) * p23 + t * p34
         return (1-t)*p1223+t*p2334
     @classmethod
-    def decasteljauQuad(cls,p1,p2,p3,t):
+    def deCasteljauQuad(cls,p1,p2,p3,t):
         p12=(1 - t) * p1 + t * p2
         p23 = (1 - t) * p2 + t * p3
         return (1 - t) * p12 + t * p23
     @classmethod
-    def decasteljau_split(cls,p1,p2,p3,p4,t):
+    def deCasteljauSplit(cls,p1,p2,p3,p4,t):
         p12 = (1 - t) * p1 + t * p2
         p23 = (1 - t) * p2 + t * p3
         p34 = (1 - t) * p3 + t * p4
@@ -38,18 +38,6 @@ class BezierCurve:
         for r in range(len(self.controlPoints)):
             c+=self.combination(n,r)*((1-t)**(n-r))*(t**r)*self.controlPoints[r]
         return c
-    def drawHighDegreeBezier(self,divs=10):
-        glColor3f(1, 1, 1)
-        glPointSize(5.0)
-        glBegin(GL_POINTS)
-        for  p in self.controlPoints:
-            p.glVertex3()
-        glEnd()
-        glBegin(GL_LINE_STRIP)
-        for t in np.linspace(0, 1, divs):
-            p = self.bersteinPolynomial(t)
-            p.glVertex3()
-        glEnd()
     def drawCurve(self, c_color=(1, 1, 1)):
         glColor3f(c_color[0], c_color[1], c_color[2])
         glPointSize(5.0)
@@ -61,14 +49,14 @@ class BezierCurve:
             for i in range(0,len(self.controlPoints)-3,3):
                 glBegin(GL_LINE_STRIP)
                 for t in np.linspace(0, 1, self.divs):
-                    p = self.decasteljauQuad(self.controlPoints[i],self.controlPoints[i+1],self.controlPoints[i+2],t)
+                    p = self.deCasteljauQuad(self.controlPoints[i],self.controlPoints[i+1],self.controlPoints[i+2],t)
                     p.glVertex3()
                 glEnd()
         elif self.type=="Cubic":
             for i in range(0, len(self.controlPoints) - 4, 4):
                 glBegin(GL_LINE_STRIP)
                 for t in np.linspace(0, 1, self.divs):
-                    p = self.decasteljauCubic(self.controlPoints[i], self.controlPoints[i + 1],
+                    p = self.deCasteljauCubic(self.controlPoints[i], self.controlPoints[i + 1],
                                              self.controlPoints[i + 2],self.controlPoints[i + 3], t)
                     p.glVertex3()
                 glEnd()
@@ -79,7 +67,7 @@ class BezierCurve:
                 p.glVertex3()
             glEnd()
     def splitCurve(self,t=0.2,c1_color=(1,0,0),c2_color=(0,0,1)):
-        curve1, curve2 = self.decasteljau_split(self.controlPoints[0],
+        curve1, curve2 = self.deCasteljauSplit(self.controlPoints[0],
                                                 self.controlPoints[1],
                                                 self.controlPoints[2],
                                                 self.controlPoints[3],
@@ -112,21 +100,21 @@ class BezierCurve:
         ctrl_point = self.controlPoints[1]
         end_point = (self.controlPoints[1] + self.controlPoints[2]) * 0.5
         for t in np.linspace(0, 1, self.divs):
-            p = self.decasteljauQuad(start_point, ctrl_point, end_point, t)
+            p = self.deCasteljauQuad(start_point, ctrl_point, end_point, t)
             p.glVertex3()
         for index in range(1, len(self.controlPoints) - 3):
             start_point = (self.controlPoints[index] + self.controlPoints[index+1]) * 0.5
             ctrl_point = self.controlPoints[index+1]
             end_point = (self.controlPoints[index+1] + self.controlPoints[index+2]) * 0.5
             for t in np.linspace(0, 1,self.divs):
-                p = self.decasteljauQuad(start_point, ctrl_point, end_point, t)
+                p = self.deCasteljauQuad(start_point, ctrl_point, end_point, t)
                 p.glVertex3()
             if index==len(self.controlPoints) - 4:
                 start_point = end_point
                 ctrl_point = self.controlPoints[index + 2]
                 end_point = self.controlPoints[index + 3]
                 for t in np.linspace(0, 1, self.divs):
-                    p = self.decasteljauQuad(start_point, ctrl_point, end_point, t)
+                    p = self.deCasteljauQuad(start_point, ctrl_point, end_point, t)
                     p.glVertex3()
         glEnd()
     def drawBezierCircle(self,center=point(0.0,0,0.0),radius=0.5):
@@ -188,10 +176,10 @@ class BeizerSurface(BezierCurve):
             for v in np.linspace(0,1,10):
                 q = []
                 for row in self.controlPoints:
-                    q_i = self.decasteljauCubic(row[0], row[1], row[2], row[3], v)
+                    q_i = self.deCasteljauCubic(row[0], row[1], row[2], row[3], v)
                     q.append(q_i)
                 curveInRow.append(q)
-                p_u_v=self.decasteljauCubic(q[0],q[1],q[2],q[3],u)
+                p_u_v=self.deCasteljauCubic(q[0],q[1],q[2],q[3],u)
                 p.append(p_u_v)
             curveInColumn.append(p)
         return curveInRow,curveInColumn
@@ -221,28 +209,27 @@ class BeizerSurface(BezierCurve):
         temp=[row[3] for row in self.controlPoints]
         for v in range(self.divs+1):
             px=v/self.divs
-            last[v]=self.decasteljauCubic(temp[0],temp[1],temp[2],temp[3],px)
+            last[v]=self.deCasteljauCubic(temp[0],temp[1],temp[2],temp[3],px)
         glNewList(drawList,GL_COMPILE)
         glBindTexture(GL_TEXTURE_2D,self.texture)
         for u in range(1,self.divs+1):
             py=u/self.divs
             pyold=(u-1)/self.divs
-            temp[0]=self.decasteljauCubic(self.controlPoints[0][3],self.controlPoints[0][2],self.controlPoints[0][1],self.controlPoints[0][0],py)
-            temp[1] = self.decasteljauCubic(self.controlPoints[1][3],self.controlPoints[1][2],self.controlPoints[1][1],self.controlPoints[1][0],py)
-            temp[2] = self.decasteljauCubic(self.controlPoints[2][3],self.controlPoints[2][2],self.controlPoints[2][1],self.controlPoints[2][0],py)
-            temp[3] = self.decasteljauCubic(self.controlPoints[3][3],self.controlPoints[3][2],self.controlPoints[3][1],self.controlPoints[3][0],py)
+            temp[0]=self.deCasteljauCubic(self.controlPoints[0][3],self.controlPoints[0][2],self.controlPoints[0][1],self.controlPoints[0][0],py)
+            temp[1] = self.deCasteljauCubic(self.controlPoints[1][3],self.controlPoints[1][2],self.controlPoints[1][1],self.controlPoints[1][0],py)
+            temp[2] = self.deCasteljauCubic(self.controlPoints[2][3],self.controlPoints[2][2],self.controlPoints[2][1],self.controlPoints[2][0],py)
+            temp[3] = self.deCasteljauCubic(self.controlPoints[3][3],self.controlPoints[3][2],self.controlPoints[3][1],self.controlPoints[3][0],py)
             glBegin(GL_TRIANGLE_STRIP)
             for v in range(self.divs+1):
                 px = v / self.divs
                 glTexCoord2f(pyold,px)
                 glVertex3f(last[v].x,last[v].y,last[v].z)
-                last[v]=self.decasteljauCubic(temp[0],temp[1],temp[2],temp[3],px)
+                last[v]=self.deCasteljauCubic(temp[0],temp[1],temp[2],temp[3],px)
                 glTexCoord2f(py,px)
                 glVertex3f(last[v].x,last[v].y,last[v].z)
             glEnd()
         glEndList()
         del last
-        print(drawList)
         return drawList
     def genMesh(self):
         if self.showPolygon==True:
@@ -262,8 +249,10 @@ class BeizerSurface(BezierCurve):
         self.divs=new_divs
 
 class BSpline:
-    def __init__(self):
-        pass
+    def __init__(self,controlPoints,order=2,knotsType="Clamped"):
+        self.controlPoints=controlPoints
+        self.order=order
+        self.knotsType=knotsType
     @classmethod
     def deBoor_Cox(cls, i, k, t, knots):
         if k == 0:
@@ -319,43 +308,41 @@ class BSpline:
 
     @classmethod
     def createBezierKnots(cls, n, k):
-        nKnots=(n+k+1)
         knots = [0] * (k+1)
         knots+=[1]*(k+1)
         return knots
-    @classmethod
-    def drawBSplineCurve(cls,controlPoints=[],order=2,knots_type="clamped"):
+    def drawBSplineCurve(self):
         glColor3f(1.0,1.0,0.0)
         glLineWidth(3.0)
         glBegin(GL_LINE_STRIP)
-        if knots_type=="Clamped":
-            knots = cls.createClampedUniformKnots(len(controlPoints),order)
-        elif knots_type=="Open":
-            knots = cls.createOpenUniformKnots(len(controlPoints), order)
-        elif knots_type=="Closed":
-            knots=cls.createClosedUniformKnots(len(controlPoints),order)
-        elif knots_type=="Bezier":
-            order=len(controlPoints)-1
-            knots=cls.createBezierKnots(len(controlPoints),order)
+        if self.knotsType=="Clamped":
+            knots = self.createClampedUniformKnots(len(self.controlPoints),self.order)
+        elif self.knotsType=="Open":
+            knots = self.createOpenUniformKnots(len(self.controlPoints), self.order)
+        elif self.knotsType=="Closed":
+            knots=self.createClosedUniformKnots(len(self.controlPoints),self.order)
+        elif self.knotsType=="Bezier":
+            self.order=len(self.controlPoints)-1
+            knots=self.createBezierKnots(len(self.controlPoints),self.order)
         print(knots)
-        tmin=knots[order]
-        tmax=knots[len(controlPoints)]
+        tmin=knots[self.order]
+        tmax=knots[len(self.controlPoints)]
         insertNum = 100
         steps=(tmax-tmin)/(insertNum)
         for i in range(insertNum):
             t=tmin+i*steps
             p=point(0,0,0)
-            for j,c_p in enumerate(controlPoints):
-                Nik=cls.deBoor_Cox(j,order,t,knots)
+            for j,c_p in enumerate(self.controlPoints):
+                Nik=self.deBoor_Cox(j,self.order,t,knots)
                 p+=Nik*c_p
-            if i==insertNum-1 and knots_type!="Open":
-                p=controlPoints[-1]
+            if i==insertNum-1 and self.knotsType!="Open":
+                p=self.controlPoints[-1]
             glVertex3f(p.x,p.y,p.z)
         glEnd()
         glColor3f(1.0, 1.0, 1.0)
         glLineWidth(1)
         glBegin(GL_LINE_STRIP)
-        for p in controlPoints:
+        for p in self.controlPoints:
             p.glVertex3()
         glEnd()
 if __name__ == '__main__':

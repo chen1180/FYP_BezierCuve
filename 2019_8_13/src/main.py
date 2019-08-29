@@ -27,6 +27,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.ui.horizontalSlider.valueChanged.connect(self.glWidget.changeT)
         self.ui.bSplineBtn.clicked.connect(lambda state,x=5:self.glWidget.changeStatus(x))
         self.ui.drawMultiBezierBtn.clicked.connect(lambda state, x=6: self.glWidget.changeStatus(x))
+        self.ui.actionSelect_mode.toggled.connect(self.glWidget.changeMode)
         self.ui.degreeBeziercomboBox.currentText()
         self.ui.displayMeshcheckBox.isChecked()
         self.ui.steps_uBezierSurfacespinBox.value()
@@ -42,29 +43,12 @@ class glWidget(QGLWidget):
         self.zoomScale=1.0
         self.camera=camera.Camera()
         self.parent=parent
-    def changeT(self,t):
-        self.t=t/100.0
-        self.update()
-    def mousePressEvent(self, event):
-        self.lastPos = point(event.x(), event.y(), 0)
-        self.update()
-    def mouseMoveEvent(self, event):
-        #https://community.khronos.org/t/orbit-around-object/66465/4
-        #PAN FUNCTION:https://computergraphics.stackovernet.com/cn/q/58
-        if event.buttons()&QtCore.Qt.MiddleButton:
-            dx = event.x() - self.lastPos.x
-            dy = self.lastPos.y - event.y()
-            self.camera.rotate(dx,dy)
-        if event.buttons() & QtCore.Qt.LeftButton:
-            dTheta = (self.lastPos.x-event.x())/10
-            dPhi = (self.lastPos.y-event.y())/10
-            self.camera.pan(dTheta,dPhi)
-        self.lastPos = point(event.x(), event.y(), 0)
-        self.update()
+        self.selectionMode=False
     def selectObject(self,x,y):
         #picking mode reference:
         #https://blog.csdn.net/lcphoenix/article/details/6588033
         #https://stackoverflow.com/questions/56755950/why-object-selection-using-mouse-click-by-glselect-is-not-working-after-moving-c
+        #https://www.glprogramming.com/red/chapter13.html
         # s4t render mode and pick matrix
         viewport = glGetIntegerv(GL_VIEWPORT)
         selectBuffer = glSelectBuffer(100)
@@ -120,10 +104,11 @@ class glWidget(QGLWidget):
         glLoadIdentity()
         self.camera.updateViewMatrix()
         self.drawCoordinateAxis()
-        self.decideObject()
+        self.instantiateObject()
+        print(self.selectionMode)
         self.renderObject()
         glFlush()
-    def decideObject(self):
+    def instantiateObject(self):
         if self.status==0:
             self.clearScreen()
         elif self.status==1:
@@ -140,7 +125,8 @@ class glWidget(QGLWidget):
         elif self.status==4:
             self.curve.drawBezierCircle()
         elif self.status==5:
-            BSpline().drawBSplineCurve(self.control_points, order=3,knots_type=self.parent.ui.knotTypecomboBox.currentText())
+            bSpline=BSpline(self.control_points,order=2,knotsType=self.parent.ui.knotTypecomboBox.currentText())
+            self.element.append([self.status, bSpline])
         elif self.status==6:
             bezier = BezierCurve(self.control_points, self.parent.ui.degreeMultiBeziercomboBox.currentText(),
                                  self.parent.ui.stepsMultiBezierspinBox.value())
@@ -166,8 +152,7 @@ class glWidget(QGLWidget):
                 elif status == 4:
                     self.curve.drawBezierCircle()
                 elif status == 5:
-                    BSpline().drawBSplineCurve(self.control_points, order=3,
-                                                   knots_type=self.parent.ui.knotTypecomboBox.currentText())
+                    shape.drawBSplineCurve()
                 elif status== 6:
                     shape.drawMultiBeizerCurve()
                 else:
@@ -176,8 +161,9 @@ class glWidget(QGLWidget):
     def changeStatus(self,newStatus=0):
         self.status=newStatus
         self.update()
-    def changeMode(self):
-        self.selectionMode= not self.selectionMode
+    def changeMode(self,mode):
+        self.selectionMode= mode
+        print(self.selectionMode)
         self.update()
 
     def clearScreen(self):
@@ -229,6 +215,28 @@ class glWidget(QGLWidget):
         ###http://goldsequence.blogspot.com/2016/04/how-to-zoom-in-in-opengl-qt.html
         degree=a0.angleDelta().y()
         self.camera.zoom(degree/1000)
+        self.update()
+
+    def changeT(self, t):
+        self.t = t / 100.0
+        self.update()
+
+    def mousePressEvent(self, event):
+        self.lastPos = point(event.x(), event.y(), 0)
+        self.update()
+
+    def mouseMoveEvent(self, event):
+        # https://community.khronos.org/t/orbit-around-object/66465/4
+        # PAN FUNCTION:https://computergraphics.stackovernet.com/cn/q/58
+        if event.buttons() & QtCore.Qt.MiddleButton:
+            dx = event.x() - self.lastPos.x
+            dy = self.lastPos.y - event.y()
+            self.camera.rotate(dx, dy)
+        if event.buttons() & QtCore.Qt.LeftButton:
+            dTheta = (self.lastPos.x - event.x()) / 10
+            dPhi = (self.lastPos.y - event.y()) / 10
+            self.camera.pan(dTheta, dPhi)
+        self.lastPos = point(event.x(), event.y(), 0)
         self.update()
 sys._excepthook = sys.excepthook
 def my_exception_hook(exctype, value, traceback):
