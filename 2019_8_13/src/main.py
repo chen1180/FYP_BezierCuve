@@ -44,37 +44,6 @@ class glWidget(QGLWidget):
         self.camera=camera.Camera()
         self.parent=parent
         self.selectionMode=False
-    def selectObject(self,x,y):
-        #picking mode reference:
-        #https://blog.csdn.net/lcphoenix/article/details/6588033
-        #https://stackoverflow.com/questions/56755950/why-object-selection-using-mouse-click-by-glselect-is-not-working-after-moving-c
-        #https://www.glprogramming.com/red/chapter13.html
-        # s4t render mode and pick matrix
-        viewport = glGetIntegerv(GL_VIEWPORT)
-        selectBuffer = glSelectBuffer(100)
-
-        glRenderMode(GL_SELECT)
-        glInitNames()
-        glPushName(0)
-        # render object
-        glMatrixMode(GL_PROJECTION)
-        glPushMatrix()
-        glLoadIdentity()
-
-        gluPickMatrix(x, viewport[3] - y, 10.0, 10.0, viewport)
-        # multiply projection matrix
-        gluPerspective(45.0, self.width() / self.height(), 0.1, 100.0)
-        glMatrixMode(GL_PROJECTION)
-        glPopMatrix()
-        glLoadName(1)
-        self.drawCurve(self.control_points)
-        glLoadName(2)
-        self.drawBeizerSurface()
-        glFlush()
-        hits = glRenderMode(GL_RENDER)
-        if hits:
-            print([x.names for x in hits])
-        self.updateGL()
     def initializeGL(self):
         self.setFocusPolicy(QtCore.Qt.StrongFocus)
         self.setMouseTracking(True)
@@ -84,10 +53,9 @@ class glWidget(QGLWidget):
         #glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST)
         glShadeModel(GL_SMOOTH)
         glEnable(GL_TEXTURE_2D)
-
         glMatrixMode(GL_PROJECTION)
         glLoadIdentity()
-        self.camera.updateProjectionMatrix(self.width(),self.height())
+        self.camera.updatePerspectiveMatrix(self.width(),self.height())
         #gluOrtho2D(0,self.widt h(),0,self.height())
         #Define data structure for drawing
         self.surface=surface.convertListToPoint(
@@ -105,7 +73,9 @@ class glWidget(QGLWidget):
         self.camera.updateViewMatrix()
         self.drawCoordinateAxis()
         self.instantiateObject()
-        print(self.selectionMode)
+        self.drawViewVolume(0.0, 5, 0.0, 5, 0.0, 10.0)
+        self.selectObject()
+        #print(self.selectionMode)
         self.renderObject()
         glFlush()
     def instantiateObject(self):
@@ -135,7 +105,7 @@ class glWidget(QGLWidget):
             self.update()
         self.status=100
     def renderObject(self):
-        print(self.element)
+        #print(self.element)
         if self.element:
             for ele in self.element:
                 status=ele[0]
@@ -163,7 +133,7 @@ class glWidget(QGLWidget):
         self.update()
     def changeMode(self,mode):
         self.selectionMode= mode
-        print(self.selectionMode)
+        #print(self.selectionMode)
         self.update()
 
     def clearScreen(self):
@@ -202,14 +172,14 @@ class glWidget(QGLWidget):
         # glEnd()
     def resizeGL(self, width, height):
         side = min(width, height)
-        print(width,height)
+        #print(width,height)
         if side < 0:
             return
         #glViewport((width - side) // 2, (height - side) // 2, side, side)
         glViewport(0,0,width,height)
         glMatrixMode(GL_PROJECTION)
         glLoadIdentity()
-        self.camera.updateProjectionMatrix(width,height)
+        self.camera.updatePerspectiveMatrix(width,height)
 
     def wheelEvent(self, a0: QtGui.QWheelEvent) -> None:
         ###http://goldsequence.blogspot.com/2016/04/how-to-zoom-in-in-opengl-qt.html
@@ -238,6 +208,73 @@ class glWidget(QGLWidget):
             self.camera.pan(dTheta, dPhi)
         self.lastPos = point(event.x(), event.y(), 0)
         self.update()
+    def drawViewVolume(self,x1,y1,z1,x2,y2,z2):
+        glColor3f(1.0, 1.0, 1.0)
+        glBegin(GL_LINE_LOOP)
+        glVertex3f(x1, y1, -z1)
+        glVertex3f(x2, y1, -z1)
+        glVertex3f(x2, y2, -z1)
+        glVertex3f(x1, y2, -z1)
+        glEnd()
+
+        glBegin(GL_LINE_LOOP)
+        glVertex3f(x1, y1, -z2)
+        glVertex3f(x2, y1, -z2)
+        glVertex3f(x2, y2, -z2)
+        glVertex3f(x1, y2, -z2)
+        glEnd()
+
+        glBegin(GL_LINES)
+        glVertex3f(x1, y1, -z1)
+        glVertex3f(x1, y1, -z2)
+        glVertex3f(x1, y2, -z1)
+        glVertex3f(x1, y2, -z2)
+        glVertex3f(x2, y1, -z1)
+        glVertex3f(x2, y1, -z2)
+        glVertex3f(x2, y2, -z1)
+        glVertex3f(x2, y2, -z2)
+        glEnd()
+    def processHit(self,hits,buffer):
+        print("Hits: {}".format(hits))
+        for i in hits:
+            print("name:".format(i))
+    def selectObject(self):
+        #picking mode reference:
+        #https://blog.csdn.net/lcphoenix/article/details/6588033
+        #https://stackoverflow.com/questions/56755950/why-object-selection-using-mouse-click-by-glselect-is-not-working-after-moving-c
+        #https://www.glprogramming.com/red/chapter13.html
+        # s4t render mode and pick matrix
+        viewport = glGetIntegerv(GL_VIEWPORT)
+        selectBuffer = glSelectBuffer(100)
+        glRenderMode(GL_SELECT)
+        glInitNames()
+        glPushName(0)
+        glPushMatrix()
+
+        # render object
+        glMatrixMode(GL_PROJECTION)
+        glLoadIdentity()
+        # multiply projection matrix
+        glOrtho(0,5,0,5,0,10)
+        glMatrixMode(GL_MODELVIEW)
+        glLoadIdentity()
+        glLoadName(1)
+        self.drawTriangle(2.0, 2.0, 3.0, 2.0, 2.5, 3.0, -5.0)
+        glLoadName(2)
+        self.drawTriangle(2.0, 7.0, 3.0, 7.0, 2.5, 8.0, -5.0)
+        glLoadName(3)
+        self.drawTriangle(2.0, 2.0, 3.0, 2.0, 2.5, 3.0, 0.0)
+        self.drawTriangle(2.0, 2.0, 3.0, 2.0, 2.5, 3.0, -10.0)
+        glPopMatrix()
+        glFlush()
+        hits = glRenderMode(GL_RENDER)
+        self.processHit(hits,selectBuffer)
+    def drawTriangle(self,x1,y1,x2,y2,x3,y3,z):
+        glBegin (GL_TRIANGLES)
+        glVertex3f (x1, y1, z)
+        glVertex3f (x2, y2, z)
+        glVertex3f (x3, y3, z)
+        glEnd ()
 sys._excepthook = sys.excepthook
 def my_exception_hook(exctype, value, traceback):
     # Print the error and traceback

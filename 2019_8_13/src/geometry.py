@@ -52,7 +52,7 @@ class curve:
         controlPoints=[]
         for row in mat:
             controlPoints.append(point.with_components(row))
-        print(controlPoints)
+        #print(controlPoints)
         return controlPoints
 class surface:
     def __init__(self):

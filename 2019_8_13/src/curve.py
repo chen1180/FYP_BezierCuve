@@ -324,7 +324,7 @@ class BSpline:
         elif self.knotsType=="Bezier":
             self.order=len(self.controlPoints)-1
             knots=self.createBezierKnots(len(self.controlPoints),self.order)
-        print(knots)
+        #print(knots)
         tmin=knots[self.order]
         tmax=knots[len(self.controlPoints)]
         insertNum = 100
