@@ -1,5 +1,6 @@
 from OpenGL.GL import *
 import numpy as np
+import math
 class point:
     def __init__(self,_x,_y,_z):
         self.x=_x
@@ -8,6 +9,13 @@ class point:
     @classmethod
     def with_components(cls,cs):
         return point(cs[0],cs[1],cs[2])
+    @classmethod
+    def cross(cls,p1,p2):
+        p = np.cross(p1.components(), p2.components())
+        return point.with_components(p)
+    @classmethod
+    def dot(cls, p1, p2):
+        return p1.x*p2.x+p1.y*p2.y+p1.z*p2.z
     def components(self):
         return [self.x,self.y,self.z]
     def glVertex3(self):

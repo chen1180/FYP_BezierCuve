@@ -2,7 +2,6 @@ from geometry import point
 from OpenGL.GLU import gluLookAt,gluPerspective,gluOrtho2D
 from numpy import cos,sin,radians,cross
 class Camera:
-    #Arcball camera setup
     def __init__(self,_targetPos=point(0,0,0),_up=1.0,_theta=90,_phi=45,radius=1.0,_fov=45):
         self.targetPos=_targetPos
         self.up=_up
@@ -16,7 +15,7 @@ class Camera:
     def updatePerspectiveMatrix(self,width,height,znear=0.1,zfar=100):
         gluPerspective(self.fov,width/height,znear,zfar )
     def updateOrthoMatrix(self,width,height):
-        gluOrtho2D(-width/height,width/height,-width/height,width/height)
+        gluOrtho2D(0,width,0,height)
     def getView(self):
         if self.viewNeedUpdate:
             self.updateViewMatrix()
@@ -34,10 +33,10 @@ class Camera:
         else:
             self.theta-=dTheta
         self.phi+=dPhi
-        if self.phi>360:
-            self.phi-=360
-        elif self.phi<-360:
-            self.phi+=360
+        if self.phi>89:
+            self.phi=89
+        elif self.phi<-89:
+            self.phi=-89
         if (self.phi>0 and self.phi<180) or (self.phi<-180 and self.phi>-360):
             self.up=1.0
         else:

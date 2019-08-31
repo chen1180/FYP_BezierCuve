@@ -125,7 +125,6 @@ class glWidget(QGLWidget):
         self.update()
 
 
-
     # define BUFSIZE 512
 
     def pickSquare(self,x,y):

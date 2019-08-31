@@ -7,6 +7,8 @@ from geometry import point,surface,curve
 import sys
 import camera
 from curve import BezierCurve,BSpline,BeizerSurface
+import selectMode
+import arcball
 class MainWindow(QtWidgets.QMainWindow):
     def __init__(self):
         super(MainWindow, self).__init__()
@@ -39,9 +41,11 @@ class glWidget(QGLWidget):
         QGLWidget.__init__(self, parent)
         self.status=100
         self.lastPos = point(0,0,0)
+        self.currentPos=point(0,0,0)
         self.t=0.5
         self.zoomScale=1.0
-        self.camera=camera.Camera()
+        self.arcball=arcball.Arcball()
+        #self.camera=camera.Camera()
         self.parent=parent
         self.selectionMode=False
     def initializeGL(self):
@@ -50,13 +54,11 @@ class glWidget(QGLWidget):
         glClearDepth(1.0)
         glDepthFunc(GL_ALWAYS)
         glEnable(GL_DEPTH_TEST)
-        #glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST)
         glShadeModel(GL_SMOOTH)
         glEnable(GL_TEXTURE_2D)
         glMatrixMode(GL_PROJECTION)
         glLoadIdentity()
-        self.camera.updatePerspectiveMatrix(self.width(),self.height())
-        #gluOrtho2D(0,self.widt h(),0,self.height())
+        gluOrtho2D(0,self.width(),0,self.height())
         #Define data structure for drawing
         self.surface=surface.convertListToPoint(
             [[[-0.75, -0.75, -0.50], [-0.25, -0.75, 0.00], [0.25, -0.75, 0.00], [0.75, -0.75, -0.50]],
@@ -66,17 +68,23 @@ class glWidget(QGLWidget):
         # self.surface=surface.generateRandomMatrix(dim=[4,4,3])
         self.control_points = curve.generateMatrix(dim=[8, 3])
         self.element=[]
+        self.selectEngine=selectMode.SelectionEngine()
     def paintGL(self):
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
         glMatrixMode(GL_MODELVIEW)
-        glLoadIdentity()
-        self.camera.updateViewMatrix()
+        self.arcball.cameraUpdate()
+        #self.camera.updateViewMatrix()
         self.drawCoordinateAxis()
         self.instantiateObject()
-        self.drawViewVolume(0.0, 5, 0.0, 5, 0.0, 10.0)
+        self.drawViewVolume(0.0, 0.5, 0.0, 0.5, 0.0, 1.0)
         self.selectObject()
-        #print(self.selectionMode)
         self.renderObject()
+        # x,y,z=self.getOGLPos(self.lastPos.x,self.lastPos.y)
+        # x1,y1,z1=self.getOGLPos(self.currentPos.x,self.currentPos.y)
+        # print(x,y,z,x1,y1,z1)
+        # self.selectEngine.drawSelectSquare(x,y,z,x1,y1,z1)
+        # print(self.lastPos,self.currentPos)
+
         glFlush()
     def instantiateObject(self):
         if self.status==0:
@@ -171,42 +179,56 @@ class glWidget(QGLWidget):
         # glVertex3f(-lx / 2, 0, ly / 2)
         # glEnd()
     def resizeGL(self, width, height):
-        side = min(width, height)
-        #print(width,height)
-        if side < 0:
-            return
-        #glViewport((width - side) // 2, (height - side) // 2, side, side)
         glViewport(0,0,width,height)
         glMatrixMode(GL_PROJECTION)
         glLoadIdentity()
-        self.camera.updatePerspectiveMatrix(width,height)
+        gluOrtho2D(0,self.width(),0,self.height())
 
     def wheelEvent(self, a0: QtGui.QWheelEvent) -> None:
         ###http://goldsequence.blogspot.com/2016/04/how-to-zoom-in-in-opengl-qt.html
         degree=a0.angleDelta().y()
-        self.camera.zoom(degree/1000)
+        self.arcball.mouseScroll(degree)
+        # self.camera.zoom(degree)
         self.update()
 
     def changeT(self, t):
         self.t = t / 100.0
         self.update()
 
-    def mousePressEvent(self, event):
+    def mousePressEvent(self, event: QtGui.QMouseEvent) -> None:
         self.lastPos = point(event.x(), event.y(), 0)
+        if event.buttons() & QtCore.Qt.LeftButton:
+            self.arcball.startPan(event.x(), event.y(),self.width(),self.height())
+            if self.selectionMode:
+                self.selectEngine.changeDrawSquare(True)
+        if event.button()==QtCore.Qt.MiddleButton:
+            self.arcball.startMotion(event.x(), event.y(),self.width(),self.height())
         self.update()
+    def mouseReleaseEvent(self, event: QtGui.QMouseEvent) -> None:
+        self.lastPos = point(event.x(), event.y(), 0)
+        if self.selectionMode:
+            self.selectEngine.changeDrawSquare(False)
+        if event.button()==QtCore.Qt.LeftButton:
+            self.arcball.stopPan(event.x(), event.y(),self.width(),self.height())
+        if event.button()==QtCore.Qt.MiddleButton:
+            self.arcball.stopMotion(event.x(), event.y(),self.width(),self.height())
 
-    def mouseMoveEvent(self, event):
+    def mouseMoveEvent(self, event: QtGui.QMouseEvent):
         # https://community.khronos.org/t/orbit-around-object/66465/4
         # PAN FUNCTION:https://computergraphics.stackovernet.com/cn/q/58
+        self.currentPos = point(event.x(), event.y(), 0)
+        dTheta = (self.lastPos.x - event.x()) / 10
+        dPhi = ( event.y()-self.lastPos.y) / 10
         if event.buttons() & QtCore.Qt.MiddleButton:
-            dx = event.x() - self.lastPos.x
-            dy = self.lastPos.y - event.y()
-            self.camera.rotate(dx, dy)
+            # self.camera.rotate(dTheta,dPhi)
+             self.arcball.mouseMotion(event.x(),event.y(),self.width(),self.height())
         if event.buttons() & QtCore.Qt.LeftButton:
-            dTheta = (self.lastPos.x - event.x()) / 10
-            dPhi = (self.lastPos.y - event.y()) / 10
-            self.camera.pan(dTheta, dPhi)
-        self.lastPos = point(event.x(), event.y(), 0)
+            self.arcball.mousePan(event.x(),event.y(),self.width(),self.height(),dTheta,dPhi)
+            if self.selectionMode:
+                pass
+            else:
+                # self.camera.pan(dTheta,dPhi)
+                self.lastPos = point(event.x(), event.y(), 0)
         self.update()
     def drawViewVolume(self,x1,y1,z1,x2,y2,z2):
         glColor3f(1.0, 1.0, 1.0)
@@ -235,7 +257,6 @@ class glWidget(QGLWidget):
         glVertex3f(x2, y2, -z2)
         glEnd()
     def processHit(self,hits,buffer):
-        print("Hits: {}".format(hits))
         for i in hits:
             print("name:".format(i))
     def selectObject(self):
@@ -255,7 +276,7 @@ class glWidget(QGLWidget):
         glMatrixMode(GL_PROJECTION)
         glLoadIdentity()
         # multiply projection matrix
-        glOrtho(0,5,0,5,0,10)
+        # glOrtho(0,5,0,5,0,10)
         glMatrixMode(GL_MODELVIEW)
         glLoadIdentity()
         glLoadName(1)
@@ -275,6 +296,19 @@ class glWidget(QGLWidget):
         glVertex3f (x2, y2, z)
         glVertex3f (x3, y3, z)
         glEnd ()
+    def screenSpaceToWorldSpace(self,x,y):
+        w=self.width()/2
+        h=self.height()/2
+        return (x-w)/w,(h-y)/h
+    def getOGLPos(self,x,y):
+        modelview=glGetDoublev(GL_MODELVIEW_MATRIX)
+        projection=glGetDoublev(GL_PROJECTION_MATRIX)
+        viewport=glGetIntegerv(GL_VIEWPORT)
+        winX=x
+        winY=viewport[3]-y
+        winZ=glReadPixels(x,winY,1,1,GL_DEPTH_COMPONENT,GL_FLOAT)
+        posX,posY,posZ=gluUnProject(winX, winY, winZ, modelview, projection, viewport)
+        return posX,posY,posZ
 sys._excepthook = sys.excepthook
 def my_exception_hook(exctype, value, traceback):
     # Print the error and traceback
