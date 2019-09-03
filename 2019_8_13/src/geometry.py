@@ -62,6 +62,13 @@ class curve:
             controlPoints.append(point.with_components(row))
         #print(controlPoints)
         return controlPoints
+
+    @classmethod
+    def listToPoint(cls,list):
+        curve=[]
+        for p in list:
+            curve.append(point.with_components(p))
+        return curve
 class surface:
     def __init__(self):
         pass

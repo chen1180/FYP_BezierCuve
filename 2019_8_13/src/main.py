@@ -66,7 +66,8 @@ class glWidget(QGLWidget):
              [[-0.75, 0.25, 0.00], [-0.25, 0.25, -0.50], [0.25, 0.25, -0.50], [0.75, 0.25, 0.00]],
              [[-0.75, 0.75, -0.50], [-0.25, 0.75, -1.00], [0.25, 0.75, -1.00], [0.75, 0.75, -0.50]]])
         # self.surface=surface.generateRandomMatrix(dim=[4,4,3])
-        self.control_points = curve.generateMatrix(dim=[8, 3])
+        #self.control_points = curve.generateMatrix(dim=[8, 3])
+        self.control_points=curve.listToPoint([[-1.0, -0.0, -0.00], [-0.0, -1.0, 0.00], [1.0, 0.0, 0.00], [0.0, 1.0,-0.50]])
         self.element=[]
         self.selectEngine=selectMode.SelectionEngine()
     def paintGL(self):
@@ -101,7 +102,9 @@ class glWidget(QGLWidget):
             curves.dlbPatch=curves.genBezierSurface()
             self.element.append([self.status, curves])
         elif self.status==4:
-            self.curve.drawBezierCircle()
+            for ele in self.element:
+                if ele[0]==1 or ele[0]==6:
+                    ele[1].degreeElevationBezier()
         elif self.status==5:
             bSpline=BSpline(self.control_points,order=2,knotsType=self.parent.ui.knotTypecomboBox.currentText())
             self.element.append([self.status, bSpline])

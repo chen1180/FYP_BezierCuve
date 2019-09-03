@@ -1,6 +1,6 @@
 from OpenGL.GL import *
 import numpy as np
-from geometry import point,surface
+from geometry import point,surface,curve
 import math
 class BezierCurve:
     def __init__(self,controlPoints,type,divs=10):
@@ -141,6 +141,28 @@ class BezierCurve:
         self.drawCurve([p1, c3, c4, p2])
         self.drawCurve([p2, c5, c6, p3])
         self.drawCurve([p3, c7, c8, p0])
+    def degreeElevationBezier(self):
+        n=len(self.controlPoints)
+        print("Number of control points: {}".format(n))
+        print("Degree: {}".format(n-1))
+        print(self.controlPoints)
+        glColor3f(1.0,1.0,1.0)
+        glBegin(GL_LINE_STRIP)
+        for p in self.controlPoints:
+            p.glVertex3()
+        glEnd()
+        Q=[]
+        Q.append(self.controlPoints[0])
+        for i in range(1,n):
+            q=i/n*self.controlPoints[i-1]+(1.0-i/n)*self.controlPoints[i]
+            Q.append(q)
+        Q.append(self.controlPoints[-1])
+        print("Number of new control points: {}".format(len(Q)))
+        print("New degree: {}".format(len(Q)-1))
+        print(Q)
+        del self.controlPoints
+        self.controlPoints=Q
+
 class BeizerSurface(BezierCurve):
     def __init__(self,controlPoints,divs,showPolygon):
         self.controlPoints=controlPoints
@@ -346,19 +368,20 @@ class BSpline:
             p.glVertex3()
         glEnd()
 if __name__ == '__main__':
-    surface_controlPoints=BeizerSurface(surface.convertListToPoint([[[-0.25, 0.0, -0.5], [0, 0, 0.0], [0.25, -0.2, 0.0], [0.5, 0.2, 0.0]],
-                                                 [[-0.5, -0.5, 0.0], [0, -0.2, 0.0], [0.15, -0.1, 2.0], [0.5, -0.6, 0.0]],
-                                                 [[-0.7, -0.7, 0.0], [-0.2, -0.5, 0.0], [0.1, -0.3, 2.0], [0.4, -0.7, 0.0]],
-                                                 [[-0.8, -0.7, 0.0], [0.3, -0.5, 0.0], [-0.2, -0.3, 2.0], [0.4, -0.9, 0.0]]]))
-    print("row")
-    for row in surface_controlPoints.row:
-        print(row)
-    print("column")
-    for column in surface_controlPoints.column:
-        print(column)
-
-    print(BezierCurve.combination(3,0),BezierCurve.combination(3,1),BezierCurve.combination(3,2),BezierCurve.combination(3,3))
-
+    # surface_controlPoints=BeizerSurface(surface.convertListToPoint([[[-0.25, 0.0, -0.5], [0, 0, 0.0], [0.25, -0.2, 0.0], [0.5, 0.2, 0.0]],
+    #                                              [[-0.5, -0.5, 0.0], [0, -0.2, 0.0], [0.15, -0.1, 2.0], [0.5, -0.6, 0.0]],
+    #                                              [[-0.7, -0.7, 0.0], [-0.2, -0.5, 0.0], [0.1, -0.3, 2.0], [0.4, -0.7, 0.0]],
+    #                                              [[-0.8, -0.7, 0.0], [0.3, -0.5, 0.0], [-0.2, -0.3, 2.0], [0.4, -0.9, 0.0]]]))
+    # print("row")
+    # for row in surface_controlPoints.row:
+    #     print(row)
+    # print("column")
+    # for column in surface_controlPoints.column:
+    #     print(column)
+    #
+    # print(BezierCurve.combination(3,0),BezierCurve.combination(3,1),BezierCurve.combination(3,2),BezierCurve.combination(3,3))
+    a=BezierCurve(curve.listToPoint([[-0.75, -0.75, -0.50], [-0.25, -0.5, 0.00], [0.25, 0.75, 0.00], [0.75, -0.75, -0.50],[-0.75, -0.25, -0.75],[-0.75, -0.75, -0.50]]),type="Mult")
+    a.degreeElevationBezier()
 
 
 

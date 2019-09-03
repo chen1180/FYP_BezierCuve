@@ -48,7 +48,12 @@ class Arcball:
             p2=self.curPos-self.lookatCenter
             print(self.lastPos,self.curPos)
             rotateAxis=point.cross(p1,p2)
-            rotateAngle=math.acos(point.dot(p1,p2))*0.1
+            angle=point.dot(p1,p2)
+            if angle <-1:
+                angle=-1
+            elif angle >1:
+                angle=1
+            rotateAngle=math.acos(angle)
             print(p1, p2,rotateAngle)
             self.angle=rotateAngle
             self.axis=rotateAxis
