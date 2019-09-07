@@ -5,8 +5,8 @@ from PyQt5.QtOpenGL import *
 import mainForm
 from geometry import point,surface,curve
 import sys
-import camera
-from curve import BezierCurve,BSpline,BeizerSurface
+from curve import BezierCurve,BSpline
+from surface import BeizerSurface,BSplineSurface
 import selectMode
 import arcball
 class MainWindow(QtWidgets.QMainWindow):
@@ -61,13 +61,17 @@ class glWidget(QGLWidget):
         gluOrtho2D(0,self.width(),0,self.height())
         #Define data structure for drawing
         self.surface=surface.convertListToPoint(
-            [[[-0.75, -0.75, -0.50], [-0.25, -0.75, 0.00], [0.25, -0.75, 0.00], [0.75, -0.75, -0.50]],
-             [[-0.75, -0.25, -0.75], [-0.25, -0.25, 0.50], [0.25, -0.25, 0.50], [0.75, -0.25, -0.75]],
-             [[-0.75, 0.25, 0.00], [-0.25, 0.25, -0.50], [0.25, 0.25, -0.50], [0.75, 0.25, 0.00]],
-             [[-0.75, 0.75, -0.50], [-0.25, 0.75, -1.00], [0.25, 0.75, -1.00], [0.75, 0.75, -0.50]]])
+            [[[-0.75, -0.75, -0.50], [-0.25, -0.75, 0.00], [0.25, -0.75, 0.00], [0.75, -0.75, -0.50],[1.0,-0.75,-0.5]],
+             [[-0.75, -0.25, -0.75], [-0.25, -0.25, 0.50], [0.25, -0.25, 0.50], [0.75, -0.25, -0.75],[1.0,-0.25,-0.5]],
+             [[-0.75, 0.25, 0.00], [-0.25, 0.25, -0.50], [0.25, 0.25, -0.50], [0.75, 0.25, 0.00],[1.0,0.25,0.0]],
+             [[-0.75, 0.75, -0.50], [-0.25, 0.75, -1.00], [0.25, 0.75, -1.00], [0.75, 0.75, -0.50],[0.75,0.75,-0.5]],
+             [[-0.75, 1.0, -0.50], [-0.25, 1.0, -1.00], [0.25, 1.0, -1.00], [0.75, 1.0, -0.50],[0.75,1.0,-0.5]]])
         # self.surface=surface.generateRandomMatrix(dim=[4,4,3])
         #self.control_points = curve.generateMatrix(dim=[8, 3])
-        self.control_points=curve.listToPoint([[-1.0, -0.0, -0.00], [-0.0, -1.0, 0.00], [1.0, 0.0, 0.00], [0.0, 1.0,-0.50]])
+        # self.control_points=curve.listToPoint([[-1.0, -0.0, -0.00], [-0.5, -1.0, 0.00], [0.0, 1.0, 0.00],[0.5, 0.5, 0],[0.75, -0.25, -0.50], [1.0, 1.0,0],[1.5, -0.5,0]])
+        self.control_points = curve.listToPoint(
+            [[-1.0, 1.0, -0.00], [-0, 1, 0.00], [1.0, 1.0, 0.00], [1.0, 0, 0], [1, -1, 0.00],
+             [0.0, -1, 0], [-1, -1, 0],[-1.0,0, 0]])
         self.element=[]
         self.selectEngine=selectMode.SelectionEngine()
     def paintGL(self):
@@ -100,7 +104,10 @@ class glWidget(QGLWidget):
             divs= self.parent.ui.steps_uBezierSurfacespinBox.value()
             curves=BeizerSurface(self.surface,divs,showPolygon)
             curves.dlbPatch=curves.genBezierSurface()
+            splineSurface=BSplineSurface(self.surface,divs,showPolygon)
+            splineSurface.dlbPatch=splineSurface.genBSplineSurface()
             self.element.append([self.status, curves])
+            self.element.append([self.status, splineSurface])
         elif self.status==4:
             for ele in self.element:
                 if ele[0]==1 or ele[0]==6:
@@ -126,12 +133,12 @@ class glWidget(QGLWidget):
                 elif status == 1:
                     shape.drawCurve()
                 elif status == 2:
-                    self.curve.splitCurve(self.t)
+                    pass
                 elif status == 3:
                     glCallList(shape.dlbPatch)
                     shape.genMesh()
                 elif status == 4:
-                    self.curve.drawBezierCircle()
+                    pass
                 elif status == 5:
                     shape.drawBSplineCurve()
                 elif status== 6:

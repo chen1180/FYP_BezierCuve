@@ -44,17 +44,10 @@ class Arcball:
         if self.trackingMouse:
             m_magic_number=1.1# this number is used to avoid the case p1-p2=0 where math value erro may occur in ratateAngle
             self.curPos=self.screenToSpherical(m_magic_number*x,m_magic_number*y,width,height)
-            p1=self.lastPos-self.lookatCenter
-            p2=self.curPos-self.lookatCenter
-            print(self.lastPos,self.curPos)
+            p1=self.normalize(self.lastPos-self.lookatCenter)
+            p2=self.normalize(self.curPos-self.lookatCenter)
             rotateAxis=point.cross(p1,p2)
-            angle=point.dot(p1,p2)
-            if angle <-1:
-                angle=-1
-            elif angle >1:
-                angle=1
-            rotateAngle=math.acos(angle)
-            print(p1, p2,rotateAngle)
+            rotateAngle=math.acos(point.dot(p1,p2))
             self.angle=rotateAngle
             self.axis=rotateAxis
     def mouseScroll(self,y):

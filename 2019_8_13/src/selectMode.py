@@ -1,13 +1,4 @@
 from OpenGL.GL import *
-from OpenGL.GLU import *
-from PyQt5 import QtGui,QtWidgets,QtCore
-from PyQt5.QtOpenGL import *
-import mainForm
-from geometry import point,surface,curve
-import sys
-import camera
-from curve import BezierCurve,BSpline,BeizerSurface
-
 class SelectionEngine:
     def __init__(self):
         self.mDrawSquare=False
