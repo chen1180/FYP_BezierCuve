@@ -90,33 +90,37 @@ class BSplineSurface(BSpline):
         last=[None]*(self.divs)
         temp=[row[0] for row in self.controlPoints]
         order=3
-        tmin = 0
-        tmax = order
-        self.uKnots=self.createClampedUniformKnots(5,order)
+        self.uKnots = self.createClampedUniformKnots(5, order)
         self.vKnots = self.createClampedUniformKnots(5, order)
-        steps = float((tmax - tmin) / (self.divs - 1))
+        vmin = self.vKnots[0]
+        vmax = self.vKnots[-1]
+        vsteps = float((vmax - vmin) / (self.divs - 1))
+        umin = self.uKnots[0]
+        umax = self.uKnots[-1]
+        usteps = float((umax - umin) / (self.divs - 1))
         for v in range(self.divs):
-            px=tmin+v*steps
+            px=vmin+v*vsteps
             last[v]=self.getBSplinePoint(px,temp,order,self.vKnots)
+        glColor3f(0,1,1)
         glNewList(drawList,GL_COMPILE)
         glBindTexture(GL_TEXTURE_2D,self.texture)
         for u in range(1,self.divs):
-            py=tmin+u*steps
-            pyold=tmin+(u-1)*steps
+            py=umin+u*usteps
+            pyold=umin+(u-1)*usteps
             for i,row in enumerate(self.controlPoints):
                 temp[i]=self.getBSplinePoint(py,row,order,self.uKnots)
-            glColor3f(0,py/tmax,0)
-            glBegin(GL_LINE_STRIP)
+            for p in temp:
+                print("temp",py,p)
+            glBegin(GL_TRIANGLE_STRIP)
             for v in range(self.divs):
-                px =tmin+v*steps
+                px =vmin+v*vsteps
                 glTexCoord2f(pyold,px)
                 glVertex3f(last[v].x,last[v].y,last[v].z)
                 last[v]=self.getBSplinePoint(px,temp,order,self.vKnots)
-                glColor3f(px/ tmax, 0, 0)
+                glColor3f(px/ vmax, py/ vmax, 0)
                 glTexCoord2f(py,px)
                 glVertex3f(last[v].x,last[v].y,last[v].z)
             glEnd()
-            break
         glEndList()
         del last
         return drawList

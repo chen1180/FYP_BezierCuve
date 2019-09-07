@@ -181,33 +181,15 @@ class BSpline:
             coe=[]
             for j, c_p in enumerate(self.controlPoints):
                 nik = self.deBoor_Cox(j, self.order, t, self.knots)
-                if (self.knotsType=="Clamped" or self.knotsType=="Bezier") and j==len(self.controlPoints)-1 and t==tmax:
-                    nik=1.0
                 coe.append(nik)
             Nik.append(coe)
         # for row in Nik:
         #       print(row)
         # print(len(Nik))
         return Nik
-    # def deBoor_Cox(self, i, k, t, knots):
-    #     if k == 0:
-    #         if t >= knots[i] and t < knots[i + 1]:
-    #             return 1.0
-    #         else:
-    #             return 0.0
-    #     else:
-    #         den1 = knots[i + k] - knots[i]
-    #         den2 = knots[i + k + 1] - knots[i + 1]
-    #         if den1 == 0:
-    #             den1 = 1
-    #         if den2 == 0:
-    #             den2 = 1
-    #         a = (t - knots[i]) / den1
-    #         b = (knots[i + k + 1] - t) / den2
-    #         return a * self.deBoor_Cox(i, k - 1, t, knots) + b * self.deBoor_Cox(i + 1, k - 1, t, knots)
     def deBoor_Cox(self, i, k, t, knots):
         if k == 0:
-            if t >= knots[i] and t < knots[i + 1]:
+            if (t >= knots[i] and t < knots[i + 1]) or (t==knots[i+1] and knots[i+1]==knots[-1]):
                 return 1.0
             else:
                 return 0.0
@@ -304,7 +286,17 @@ if __name__ == '__main__':
     #
     # print(BezierCurve.combination(3,0),BezierCurve.combination(3,1),BezierCurve.combination(3,2),BezierCurve.combination(3,3))
     b=BSpline(curve.listToPoint([[-0.75, -0.75, -0.50], [-0.25, -0.5, 0.00]]),order=2)
-    print( b.getBSplinePoint([0.5,0.5],b.controlPoints))
+    knots=[0, 0, 0, 0, 1, 2, 2, 2, 2]
+    divs=5
+    tmin=0
+    tmax=2
+    step=float(tmax-tmin)/(divs-1)
+    for j in range(divs):
+        t=tmin+j*step
+        a=[]
+        for i in range(5):
+            a.append(b.deBoor_Cox(i,3,t,knots))
+        print(a)
 
 
 
