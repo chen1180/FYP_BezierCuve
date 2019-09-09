@@ -85,7 +85,7 @@ class glWidget(QGLWidget):
         #self.camera.updateViewMatrix()
         self.drawCoordinateAxis()
         self.instantiateObject()
-        self.drawViewVolume(0.0, 0.5, 0.0, 0.5, 0.0, 1.0)
+        # self.drawViewVolume(0.0, 0.5, 0.0, 0.5, 0.0, 1.0)
         self.selectObject()
         self.renderObject()
 
