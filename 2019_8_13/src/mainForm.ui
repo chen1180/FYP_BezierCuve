@@ -14,11 +14,11 @@
    <string>MainWindow</string>
   </property>
   <widget class="QWidget" name="centralwidget">
-   <layout class="QHBoxLayout" name="horizontalLayout_3" stretch="1,6,1">
+   <layout class="QHBoxLayout" name="horizontalLayout_3" stretch="0,6,1">
     <item>
      <widget class="QTabWidget" name="drawWidget">
       <property name="currentIndex">
-       <number>0</number>
+       <number>1</number>
       </property>
       <widget class="QWidget" name="BezierCurve">
        <attribute name="title">
@@ -63,12 +63,22 @@
           <property name="minimum">
            <number>1</number>
           </property>
+          <property name="maximum">
+           <number>100</number>
+          </property>
           <property name="value">
            <number>10</number>
           </property>
          </widget>
         </item>
-        <item row="3" column="0" colspan="2">
+        <item row="2" column="0" colspan="2">
+         <widget class="QPushButton" name="drawBezierBtn">
+          <property name="text">
+           <string>Draw Bezier Curve</string>
+          </property>
+         </widget>
+        </item>
+        <item row="4" column="0" colspan="2">
          <widget class="Line" name="line_2">
           <property name="lineWidth">
            <number>1</number>
@@ -78,14 +88,14 @@
           </property>
          </widget>
         </item>
-        <item row="4" column="0">
+        <item row="5" column="0">
          <widget class="QLabel" name="degreeMultiBezierlabel">
           <property name="text">
            <string>Degree</string>
           </property>
          </widget>
         </item>
-        <item row="4" column="1">
+        <item row="5" column="1">
          <widget class="QComboBox" name="degreeMultiBeziercomboBox">
           <item>
            <property name="text">
@@ -99,59 +109,105 @@
           </item>
          </widget>
         </item>
-        <item row="2" column="0" colspan="2">
-         <widget class="QPushButton" name="drawBezierBtn">
-          <property name="text">
-           <string>Draw Bezier Curve</string>
-          </property>
-         </widget>
-        </item>
-        <item row="6" column="1">
-         <widget class="QSpinBox" name="stepsMultiBezierspinBox">
-          <property name="minimum">
-           <number>1</number>
-          </property>
-          <property name="value">
-           <number>10</number>
-          </property>
-         </widget>
-        </item>
-        <item row="6" column="0">
+        <item row="7" column="0">
          <widget class="QLabel" name="stepsMultiBezierlabel">
           <property name="text">
            <string>Steps</string>
           </property>
          </widget>
         </item>
-        <item row="7" column="0" colspan="2">
+        <item row="7" column="1">
+         <widget class="QSpinBox" name="stepsMultiBezierspinBox">
+          <property name="minimum">
+           <number>1</number>
+          </property>
+          <property name="maximum">
+           <number>100</number>
+          </property>
+          <property name="value">
+           <number>10</number>
+          </property>
+         </widget>
+        </item>
+        <item row="8" column="0" colspan="2">
          <widget class="QPushButton" name="drawMultiBezierBtn">
           <property name="text">
            <string>Draw Multi-Bezier</string>
           </property>
          </widget>
         </item>
-        <item row="8" column="0" colspan="2">
+        <item row="9" column="0" colspan="2">
          <widget class="Line" name="line">
           <property name="orientation">
            <enum>Qt::Horizontal</enum>
           </property>
          </widget>
         </item>
-        <item row="9" column="0">
+        <item row="10" column="0">
          <widget class="QLabel" name="steps_uBezierSurfacelabel">
           <property name="text">
            <string>Steps-u</string>
           </property>
          </widget>
         </item>
-        <item row="10" column="0">
+        <item row="10" column="1">
+         <widget class="QSpinBox" name="steps_uBezierSurfacespinBox">
+          <property name="minimum">
+           <number>1</number>
+          </property>
+          <property name="maximum">
+           <number>100</number>
+          </property>
+          <property name="value">
+           <number>10</number>
+          </property>
+         </widget>
+        </item>
+        <item row="11" column="0">
          <widget class="QLabel" name="steps_vBezierSurfacelabel">
           <property name="text">
            <string>Steps-v</string>
           </property>
          </widget>
         </item>
-        <item row="16" column="1">
+        <item row="11" column="1">
+         <widget class="QSpinBox" name="steps_vBezierSurfacespinBox">
+          <property name="minimum">
+           <number>1</number>
+          </property>
+          <property name="maximum">
+           <number>100</number>
+          </property>
+          <property name="value">
+           <number>10</number>
+          </property>
+         </widget>
+        </item>
+        <item row="12" column="1">
+         <widget class="QCheckBox" name="displayMeshcheckBox">
+          <property name="layoutDirection">
+           <enum>Qt::RightToLeft</enum>
+          </property>
+          <property name="text">
+           <string>Display Mesh</string>
+          </property>
+         </widget>
+        </item>
+        <item row="13" column="0" colspan="2">
+         <widget class="QPushButton" name="drawBezierSurfaceBtn">
+          <property name="text">
+           <string>Draw Bezier Surface</string>
+          </property>
+         </widget>
+        </item>
+        <item row="14" column="0" colspan="2">
+         <widget class="Line" name="line_3">
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
+          </property>
+         </widget>
+        </item>
+        <item row="17" column="1">
          <widget class="QSlider" name="horizontalSlider">
           <property name="layoutDirection">
            <enum>Qt::LeftToRight</enum>
@@ -168,73 +224,22 @@
          </widget>
         </item>
         <item row="19" column="1">
-         <widget class="QPushButton" name="clearBtn">
-          <property name="text">
-           <string>Clear</string>
-          </property>
-         </widget>
-        </item>
-        <item row="9" column="1">
-         <widget class="QSpinBox" name="steps_uBezierSurfacespinBox">
-          <property name="minimum">
-           <number>1</number>
-          </property>
-          <property name="value">
-           <number>10</number>
-          </property>
-         </widget>
-        </item>
-        <item row="10" column="1">
-         <widget class="QSpinBox" name="steps_vBezierSurfacespinBox">
-          <property name="minimum">
-           <number>1</number>
-          </property>
-          <property name="value">
-           <number>10</number>
-          </property>
-         </widget>
-        </item>
-        <item row="11" column="1">
-         <widget class="QCheckBox" name="displayMeshcheckBox">
-          <property name="layoutDirection">
-           <enum>Qt::RightToLeft</enum>
-          </property>
-          <property name="text">
-           <string>Display Mesh</string>
-          </property>
-         </widget>
-        </item>
-        <item row="12" column="0" colspan="2">
-         <widget class="QPushButton" name="drawBezierSurfaceBtn">
-          <property name="text">
-           <string>Draw Bezier Surface</string>
-          </property>
-         </widget>
-        </item>
-        <item row="13" column="0" colspan="2">
-         <widget class="Line" name="line_3">
-          <property name="orientation">
-           <enum>Qt::Horizontal</enum>
-          </property>
-         </widget>
-        </item>
-        <item row="17" column="1">
-         <widget class="QPushButton" name="splitBtn">
-          <property name="text">
-           <string>Split curve</string>
-          </property>
-         </widget>
-        </item>
-        <item row="18" column="1">
          <widget class="QPushButton" name="pushButton">
           <property name="text">
            <string>Bezier circle</string>
           </property>
          </widget>
         </item>
+        <item row="3" column="0" colspan="2">
+         <widget class="QPushButton" name="elevateDegreeBezierCurveBtn">
+          <property name="text">
+           <string>Elevate Degree</string>
+          </property>
+         </widget>
+        </item>
        </layout>
       </widget>
-      <widget class="QWidget" name="tab">
+      <widget class="QWidget" name="B_Spline">
        <attribute name="title">
         <string>B-Spline</string>
        </attribute>
@@ -242,7 +247,7 @@
         <item row="0" column="0">
          <widget class="QLabel" name="knotlabel">
           <property name="text">
-           <string>Knots</string>
+           <string>Knots Type</string>
           </property>
          </widget>
         </item>
@@ -251,11 +256,6 @@
           <item>
            <property name="text">
             <string>Clamped</string>
-           </property>
-          </item>
-          <item>
-           <property name="text">
-            <string>Bezier</string>
            </property>
           </item>
           <item>
@@ -270,10 +270,114 @@
           </item>
          </widget>
         </item>
-        <item row="1" column="0" colspan="2">
+        <item row="2" column="0">
+         <widget class="QLabel" name="degreeBSpline_label">
+          <property name="text">
+           <string>Degree</string>
+          </property>
+         </widget>
+        </item>
+        <item row="2" column="1">
+         <widget class="QSpinBox" name="degreeBSpline_spinBox">
+          <property name="maximum">
+           <number>100</number>
+          </property>
+          <property name="value">
+           <number>2</number>
+          </property>
+         </widget>
+        </item>
+        <item row="4" column="0" colspan="2">
          <widget class="QPushButton" name="bSplineBtn">
           <property name="text">
-           <string>Draw B spline</string>
+           <string>Draw B-Spline</string>
+          </property>
+         </widget>
+        </item>
+        <item row="6" column="0" colspan="2">
+         <widget class="Line" name="line_4">
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
+          </property>
+         </widget>
+        </item>
+        <item row="8" column="0">
+         <widget class="QLabel" name="divsBSplineSurface_label">
+          <property name="text">
+           <string>Steps</string>
+          </property>
+         </widget>
+        </item>
+        <item row="8" column="1">
+         <widget class="QSpinBox" name="divsSplineSurfaceBox_spinBox">
+          <property name="minimum">
+           <number>1</number>
+          </property>
+          <property name="maximum">
+           <number>100</number>
+          </property>
+          <property name="value">
+           <number>10</number>
+          </property>
+         </widget>
+        </item>
+        <item row="10" column="0">
+         <widget class="QLabel" name="knotlabel_2">
+          <property name="text">
+           <string>Knots Type</string>
+          </property>
+         </widget>
+        </item>
+        <item row="10" column="1">
+         <widget class="QComboBox" name="bSplineSurface_comboBox">
+          <item>
+           <property name="text">
+            <string>Clamped</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>Open</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>Closed</string>
+           </property>
+          </item>
+         </widget>
+        </item>
+        <item row="12" column="0">
+         <widget class="QLabel" name="degreeBSplineSurface_label">
+          <property name="text">
+           <string>Degree</string>
+          </property>
+         </widget>
+        </item>
+        <item row="14" column="1">
+         <widget class="QCheckBox" name="bSplineSurface_displayMeshcheckBox">
+          <property name="layoutDirection">
+           <enum>Qt::RightToLeft</enum>
+          </property>
+          <property name="text">
+           <string>Display Mesh</string>
+          </property>
+         </widget>
+        </item>
+        <item row="16" column="0" colspan="2">
+         <widget class="QPushButton" name="drawBSplineSurfaceBtn">
+          <property name="text">
+           <string>Draw B-Spline Surface</string>
+          </property>
+         </widget>
+        </item>
+        <item row="12" column="1">
+         <widget class="QSpinBox" name="degreeBSplineSurface_spinBox">
+          <property name="maximum">
+           <number>100</number>
+          </property>
+          <property name="value">
+           <number>3</number>
           </property>
          </widget>
         </item>
@@ -352,6 +456,7 @@
    </attribute>
    <addaction name="actionSelect_mode"/>
    <addaction name="actionPencil"/>
+   <addaction name="actionClearScreen"/>
   </widget>
   <action name="actionSelect_mode">
    <property name="checkable">
@@ -375,6 +480,15 @@
    </property>
    <property name="toolTip">
     <string>Draw point</string>
+   </property>
+  </action>
+  <action name="actionClearScreen">
+   <property name="icon">
+    <iconset>
+     <normaloff>../Icons/eraser.png</normaloff>../Icons/eraser.png</iconset>
+   </property>
+   <property name="text">
+    <string>ClearScreen</string>
    </property>
   </action>
  </widget>

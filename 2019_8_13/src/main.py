@@ -21,20 +21,24 @@ class MainWindow(QtWidgets.QMainWindow):
         self.glWidget=glWidget(self)
         self.ui.openGLWidget.close()
         self.ui.horizontalLayout_2.replaceWidget(self.ui.openGLWidget,self.glWidget)
-        self.ui.clearBtn.clicked.connect(lambda state, x=0: self.glWidget.changeStatus(x))
+        #pushbutton
         self.ui.drawBezierBtn.clicked.connect(lambda state,x=1:self.glWidget.changeStatus(x))
-        self.ui.splitBtn.clicked.connect(lambda state,x=2:self.glWidget.changeStatus(x))
+        self.ui.elevateDegreeBezierCurveBtn.clicked.connect(lambda state,x=2:self.glWidget.changeStatus(x))
         self.ui.drawBezierSurfaceBtn.clicked.connect(lambda state,x=3:self.glWidget.changeStatus(x))
         self.ui.pushButton.clicked.connect(lambda state,x=4:self.glWidget.changeStatus(x))
         self.ui.horizontalSlider.valueChanged.connect(self.glWidget.changeT)
         self.ui.bSplineBtn.clicked.connect(lambda state,x=5:self.glWidget.changeStatus(x))
         self.ui.drawMultiBezierBtn.clicked.connect(lambda state, x=6: self.glWidget.changeStatus(x))
+        self.ui.drawBSplineSurfaceBtn.clicked.connect(lambda state, x=7: self.glWidget.changeStatus(x))
+        root=QtWidgets.QTreeWidgetItem(self.ui.scenetreeWidget)
+        self.ui.degreeBSplineSurface_spinBox.value()
+        #toolbar
+        self.ui.actionClearScreen.triggered.connect(lambda state, x=0: self.glWidget.changeStatus(x))
         self.ui.actionSelect_mode.toggled.connect(self.glWidget.changeMode)
         self.ui.degreeBeziercomboBox.currentText()
         self.ui.displayMeshcheckBox.isChecked()
         self.ui.steps_uBezierSurfacespinBox.value()
-        #toobar
-        #self.ui.actionSelect_mode.triggered.connect(self.glWidget.changeMode)
+
 class glWidget(QGLWidget):
     knotsTypeChanged = QtCore.pyqtSignal(str)
     def __init__(self, parent):
@@ -52,7 +56,7 @@ class glWidget(QGLWidget):
         self.setFocusPolicy(QtCore.Qt.StrongFocus)
         self.setMouseTracking(True)
         glClearDepth(1.0)
-        glDepthFunc(GL_ALWAYS)
+        glDepthFunc(GL_LESS)
         glEnable(GL_DEPTH_TEST)
         glShadeModel(GL_SMOOTH)
         glEnable(GL_TEXTURE_2D)
@@ -71,7 +75,7 @@ class glWidget(QGLWidget):
         # self.control_points=curve.listToPoint([[-1.0, -0.0, -0.00], [-0.5, -1.0, 0.00], [0.0, 1.0, 0.00],[0.5, 0.5, 0],[0.75, -0.25, -0.50], [1.0, 1.0,0],[1.5, -0.5,0]])
         self.control_points = curve.listToPoint(
             [[-1.0, 1.0, -0.00], [-0, 1, 0.00], [1.0, 1.0, 0.00], [1.0, 0, 0], [1, -1, 0.00],
-             [0.0, -1, 0], [-1, -1, 0],[-1.0,0, 0]])
+             [0.0, -1, 0], [-1, -1, 0],[-1.0,0, 0],[-2,-0.5, 0]])
         self.element=[]
         self.selectEngine=selectMode.SelectionEngine()
     def paintGL(self):
@@ -84,11 +88,6 @@ class glWidget(QGLWidget):
         self.drawViewVolume(0.0, 0.5, 0.0, 0.5, 0.0, 1.0)
         self.selectObject()
         self.renderObject()
-        # x,y,z=self.getOGLPos(self.lastPos.x,self.lastPos.y)
-        # x1,y1,z1=self.getOGLPos(self.currentPos.x,self.currentPos.y)
-        # print(x,y,z,x1,y1,z1)
-        # self.selectEngine.drawSelectSquare(x,y,z,x1,y1,z1)
-        # print(self.lastPos,self.currentPos)
 
         glFlush()
     def instantiateObject(self):
@@ -98,27 +97,34 @@ class glWidget(QGLWidget):
             bezier=BezierCurve(self.control_points,self.parent.ui.degreeBeziercomboBox.currentText(),self.parent.ui.stepsBeizerspinBox.value())
             self.element.append([self.status, bezier])
         elif self.status==2:
-            self.curve.splitCurve(self.t)
+            for i in self.element:
+                if i[0] == 1:
+                    i[1].degreeElevationBezier()
         elif self.status==3:
             showPolygon=self.parent.ui.displayMeshcheckBox.isChecked()
             divs= self.parent.ui.steps_uBezierSurfacespinBox.value()
             curves=BeizerSurface(self.surface,divs,showPolygon)
             curves.dlbPatch=curves.genBezierSurface()
-            splineSurface=BSplineSurface(self.surface,divs,showPolygon)
-            splineSurface.dlbPatch=splineSurface.genBSplineSurface()
             self.element.append([self.status, curves])
-            self.element.append([self.status, splineSurface])
         elif self.status==4:
             for ele in self.element:
                 if ele[0]==1 or ele[0]==6:
                     ele[1].degreeElevationBezier()
         elif self.status==5:
-            bSpline=BSpline(self.control_points,order=2,knotsType=self.parent.ui.knotTypecomboBox.currentText())
+            bSpline=BSpline(self.control_points,order=self.parent.ui.degreeBSpline_spinBox.value(),knotsType=self.parent.ui.knotTypecomboBox.currentText())
             self.element.append([self.status, bSpline])
         elif self.status==6:
             bezier = BezierCurve(self.control_points, self.parent.ui.degreeMultiBeziercomboBox.currentText(),
                                  self.parent.ui.stepsMultiBezierspinBox.value())
             self.element.append([self.status, bezier])
+        elif self.status==7:
+            showPolygon = self.parent.ui.bSplineSurface_displayMeshcheckBox.isChecked()
+            divs = self.parent.ui.divsSplineSurfaceBox_spinBox.value()
+            order=self.parent.ui.degreeBSplineSurface_spinBox.value()
+            knotsType=self.parent.ui.bSplineSurface_comboBox.currentText()
+            splineSurface = BSplineSurface(self.surface,order,divs,knotsType, showPolygon)
+            splineSurface.genKnotsTypeSurface()
+            self.element.append([self.status, splineSurface])
         else:
             self.update()
         self.status=100
@@ -143,6 +149,9 @@ class glWidget(QGLWidget):
                     shape.drawBSplineCurve()
                 elif status== 6:
                     shape.drawMultiBeizerCurve()
+                elif status==7:
+                    glCallList(shape.dlbPatch)
+                    shape.genMesh()
                 else:
                     self.update()
 

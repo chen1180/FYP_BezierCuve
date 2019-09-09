@@ -10,49 +10,47 @@ class BeizerSurface(BezierCurve):
         self.divs=divs
         self.texture=0
     def genBezierSurface(self):
-        drawList=glGenLists(1)
-        last=[None]*(self.divs+1)
+        drawList = glGenLists(1)
+        last = [None] * (self.divs+1)
         if self.dlbPatch:
-            glDeleteLists(self.dlbPatch,1)
-        temp=[row[3] for row in self.controlPoints]
+            glDeleteLists(self.dlbPatch, 1)
+        temp = [row[0] for row in self.controlPoints]
         for v in range(self.divs+1):
-            px=v/self.divs
-            last[v]=self.deCasteljauCubic(temp[0],temp[1],temp[2],temp[3],px)
-        glNewList(drawList,GL_COMPILE)
-        glBindTexture(GL_TEXTURE_2D,self.texture)
-        for u in range(1,self.divs+1):
-            py=u/self.divs
-            pyold=(u-1)/self.divs
-            temp[0]=self.deCasteljauCubic(self.controlPoints[0][3],self.controlPoints[0][2],self.controlPoints[0][1],self.controlPoints[0][0],py)
-            temp[1] = self.deCasteljauCubic(self.controlPoints[1][3],self.controlPoints[1][2],self.controlPoints[1][1],self.controlPoints[1][0],py)
-            temp[2] = self.deCasteljauCubic(self.controlPoints[2][3],self.controlPoints[2][2],self.controlPoints[2][1],self.controlPoints[2][0],py)
-            temp[3] = self.deCasteljauCubic(self.controlPoints[3][3],self.controlPoints[3][2],self.controlPoints[3][1],self.controlPoints[3][0],py)
-            glColor3f(0,0.5,0.5)
+            px = v / self.divs
+            last[v] = self.bersteinPolynomial(px,temp)
+        glNewList(drawList, GL_COMPILE)
+        glBindTexture(GL_TEXTURE_2D, self.texture)
+        for u in range(1, self.divs+1 ):
+            py = u / self.divs
+            pyold = (u - 1) / self.divs
+            for idx,row in enumerate(self.controlPoints):
+                temp[idx]=self.bersteinPolynomial(py,row)
+            glColor3f(0, 0.5, 0.5)
             glBegin(GL_TRIANGLE_STRIP)
             for v in range(self.divs+1):
                 px = v / self.divs
-                glTexCoord2f(pyold,px)
-                glVertex3f(last[v].x,last[v].y,last[v].z)
-                last[v]=self.deCasteljauCubic(temp[0],temp[1],temp[2],temp[3],px)
-                glTexCoord2f(py,px)
-                glVertex3f(last[v].x,last[v].y,last[v].z)
+                glTexCoord2f(pyold, px)
+                glVertex3f(last[v].x, last[v].y, last[v].z)
+                last[v] = self.bersteinPolynomial(px,temp)
+                glTexCoord2f(py, px)
+                glVertex3f(last[v].x, last[v].y, last[v].z)
             glEnd()
         glEndList()
         del last
         return drawList
     def genMesh(self):
-        if self.showPolygon==True:
+        if self.showPolygon == True:
             glDisable(GL_TEXTURE_2D)
-            for i in range(0,4):
+            for i in range(len(self.controlPoints)):
                 glColor3f(1.0, 1.0, 1.0)
                 glBegin(GL_LINE_STRIP)
-                for j in range(0,4):
-                    glVertex3f(self.controlPoints[i][j].x,self.controlPoints[i][j].y,self.controlPoints[i][j].z)
+                for j in range(len(self.controlPoints[0])):
+                    glVertex3f(self.controlPoints[i][j].x, self.controlPoints[i][j].y, self.controlPoints[i][j].z)
                 glEnd()
-            for i in range(0,4):
+            for i in range(len(self.controlPoints[0])):
                 glBegin(GL_LINE_STRIP)
-                for j in range(0,4):
-                    glVertex3f(self.controlPoints[j][i].x,self.controlPoints[j][i].y,self.controlPoints[j][i].z)
+                for j in range(len(self.controlPoints)):
+                    glVertex3f(self.controlPoints[j][i].x, self.controlPoints[j][i].y, self.controlPoints[j][i].z)
                 glEnd()
             glEnable(GL_TEXTURE_2D)
     def changeDivs(self,new_divs):
@@ -77,30 +75,39 @@ class BeizerSurface(BezierCurve):
         glEnd()
         glPopMatrix()
 class BSplineSurface(BSpline):
-    def __init__(self,controlPoints=[],divs=100,showPolygon=False):
+    def __init__(self,controlPoints,order,divs=100,knotsType="Clamped",showPolygon=False):
         self.controlPoints=controlPoints.copy()
         self.divs=divs
         self.dlbPatch = None
         self.showPolygon=showPolygon
         self.texture=0
-    def genBSplineSurface(self):
+        self.knotsType=knotsType
+        self.order=order
+    def genKnotsTypeSurface(self):
+        if self.knotsType=="Clamped":
+            self.dlbPatch= self.genClampedBSplineSurface()
+        elif  self.knotsType=="Open":
+            self.dlbPatch=self.genOpenBSplineSurface()
+        elif  self.knotsType=="Closed":
+            self.dlbPatch=self.genClosedBSplineSurface()
+    def genClampedBSplineSurface(self):
         drawList=glGenLists(1)
         if self.dlbPatch:
             glDeleteLists(self.dlbPatch,1)
         last=[None]*(self.divs)
         temp=[row[0] for row in self.controlPoints]
-        order=3
-        self.uKnots = self.createClampedUniformKnots(5, order)
-        self.vKnots = self.createClampedUniformKnots(5, order)
-        vmin = self.vKnots[0]
-        vmax = self.vKnots[-1]
+        self.uKnots = self.createClampedUniformKnots(len(self.controlPoints[0]), self.order)
+        self.vKnots = self.createClampedUniformKnots(len(self.controlPoints), self.order)
+        vmin = self.vKnots[self.order]
+        vmax = self.vKnots[len(self.controlPoints)]
         vsteps = float((vmax - vmin) / (self.divs - 1))
-        umin = self.uKnots[0]
-        umax = self.uKnots[-1]
+        umin = self.uKnots[self.order]
+        umax = self.uKnots[len(self.controlPoints[0])]
         usteps = float((umax - umin) / (self.divs - 1))
         for v in range(self.divs):
             px=vmin+v*vsteps
-            last[v]=self.getBSplinePoint(px,temp,order,self.vKnots)
+            coeff = self.computeClampedCofficient(len(temp), self.order, px, self.vKnots)
+            last[v] = self.getBSplinePoint(coeff, temp)
         glColor3f(0,1,1)
         glNewList(drawList,GL_COMPILE)
         glBindTexture(GL_TEXTURE_2D,self.texture)
@@ -108,15 +115,15 @@ class BSplineSurface(BSpline):
             py=umin+u*usteps
             pyold=umin+(u-1)*usteps
             for i,row in enumerate(self.controlPoints):
-                temp[i]=self.getBSplinePoint(py,row,order,self.uKnots)
-            for p in temp:
-                print("temp",py,p)
+                coeff = self.computeClampedCofficient(len(row), self.order, py, self.uKnots)
+                temp[i]=self.getBSplinePoint(coeff,row)
             glBegin(GL_TRIANGLE_STRIP)
             for v in range(self.divs):
                 px =vmin+v*vsteps
                 glTexCoord2f(pyold,px)
                 glVertex3f(last[v].x,last[v].y,last[v].z)
-                last[v]=self.getBSplinePoint(px,temp,order,self.vKnots)
+                coeff = self.computeClampedCofficient(len(temp), self.order, px, self.vKnots)
+                last[v]=self.getBSplinePoint(coeff,temp)
                 glColor3f(px/ vmax, py/ vmax, 0)
                 glTexCoord2f(py,px)
                 glVertex3f(last[v].x,last[v].y,last[v].z)
@@ -124,23 +131,112 @@ class BSplineSurface(BSpline):
         glEndList()
         del last
         return drawList
+    def genOpenBSplineSurface(self):
+        drawList = glGenLists(1)
+        if self.dlbPatch:
+            glDeleteLists(self.dlbPatch, 1)
+        last = [None] * (self.divs)
+        temp = [row[0] for row in self.controlPoints]
+        self.uKnots = self.createOpenUniformKnots(len(self.controlPoints[0]), self.order)
+        self.vKnots = self.createOpenUniformKnots(len(self.controlPoints), self.order)
+        vmin = self.vKnots[self.order]
+        vmax = self.vKnots[len(self.controlPoints)]
+        vsteps = float((vmax - vmin) / (self.divs - 1))
+        umin = self.uKnots[self.order]
+        umax = self.uKnots[len(self.controlPoints[0])]
+        usteps = float((umax - umin) / (self.divs - 1))
+        for v in range(self.divs):
+            px = vmin + v * vsteps
+            coeff = self.computeOpenCofficient(len(temp), self.order, px, self.vKnots)
+            last[v] = self.getBSplinePoint(coeff, temp)
+        glColor3f(0, 1, 1)
+        glNewList(drawList, GL_COMPILE)
+        glBindTexture(GL_TEXTURE_2D, self.texture)
+        for u in range(1, self.divs):
+            py = umin + u * usteps
+            pyold = umin + (u - 1) * usteps
+            for i, row in enumerate(self.controlPoints):
+                coeff = self.computeOpenCofficient(len(row), self.order, py, self.uKnots)
+                temp[i] = self.getBSplinePoint(coeff, row)
+            glBegin(GL_TRIANGLE_STRIP)
+            for v in range(self.divs):
+                px = vmin + v * vsteps
+                glTexCoord2f(pyold, px)
+                glVertex3f(last[v].x, last[v].y, last[v].z)
+                coeff = self.computeOpenCofficient(len(temp), self.order, px, self.vKnots)
+                last[v] = self.getBSplinePoint(coeff, temp)
+                glColor3f(px / vmax, py / vmax, 0)
+                glTexCoord2f(py, px)
+                glVertex3f(last[v].x, last[v].y, last[v].z)
+            glEnd()
+        glEndList()
+        del last
+        return drawList
+
+    def genClosedBSplineSurface(self):
+        drawList = glGenLists(1)
+        if self.dlbPatch:
+            glDeleteLists(self.dlbPatch, 1)
+        last = [None] * (self.divs)
+        print("before")
+        for row in self.controlPoints:
+            print(row)
+        for i in range(self.order):
+                self.controlPoints.append(self.controlPoints[i])
+        print("after")
+        for row in self.controlPoints:
+            print(row)
+        temp = [row[0] for row in self.controlPoints]
+        self.uKnots = self.createClosedUniformKnots(len(self.controlPoints[0]), self.order)
+        self.vKnots = self.createClosedUniformKnots(len(self.controlPoints), self.order)
+        vmin = self.vKnots[self.order]
+        vmax = self.vKnots[len(self.controlPoints)]
+        vsteps = float((vmax - vmin) / (self.divs - 1))
+        umin = self.uKnots[self.order]
+        umax = self.uKnots[len(self.controlPoints[0])]
+        usteps = float((umax - umin) / (self.divs - 1))
+        for v in range(self.divs):
+            px = vmin + v * vsteps
+            coeff = self.computeOpenCofficient(len(temp), self.order, px, self.vKnots)
+            last[v] = self.getBSplinePoint(coeff, temp)
+        glColor3f(0, 1, 1)
+        glNewList(drawList, GL_COMPILE)
+        glBindTexture(GL_TEXTURE_2D, self.texture)
+        for u in range(1, self.divs):
+            py = umin + u * usteps
+            pyold = umin + (u - 1) * usteps
+            for i, row in enumerate(self.controlPoints):
+                coeff = self.computeOpenCofficient(len(row), self.order, py, self.uKnots)
+                temp[i] = self.getBSplinePoint(coeff, row)
+            glBegin(GL_TRIANGLE_STRIP)
+            for v in range(self.divs):
+                px = vmin + v * vsteps
+                glTexCoord2f(pyold, px)
+                glVertex3f(last[v].x, last[v].y, last[v].z)
+                coeff = self.computeOpenCofficient(len(temp), self.order, px, self.vKnots)
+                last[v] = self.getBSplinePoint(coeff, temp)
+                glColor3f(px / vmax, py / vmax, 0)
+                glTexCoord2f(py, px)
+                glVertex3f(last[v].x, last[v].y, last[v].z)
+            glEnd()
+        glEndList()
+        del last
+        return drawList
     def genMesh(self):
         if self.showPolygon==True:
             glDisable(GL_TEXTURE_2D)
-            for i in range(0,4):
+            for i in range(len(self.controlPoints)):
                 glColor3f(1.0, 1.0, 1.0)
                 glBegin(GL_LINE_STRIP)
-                for j in range(0,4):
+                for j in range(len(self.controlPoints[0])):
                     glVertex3f(self.controlPoints[i][j].x,self.controlPoints[i][j].y,self.controlPoints[i][j].z)
                 glEnd()
-            for i in range(0,4):
+            for i in range(len(self.controlPoints[0])):
                 glBegin(GL_LINE_STRIP)
-                for j in range(0,4):
+                for j in range(len(self.controlPoints)):
                     glVertex3f(self.controlPoints[j][i].x,self.controlPoints[j][i].y,self.controlPoints[j][i].z)
                 glEnd()
             glEnable(GL_TEXTURE_2D)
-    def genPolygon(self):
-        print(self.columns)
 
 if __name__ == '__main__':
     a=BSplineSurface(surface.convertListToPoint(

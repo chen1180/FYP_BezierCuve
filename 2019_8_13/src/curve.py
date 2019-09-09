@@ -32,11 +32,11 @@ class BezierCurve:
         p2334 = (1 - t) * p23 + t * p34
         p=(1-t)*p1223+t*p2334
         return [p1,p12,p1223,p],[p,p2334,p34,p4]
-    def bersteinPolynomial(self,t):
+    def bersteinPolynomial(self,t,controlPoints):
         c=point(0,0,0)
-        n=len(self.controlPoints)-1
-        for r in range(len(self.controlPoints)):
-            c+=self.combination(n,r)*((1-t)**(n-r))*(t**r)*self.controlPoints[r]
+        n=len(controlPoints)-1
+        for r in range(len(controlPoints)):
+            c+=self.combination(n,r)*((1-t)**(n-r))*(t**r)*controlPoints[r]
         return c
     def drawCurve(self, c_color=(1, 1, 1)):
         glColor3f(c_color[0], c_color[1], c_color[2])
@@ -63,7 +63,7 @@ class BezierCurve:
         else:
             glBegin(GL_LINE_STRIP)
             for t in np.linspace(0, 1, self.divs):
-                p = self.bersteinPolynomial(t)
+                p = self.bersteinPolynomial(t,self.controlPoints)
                 p.glVertex3()
             glEnd()
     def splitCurve(self,t=0.2,c1_color=(1,0,0),c2_color=(0,0,1)):
@@ -95,28 +95,57 @@ class BezierCurve:
             p.glVertex3()
         glEnd()
         glColor3f(0, 1, 0)
-        glBegin(GL_LINE_STRIP)
-        start_point = self.controlPoints[0]
-        ctrl_point = self.controlPoints[1]
-        end_point = (self.controlPoints[1] + self.controlPoints[2]) * 0.5
-        for t in np.linspace(0, 1, self.divs):
-            p = self.deCasteljauQuad(start_point, ctrl_point, end_point, t)
-            p.glVertex3()
-        for index in range(1, len(self.controlPoints) - 3):
-            start_point = (self.controlPoints[index] + self.controlPoints[index+1]) * 0.5
-            ctrl_point = self.controlPoints[index+1]
-            end_point = (self.controlPoints[index+1] + self.controlPoints[index+2]) * 0.5
-            for t in np.linspace(0, 1,self.divs):
+        if self.type=="Quadratic":
+            glBegin(GL_LINE_STRIP)
+            start_point = self.controlPoints[0]
+            ctrl_point = self.controlPoints[1]
+            end_point = (self.controlPoints[1] + self.controlPoints[2]) * 0.5
+            for t in np.linspace(0, 1, self.divs):
                 p = self.deCasteljauQuad(start_point, ctrl_point, end_point, t)
                 p.glVertex3()
-            if index==len(self.controlPoints) - 4:
-                start_point = end_point
-                ctrl_point = self.controlPoints[index + 2]
-                end_point = self.controlPoints[index + 3]
-                for t in np.linspace(0, 1, self.divs):
+            for index in range(1, len(self.controlPoints) - 3):
+                start_point = (self.controlPoints[index] + self.controlPoints[index+1]) * 0.5
+                ctrl_point = self.controlPoints[index+1]
+                end_point = (self.controlPoints[index+1] + self.controlPoints[index+2]) * 0.5
+                for t in np.linspace(0, 1,self.divs):
                     p = self.deCasteljauQuad(start_point, ctrl_point, end_point, t)
                     p.glVertex3()
-        glEnd()
+                if index==len(self.controlPoints) - 4:
+                    start_point = end_point
+                    ctrl_point = self.controlPoints[index + 2]
+                    end_point = self.controlPoints[index + 3]
+                    for t in np.linspace(0, 1, self.divs):
+                        p = self.deCasteljauQuad(start_point, ctrl_point, end_point, t)
+                        p.glVertex3()
+            glEnd()
+        elif self.type=="Cubic":
+            glBegin(GL_LINE_STRIP)
+            start_point = self.controlPoints[0]
+            c1 = self.controlPoints[1]
+            c2=self.controlPoints[2]
+            end_point = (self.controlPoints[2] + self.controlPoints[3]) * 0.5
+            for t in np.linspace(0, 1, self.divs):
+                p = self.deCasteljauCubic(start_point, c1,c2, end_point, t)
+                p.glVertex3()
+            for index in range(2, len(self.controlPoints) - 5,2):
+                start_point = (self.controlPoints[index] + self.controlPoints[index + 1]) * 0.5
+                c1 = self.controlPoints[index + 1]
+                c2 = self.controlPoints[index + 2]
+                end_point = (self.controlPoints[index + 2] + self.controlPoints[index + 3]) * 0.5
+                for t in np.linspace(0, 1, self.divs):
+                    p = self.deCasteljauCubic(start_point, c1,c2, end_point, t)
+                    p.glVertex3()
+                if index==len(self.controlPoints) - 6:
+                    start_point = end_point
+                    c1 = self.controlPoints[index+3]
+                    c2 = self.controlPoints[index+4]
+                    end_point = self.controlPoints[index + 5]
+                    for t in np.linspace(0, 1, self.divs):
+                        p = self.deCasteljauCubic(start_point, c1,c2, end_point, t)
+                        p.glVertex3()
+
+            glEnd()
+
     def drawBezierCircle(self,center=point(0.0,0,0.0),radius=0.5):
         #Bezier curve approximation constant
         #reference: https://www.jianshu.com/p/5198d8aa80c1
@@ -171,6 +200,45 @@ class BSpline:
         self.knotsType=knotsType
         self.knots=self.setKnots()
         self.coeff=self.getCoefficent()
+    def computeClampedCofficient(self,n,p,u,knots):
+        #for clamped B-Spline
+        #reference https://pages.mtu.edu/~shene/COURSES/cs3621/NOTES/spline/B-spline/bspline-curve-coef.html
+        N=[0]*(n)
+        k=0
+        for idx in range(len(knots)-1):
+            if u>=knots[idx] and u<knots[idx+1]:
+                k=idx
+                break
+        if u==knots[0]:
+            N[0]=1.0
+            return N
+        elif u==knots[-1]:
+            N[-1]=1.0
+            return N
+        N[k]=1.0
+        for d in range(1,p+1):
+            N[k-d]=(knots[k+1]-u)/(knots[k+1]-knots[(k-d)+1])*N[(k-d)+1]
+            for i in range(k-d+1,k):
+                N[i]=(u-knots[i])/(knots[i+d]-knots[i])*N[i]+(knots[i+d+1]-u)/(knots[i+d+1]-knots[i+1])*N[i+1]
+            N[k]=(u-knots[k])/(knots[k+d]-knots[k])*N[k]
+        return N
+    def computeOpenCofficient(self,n,p,u,knots):
+        # for Open B-Spline
+        N = [0] * (n+p+1)
+        k = 0
+        for idx in range(len(knots) - 1):
+            if u >= knots[idx] and u < knots[idx + 1]:
+                k = idx
+                break
+        N[k] = 1.0
+        for d in range(1, p + 1):
+            N[k - d] = (knots[k + 1] - u) / (knots[k + 1] - knots[(k - d) + 1]) * N[(k - d) + 1]
+            for i in range(k - d + 1, k):
+                N[i] = (u - knots[i]) / (knots[i + d] - knots[i]) * N[i] + (knots[i + d + 1] - u) / (
+                            knots[i + d + 1] - knots[i + 1]) * N[i + 1]
+            N[k] = (u - knots[k]) / (knots[k + d] - knots[k]) * N[k]
+        N=N[0:n]
+        return N
     def getCoefficent(self):
         tmin = self.knots[self.order]
         tmax = self.knots[len(self.controlPoints)]
@@ -178,83 +246,67 @@ class BSpline:
         Nik = []
         for i in range(self.divs):
             t = tmin + i * steps
-            coe=[]
-            for j, c_p in enumerate(self.controlPoints):
-                nik = self.deBoor_Cox(j, self.order, t, self.knots)
-                coe.append(nik)
+            if self.knotsType=="Clamped":
+                coe=self.computeClampedCofficient(len(self.controlPoints),self.order,t,self.knots)
+            elif self.knotsType=="Open":
+                coe = self.computeOpenCofficient(len(self.controlPoints), self.order, t, self.knots)
+            elif self.knotsType=="Closed":
+                coe = self.computeOpenCofficient(len(self.controlPoints), self.order, t, self.knots)
             Nik.append(coe)
         # for row in Nik:
         #       print(row)
         # print(len(Nik))
         return Nik
-    def deBoor_Cox(self, i, k, t, knots):
-        if k == 0:
-            if (t >= knots[i] and t < knots[i + 1]) or (t==knots[i+1] and knots[i+1]==knots[-1]):
-                return 1.0
-            else:
-                return 0.0
-        else:
-            den1 = knots[i + k] - knots[i]
-            den2 = knots[i + k + 1] - knots[i + 1]
-            if den1 == 0:
-                den1 = 1
-            if den2 == 0:
-                den2 = 1
-            a = (t - knots[i]) / den1
-            b = (knots[i + k + 1] - t) / den2
-            return a * self.deBoor_Cox(i, k - 1, t, knots) + b * self.deBoor_Cox(i + 1, k - 1, t, knots)
-
     #https://www.cnblogs.com/nobodyzhou/p/5451528.html
     def createOpenUniformKnots(self,n,k):
+        #For open B-spline curves, the domain is [uk, um-k]. p is the degree,m is n+k+1
         nKnots = n + k + 1
         knots = [None] * nKnots
         for i in range(nKnots):
             knots[i] = i
+        print(knots)
         return knots
 
     def createClampedUniformKnots(self, n, k):
+        nKnots=n+k+1
         knots=[0]*(k+1)
         knots+=[i for i in range(1,n-k)]
-        knots+=[n-k]*(k+1)
+        knots+=[n-k]*(nKnots-n)
         print(knots)
         return knots
     def createClosedUniformKnots(self, n, k):
         nKnots = n + k + 1
         knots = [None] * nKnots
-        for i in range(n):
-            knots[i]=i
-        for i in range(k+1):
-            knots[n+i]=knots[i]
+        for i in range(nKnots):
+            knots[i] = i
         return knots
-    def createBezierKnots(self, n, k):
-        if ((n-1)//k)%2==0:
-            knots = [0] * (k+1)
-            knots += [i for i in range(1,k+1)]
-            knots+=[k+2]*(k+1)
-        return knots
+    # def createBezierKnots(self, n, k):
+    #     #Boehm's Algorithm
+    #     #http://web.archive.org/web/20120227050519/http://tom.cs.byu.edu/~455/bs.pdf
+    #     if ((n - 1) // k) % 2 == 0:
+    #         knots = [0] * (k + 1)
+    #         knots += [i for i in range(1, k + 1)]
+    #         knots += [k + 2] * (k + 1)
+    #     print(knots)
+    #     return knots
     def setKnots(self):
         knots=[]
         if self.knotsType=="Clamped":
-            print(self.controlPoints)
             knots = self.createClampedUniformKnots(len(self.controlPoints),self.order)
         elif self.knotsType=="Open":
-            print(self.controlPoints)
             knots = self.createOpenUniformKnots(len(self.controlPoints), self.order)
         elif self.knotsType=="Closed":
-            self.controlPoints.append(self.controlPoints[0])
-            self.controlPoints.append(self.controlPoints[1])
-            self.controlPoints.append(self.controlPoints[2])
-            print(self.controlPoints)
-            knots = self.createOpenUniformKnots(len(self.controlPoints), self.order)
-        elif self.knotsType=="Bezier":
-            knots=self.createBezierKnots(len(self.controlPoints),self.order)
+            for i in range(self.order):
+                self.controlPoints.append(self.controlPoints[i])
+            knots = self.createClosedUniformKnots(len(self.controlPoints), self.order)
+        # elif self.knotsType=="Bezier":
+        #     knots=self.createBezierKnots(len(self.controlPoints),self.order)
         return knots
-    def getBSplinePoint(self,t,controlPoints,order,knots):
-        bsplinePoint=point(0,0,0)
-        for i,p in enumerate(controlPoints):
-            nik = self.deBoor_Cox(i, order, t, knots)
-            bsplinePoint+=nik*p
-        return bsplinePoint
+    def getBSplinePoint(self,N,controlPoints):
+        c=point(0,0,0)
+        for a,b in zip(N,controlPoints):
+            c+=a*b
+        return c
     def drawBSplineCurve(self):
         glColor3f(1.0,1.0,0.0)
         glLineWidth(3.0)
@@ -272,6 +324,24 @@ class BSpline:
             p.glVertex3()
         glEnd()
 
+    def deBoor_Cox(self, i, k, t, knots):
+        if k == 0:
+            if (t >= knots[i] and t < knots[i + 1]) or (t==knots[i+1] and knots[i+1]==knots[-1]):
+                return 1.0
+            else:
+                return 0.0
+        else:
+            den1 = knots[i + k] - knots[i]
+            den2 = knots[i + k + 1] - knots[i + 1]
+            if den1 == 0:
+                den1 = 1
+            if den2 == 0:
+                den2 = 1
+            a = (t - knots[i]) / den1
+            b = (knots[i + k + 1] - t) / den2
+            return a * self.deBoor_Cox(i, k - 1, t, knots) + b * self.deBoor_Cox(i + 1, k - 1, t, knots)
+
+
 if __name__ == '__main__':
     # surface_controlPoints=BeizerSurface(surface.convertListToPoint([[[-0.25, 0.0, -0.5], [0, 0, 0.0], [0.25, -0.2, 0.0], [0.5, 0.2, 0.0]],
     #                                              [[-0.5, -0.5, 0.0], [0, -0.2, 0.0], [0.15, -0.1, 2.0], [0.5, -0.6, 0.0]],
@@ -285,18 +355,17 @@ if __name__ == '__main__':
     #     print(column)
     #
     # print(BezierCurve.combination(3,0),BezierCurve.combination(3,1),BezierCurve.combination(3,2),BezierCurve.combination(3,3))
-    b=BSpline(curve.listToPoint([[-0.75, -0.75, -0.50], [-0.25, -0.5, 0.00]]),order=2)
-    knots=[0, 0, 0, 0, 1, 2, 2, 2, 2]
+    b=BSpline(curve.listToPoint([[-0.75, -0.75, -0.50], [-0.25, -0.5, 0.00],[-0.5, -0.5, 0.0], [0, -0.2, 0.0], [0.15, -0.1, 2.0]]),order=3)
+    knots=[0, 1, 2, 3, 4, 5, 6, 7, 8]
     divs=5
     tmin=0
     tmax=2
+    print(knots)
     step=float(tmax-tmin)/(divs-1)
     for j in range(divs):
         t=tmin+j*step
-        a=[]
-        for i in range(5):
-            a.append(b.deBoor_Cox(i,3,t,knots))
-        print(a)
+        print(t)
+        print(b.de_boors(t, knots, b.controlPoints, 3))
 
 
 

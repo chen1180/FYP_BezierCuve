@@ -47,7 +47,7 @@ class Arcball:
             p1=self.normalize(self.lastPos-self.lookatCenter)
             p2=self.normalize(self.curPos-self.lookatCenter)
             rotateAxis=point.cross(p1,p2)
-            rotateAngle=math.acos(point.dot(p1,p2))*0.2
+            rotateAngle=math.acos(point.dot(p1,p2))*0.5
             self.angle=rotateAngle
             self.axis=rotateAxis
     def mouseScroll(self,y):
