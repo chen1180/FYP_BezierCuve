@@ -340,7 +340,92 @@ class BSpline:
             a = (t - knots[i]) / den1
             b = (knots[i + k + 1] - t) / den2
             return a * self.deBoor_Cox(i, k - 1, t, knots) + b * self.deBoor_Cox(i + 1, k - 1, t, knots)
+class NURBS:
+    def __init__(self,controlPoints,weights,order,knotsType="Clamped",divs=100):
+        self.controlPoints=list(controlPoints)
+        self.order=order
+        self.divs=divs
+        self.knotsType=knotsType
+        self.knots=self.setKnots()
+        self.weights=weights
+        self.curvePoints=self.getNURBSPoints()
+    def computeClampedCofficient(self,n,p,u,knots):
+        #for clamped B-Spline
+        #reference https://pages.mtu.edu/~shene/COURSES/cs3621/NOTES/spline/B-spline/bspline-curve-coef.html
+        N=[0]*(n)
+        k=0
+        for idx in range(len(knots)-1):
+            if u>=knots[idx] and u<knots[idx+1]:
+                k=idx
+                break
+        if u==knots[0]:
+            N[0]=1.0
+            return N
+        elif u==knots[-1]:
+            N[-1]=1.0
+            return N
+        N[k]=1.0
+        for d in range(1,p+1):
+            N[k-d]=(knots[k+1]-u)/(knots[k+1]-knots[(k-d)+1])*N[(k-d)+1]
+            for i in range(k-d+1,k):
+                N[i]=(u-knots[i])/(knots[i+d]-knots[i])*N[i]+(knots[i+d+1]-u)/(knots[i+d+1]-knots[i+1])*N[i+1]
+            N[k]=(u-knots[k])/(knots[k+d]-knots[k])*N[k]
+        return N
+    def getNURBSPoints(self):
+        tmin = self.knots[self.order]
+        tmax = self.knots[len(self.controlPoints)]
+        steps = float((tmax - tmin) / (self.divs-1))
+        curve = []
+        for i in range(self.divs):
+            t = tmin + i * steps
+            coe=self.computeClampedCofficient(len(self.controlPoints),self.order,t,self.knots)
+            nwp=point(0,0,0)
+            nw=0
+            for n,w,p in zip(coe,self.weights,self.controlPoints):
+                nwp+=n*w*p
+                nw+=n*w
+            curve.append(nwp*(1/nw))
+        # for row in Nik:
+        #       print(row)
+        # print(len(Nik))
+        return curve
+    def createClampedUniformKnots(self, n, k):
+        nKnots=n+k+1
+        knots=[0]*(k+1)
+        knots+=[i for i in range(1,n-k)]
+        knots+=[n-k]*(nKnots-n)
+        print(knots)
+        return knots
+    def setWeights(self,w):
+        weights=[w]*(len(self.controlPoints))
+        return weights
 
+    def setKnots(self):
+        knots = []
+        if self.knotsType == "Clamped":
+            knots = self.createClampedUniformKnots(len(self.controlPoints), self.order)
+        elif self.knotsType == "Open":
+            knots = self.createOpenUniformKnots(len(self.controlPoints), self.order)
+        elif self.knotsType == "Closed":
+            for i in range(self.order):
+                self.controlPoints.append(self.controlPoints[i])
+            knots = self.createClosedUniformKnots(len(self.controlPoints), self.order)
+        # elif self.knotsType=="Bezier":
+        #     knots=self.createBezierKnots(len(self.controlPoints),self.order)
+        return knots
+    def drawNURBS(self):
+        glColor3f(0.0,1.0,0.0)
+        glLineWidth(3.0)
+        glBegin(GL_LINE_STRIP)
+        for p in self.curvePoints:
+            p.glVertex3()
+        glEnd()
+        glColor3f(1.0, 1.0, 1.0)
+        glLineWidth(1)
+        glBegin(GL_LINE_STRIP)
+        for p in self.controlPoints:
+            p.glVertex3()
+        glEnd()
 
 if __name__ == '__main__':
     # surface_controlPoints=BeizerSurface(surface.convertListToPoint([[[-0.25, 0.0, -0.5], [0, 0, 0.0], [0.25, -0.2, 0.0], [0.5, 0.2, 0.0]],

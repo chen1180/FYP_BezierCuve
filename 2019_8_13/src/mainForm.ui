@@ -18,7 +18,7 @@
     <item>
      <widget class="QTabWidget" name="drawWidget">
       <property name="currentIndex">
-       <number>1</number>
+       <number>2</number>
       </property>
       <widget class="QWidget" name="BezierCurve">
        <attribute name="title">
@@ -75,6 +75,13 @@
          <widget class="QPushButton" name="drawBezierBtn">
           <property name="text">
            <string>Draw Bezier Curve</string>
+          </property>
+         </widget>
+        </item>
+        <item row="3" column="0" colspan="2">
+         <widget class="QPushButton" name="elevateDegreeBezierCurveBtn">
+          <property name="text">
+           <string>Elevate Degree</string>
           </property>
          </widget>
         </item>
@@ -204,36 +211,6 @@
          <widget class="Line" name="line_3">
           <property name="orientation">
            <enum>Qt::Horizontal</enum>
-          </property>
-         </widget>
-        </item>
-        <item row="17" column="1">
-         <widget class="QSlider" name="horizontalSlider">
-          <property name="layoutDirection">
-           <enum>Qt::LeftToRight</enum>
-          </property>
-          <property name="maximum">
-           <number>99</number>
-          </property>
-          <property name="singleStep">
-           <number>1</number>
-          </property>
-          <property name="orientation">
-           <enum>Qt::Horizontal</enum>
-          </property>
-         </widget>
-        </item>
-        <item row="19" column="1">
-         <widget class="QPushButton" name="pushButton">
-          <property name="text">
-           <string>Bezier circle</string>
-          </property>
-         </widget>
-        </item>
-        <item row="3" column="0" colspan="2">
-         <widget class="QPushButton" name="elevateDegreeBezierCurveBtn">
-          <property name="text">
-           <string>Elevate Degree</string>
           </property>
          </widget>
         </item>
@@ -383,6 +360,67 @@
         </item>
        </layout>
       </widget>
+      <widget class="QWidget" name="NURBS">
+       <attribute name="title">
+        <string>NURBS</string>
+       </attribute>
+       <layout class="QFormLayout" name="formLayout_3">
+        <item row="0" column="0">
+         <widget class="QLabel" name="NURBS_knotlabel">
+          <property name="text">
+           <string>Knots Type</string>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="1">
+         <widget class="QComboBox" name="NURBS_knotTypecomboBox">
+          <item>
+           <property name="text">
+            <string>Clamped</string>
+           </property>
+          </item>
+         </widget>
+        </item>
+        <item row="1" column="0">
+         <widget class="QLabel" name="weightNURBS_label">
+          <property name="text">
+           <string>Weight</string>
+          </property>
+         </widget>
+        </item>
+        <item row="2" column="0">
+         <widget class="QLabel" name="degreeNURBS_label">
+          <property name="text">
+           <string>Degree</string>
+          </property>
+         </widget>
+        </item>
+        <item row="2" column="1">
+         <widget class="QSpinBox" name="degreeNURBS_spinBox">
+          <property name="maximum">
+           <number>100</number>
+          </property>
+          <property name="value">
+           <number>2</number>
+          </property>
+         </widget>
+        </item>
+        <item row="3" column="0" colspan="2">
+         <widget class="QPushButton" name="drawNURBS_Btn">
+          <property name="text">
+           <string>Draw NURBS</string>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="1">
+         <widget class="QPushButton" name="weightNURBS_Btn">
+          <property name="text">
+           <string>Change</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </widget>
      </widget>
     </item>
     <item>
@@ -407,26 +445,6 @@
           <string>Scene</string>
          </property>
         </column>
-       </widget>
-      </item>
-      <item>
-       <widget class="QTabWidget" name="propertytabWidget">
-        <property name="layoutDirection">
-         <enum>Qt::LeftToRight</enum>
-        </property>
-        <property name="autoFillBackground">
-         <bool>false</bool>
-        </property>
-        <widget class="QWidget" name="tab_2">
-         <attribute name="title">
-          <string>Tab 1</string>
-         </attribute>
-        </widget>
-        <widget class="QWidget" name="tab_3">
-         <attribute name="title">
-          <string>Tab 2</string>
-         </attribute>
-        </widget>
        </widget>
       </item>
      </layout>

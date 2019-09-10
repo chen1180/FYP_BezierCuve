@@ -2,10 +2,10 @@ from OpenGL.GL import *
 from OpenGL.GLU import *
 from PyQt5 import QtGui,QtWidgets,QtCore
 from PyQt5.QtOpenGL import *
-import mainForm
+import mainForm,weightForm
 from geometry import point,surface,curve
 import sys
-from curve import BezierCurve,BSpline
+from curve import BezierCurve,BSpline,NURBS
 from surface import BeizerSurface,BSplineSurface
 import selectMode
 import arcball
@@ -25,11 +25,12 @@ class MainWindow(QtWidgets.QMainWindow):
         self.ui.drawBezierBtn.clicked.connect(lambda state,x=1:self.glWidget.changeStatus(x))
         self.ui.elevateDegreeBezierCurveBtn.clicked.connect(lambda state,x=2:self.glWidget.changeStatus(x))
         self.ui.drawBezierSurfaceBtn.clicked.connect(lambda state,x=3:self.glWidget.changeStatus(x))
-        self.ui.pushButton.clicked.connect(lambda state,x=4:self.glWidget.changeStatus(x))
-        self.ui.horizontalSlider.valueChanged.connect(self.glWidget.changeT)
+        self.ui.elevateDegreeBezierCurveBtn.clicked.connect(lambda state,x=4:self.glWidget.changeStatus(x))
         self.ui.bSplineBtn.clicked.connect(lambda state,x=5:self.glWidget.changeStatus(x))
         self.ui.drawMultiBezierBtn.clicked.connect(lambda state, x=6: self.glWidget.changeStatus(x))
         self.ui.drawBSplineSurfaceBtn.clicked.connect(lambda state, x=7: self.glWidget.changeStatus(x))
+        self.ui.drawNURBS_Btn.clicked.connect(lambda state, x=8: self.glWidget.changeStatus(x))
+        self.ui.weightNURBS_Btn.clicked.connect(lambda state, x=9: self.glWidget.changeStatus(x))
         root=QtWidgets.QTreeWidgetItem(self.ui.scenetreeWidget)
         self.ui.degreeBSplineSurface_spinBox.value()
         #toolbar
@@ -76,6 +77,7 @@ class glWidget(QGLWidget):
         self.control_points = curve.listToPoint(
             [[-1.0, 1.0, -0.00], [-0, 1, 0.00], [1.0, 1.0, 0.00], [1.0, 0, 0], [1, -1, 0.00],
              [0.0, -1, 0], [-1, -1, 0],[-1.0,0, 0],[-2,-0.5, 0]])
+        self.weight=[1.0]*len(self.control_points)
         self.element=[]
         self.selectEngine=selectMode.SelectionEngine()
     def paintGL(self):
@@ -125,6 +127,13 @@ class glWidget(QGLWidget):
             splineSurface = BSplineSurface(self.surface,order,divs,knotsType, showPolygon)
             splineSurface.genKnotsTypeSurface()
             self.element.append([self.status, splineSurface])
+        elif self.status==8:
+            nurbs = NURBS(self.control_points,weights=self.weight,order=self.parent.ui.degreeNURBS_spinBox.value(),
+                          knotsType=self.parent.ui.NURBS_knotTypecomboBox.currentText())
+            self.element.append([self.status, nurbs])
+        elif self.status==9:
+            self.weightForm = weightForm.NURBS_WeightForm(len(self.control_points),self.weight)
+            self.weightForm.setupUI()
         else:
             self.update()
         self.status=100
@@ -147,11 +156,14 @@ class glWidget(QGLWidget):
                     pass
                 elif status == 5:
                     shape.drawBSplineCurve()
+
                 elif status== 6:
                     shape.drawMultiBeizerCurve()
                 elif status==7:
                     glCallList(shape.dlbPatch)
                     shape.genMesh()
+                elif status==8:
+                    shape.drawNURBS()
                 else:
                     self.update()
 

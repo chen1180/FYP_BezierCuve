@@ -38,6 +38,11 @@ class point:
 
     def combo(self, scalar, other):
         return self.plus(other.minus(self).scale(scalar))
+    def homoForm(self,w=1):
+        self.w=w
+        self.x*=w
+        self.y*=w
+        self.z*=w
 
     #
     # Special methods, hooks into Python syntax.
@@ -98,4 +103,5 @@ if __name__ == '__main__':
     test2=point(3,4,5)
     print(type(test))
     print(test+test2)
-
+    test.homoForm(10)
+    print(test.x,test.y,test.z,test.w)
