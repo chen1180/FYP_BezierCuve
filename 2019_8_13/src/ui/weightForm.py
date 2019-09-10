@@ -13,9 +13,9 @@ class NURBS_WeightForm(QtWidgets.QWidget):
         for i in range(self.row):
             label=QtWidgets.QLabel("weight {}".format(i))
             spinBox=QtWidgets.QDoubleSpinBox()
-            spinBox.setValue(self.weights[i])
-            spinBox.setMinimum(0.0)
+            spinBox.setMinimum(-1.0)
             spinBox.setMaximum(1.0)
+            spinBox.setValue(self.weights[i])
             spinBox.setSingleStep(0.1)
             self.doubleSpinbox.append(spinBox)
             self.layout.addRow(QtWidgets.QLabel("weight {}".format(i)),spinBox)
@@ -28,7 +28,6 @@ class NURBS_WeightForm(QtWidgets.QWidget):
     def accept(self):
         for i in range(len(self.weights)):
             self.weights[i]=self.doubleSpinbox[i].value()
-        print(self.weights)
         self.close()
     def reject(self):
         self.close()

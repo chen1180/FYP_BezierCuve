@@ -1,6 +1,5 @@
 from curve import BezierCurve,BSpline
 from OpenGL.GL import *
-import numpy as np
 from geometry import surface,point
 class BeizerSurface(BezierCurve):
     def __init__(self,controlPoints=[],divs=100,showPolygon=False):
@@ -78,18 +77,13 @@ class BSplineSurface(BSpline):
     def __init__(self,controlPoints,order,divs=100,knotsType="Clamped",showPolygon=False):
         self.controlPoints=controlPoints.copy()
         self.divs=divs
-        self.dlbPatch = None
         self.showPolygon=showPolygon
         self.texture=0
         self.knotsType=knotsType
         self.order=order
-    def genKnotsTypeSurface(self):
-        if self.knotsType=="Clamped":
-            self.dlbPatch= self.genClampedBSplineSurface()
-        elif  self.knotsType=="Open":
-            self.dlbPatch=self.genOpenBSplineSurface()
-        elif  self.knotsType=="Closed":
-            self.dlbPatch=self.genClosedBSplineSurface()
+        self.curvePoints=[]
+        self.dlbPatch = None
+        self.texPatch=None
     def genClampedBSplineSurface(self):
         drawList=glGenLists(1)
         if self.dlbPatch:
@@ -131,6 +125,32 @@ class BSplineSurface(BSpline):
         glEndList()
         del last
         return drawList
+    def getBSplineSurfacePoints(self):
+        last=[None]*(self.divs)
+        temp=[row[0] for row in self.controlPoints]
+        self.uKnots = self.createClampedUniformKnots(len(self.controlPoints[0]), self.order)
+        self.vKnots = self.createClampedUniformKnots(len(self.controlPoints), self.order)
+        vmin = self.vKnots[self.order]
+        vmax = self.vKnots[len(self.controlPoints)]
+        vsteps = float((vmax - vmin) / (self.divs - 1))
+        umin = self.uKnots[self.order]
+        umax = self.uKnots[len(self.controlPoints[0])]
+        usteps = float((umax - umin) / (self.divs - 1))
+        for v in range(self.divs):
+            px=vmin+v*vsteps
+            coeff = self.computeClampedCofficient(len(temp), self.order, px, self.vKnots)
+            last[v] = self.getBSplinePoint(coeff, temp)
+        self.curvePoints.append(last.copy())
+        for u in range(1,self.divs):
+            py=umin+u*usteps
+            for i,row in enumerate(self.controlPoints):
+                coeff = self.computeClampedCofficient(len(row), self.order, py, self.uKnots)
+                temp[i]=self.getBSplinePoint(coeff,row)
+            for v in range(self.divs):
+                px = vmin + v * vsteps
+                coeff = self.computeClampedCofficient(len(temp), self.order, px, self.vKnots)
+                last[v] = self.getBSplinePoint(coeff, temp)
+            self.curvePoints.append(last.copy())
     def genOpenBSplineSurface(self):
         drawList = glGenLists(1)
         if self.dlbPatch:
@@ -223,21 +243,26 @@ class BSplineSurface(BSpline):
         del last
         return drawList
     def genMesh(self):
+        drawList = glGenLists(1)
+        if self.dlbPatch:
+            glDeleteLists(self.dlbPatch, 1)
+        glNewList(drawList, GL_COMPILE)
         if self.showPolygon==True:
             glDisable(GL_TEXTURE_2D)
-            for i in range(len(self.controlPoints)):
+            for i in range(len(self.curvePoints)):
                 glColor3f(1.0, 1.0, 1.0)
                 glBegin(GL_LINE_STRIP)
-                for j in range(len(self.controlPoints[0])):
-                    glVertex3f(self.controlPoints[i][j].x,self.controlPoints[i][j].y,self.controlPoints[i][j].z)
+                for j in range(len(self.curvePoints[0])):
+                    glVertex3f(self.curvePoints[i][j].x,self.curvePoints[i][j].y,self.curvePoints[i][j].z)
                 glEnd()
-            for i in range(len(self.controlPoints[0])):
+            for i in range(len(self.curvePoints[0])):
                 glBegin(GL_LINE_STRIP)
-                for j in range(len(self.controlPoints)):
-                    glVertex3f(self.controlPoints[j][i].x,self.controlPoints[j][i].y,self.controlPoints[j][i].z)
+                for j in range(len(self.curvePoints)):
+                    glVertex3f(self.curvePoints[j][i].x,self.curvePoints[j][i].y,self.curvePoints[j][i].z)
                 glEnd()
             glEnable(GL_TEXTURE_2D)
-
+        glEndList()
+        return drawList
 if __name__ == '__main__':
     a=BSplineSurface(surface.convertListToPoint(
             [[[-0.75, -0.75, -0.50], [-0.25, -0.75, 0.00], [0.25, -0.75, 0.00], [0.75, -0.75, -0.50]],

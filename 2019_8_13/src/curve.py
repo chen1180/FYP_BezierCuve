@@ -215,7 +215,10 @@ class BSpline:
         elif u==knots[-1]:
             N[-1]=1.0
             return N
-        N[k]=1.0
+        try:
+            N[k]=1.0
+        except Exception as e:
+            print("Got error {}".format(e))
         for d in range(1,p+1):
             N[k-d]=(knots[k+1]-u)/(knots[k+1]-knots[(k-d)+1])*N[(k-d)+1]
             for i in range(k-d+1,k):
@@ -384,7 +387,11 @@ class NURBS:
             for n,w,p in zip(coe,self.weights,self.controlPoints):
                 nwp+=n*w*p
                 nw+=n*w
-            curve.append(nwp*(1/nw))
+            try:
+                p=nwp*(1/nw)
+                curve.append(p)
+            except Exception as e:
+                print(e)
         # for row in Nik:
         #       print(row)
         # print(len(Nik))

@@ -2,18 +2,18 @@ from OpenGL.GL import *
 from OpenGL.GLU import *
 from PyQt5 import QtGui,QtWidgets,QtCore
 from PyQt5.QtOpenGL import *
-import mainForm
-from geometry import point,surface,curve
+from ui import mainForm
+from geometry import point
 import sys
 import camera
-from curve import BezierCurve,BSpline,BeizerSurface
+
 
 class MainWindow(QtWidgets.QMainWindow):
     def __init__(self):
         super(MainWindow, self).__init__()
         self.setupUi()
     def setupUi(self):
-        self.ui=mainForm.Ui_MainWindow()
+        self.ui= mainForm.Ui_MainWindow()
         self.setWindowState(QtCore.Qt.WindowMaximized)
         self.ui.setupUi(self)
         self.ui.openGLWidget.close()

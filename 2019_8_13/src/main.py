@@ -2,7 +2,7 @@ from OpenGL.GL import *
 from OpenGL.GLU import *
 from PyQt5 import QtGui,QtWidgets,QtCore
 from PyQt5.QtOpenGL import *
-import mainForm,weightForm
+from ui import weightForm, mainForm
 from geometry import point,surface,curve
 import sys
 from curve import BezierCurve,BSpline,NURBS
@@ -14,7 +14,7 @@ class MainWindow(QtWidgets.QMainWindow):
         super(MainWindow, self).__init__()
         self.setupUi()
     def setupUi(self):
-        self.ui=mainForm.Ui_MainWindow()
+        self.ui= mainForm.Ui_MainWindow()
         self.setWindowState(QtCore.Qt.WindowMaximized)
         self.ui.setupUi(self)
         self.ui.openGLWidget.close()
@@ -75,8 +75,7 @@ class glWidget(QGLWidget):
         #self.control_points = curve.generateMatrix(dim=[8, 3])
         # self.control_points=curve.listToPoint([[-1.0, -0.0, -0.00], [-0.5, -1.0, 0.00], [0.0, 1.0, 0.00],[0.5, 0.5, 0],[0.75, -0.25, -0.50], [1.0, 1.0,0],[1.5, -0.5,0]])
         self.control_points = curve.listToPoint(
-            [[-1.0, 1.0, -0.00], [-0, 1, 0.00], [1.0, 1.0, 0.00], [1.0, 0, 0], [1, -1, 0.00],
-             [0.0, -1, 0], [-1, -1, 0],[-1.0,0, 0],[-2,-0.5, 0]])
+            [[-1.0, 1.0, -0.00], [-0, 0, 0.00], [1.0, 1.0, 0.00],[1.5, 1.0, 0.00],[1.5, -0.5, 0.0]])
         self.weight=[1.0]*len(self.control_points)
         self.element=[]
         self.selectEngine=selectMode.SelectionEngine()
@@ -125,14 +124,15 @@ class glWidget(QGLWidget):
             order=self.parent.ui.degreeBSplineSurface_spinBox.value()
             knotsType=self.parent.ui.bSplineSurface_comboBox.currentText()
             splineSurface = BSplineSurface(self.surface,order,divs,knotsType, showPolygon)
-            splineSurface.genKnotsTypeSurface()
+            splineSurface.getBSplineSurfacePoints()
+            splineSurface.dlbPatch=splineSurface.genMesh()
             self.element.append([self.status, splineSurface])
         elif self.status==8:
             nurbs = NURBS(self.control_points,weights=self.weight,order=self.parent.ui.degreeNURBS_spinBox.value(),
                           knotsType=self.parent.ui.NURBS_knotTypecomboBox.currentText())
             self.element.append([self.status, nurbs])
         elif self.status==9:
-            self.weightForm = weightForm.NURBS_WeightForm(len(self.control_points),self.weight)
+            self.weightForm = weightForm.NURBS_WeightForm(len(self.control_points), self.weight)
             self.weightForm.setupUI()
         else:
             self.update()
@@ -156,12 +156,10 @@ class glWidget(QGLWidget):
                     pass
                 elif status == 5:
                     shape.drawBSplineCurve()
-
                 elif status== 6:
                     shape.drawMultiBeizerCurve()
                 elif status==7:
                     glCallList(shape.dlbPatch)
-                    shape.genMesh()
                 elif status==8:
                     shape.drawNURBS()
                 else:
