@@ -9,6 +9,7 @@ from curve import BezierCurve,BSpline,NURBS
 from surface import BeizerSurface,BSplineSurface
 import selectMode
 import arcball
+import modelLoader
 class MainWindow(QtWidgets.QMainWindow):
     def __init__(self):
         super(MainWindow, self).__init__()
@@ -18,9 +19,10 @@ class MainWindow(QtWidgets.QMainWindow):
         self.setWindowState(QtCore.Qt.WindowMaximized)
         self.ui.setupUi(self)
         self.ui.openGLWidget.close()
-        self.glWidget=glWidget(self)
-        self.ui.openGLWidget.close()
-        self.ui.horizontalLayout_2.replaceWidget(self.ui.openGLWidget,self.glWidget)
+        # self.ui.view=graphicView(self)
+        self.glWidget = glWidget(self)
+        # self.ui.view.setViewport(self.glWidget)
+        self.ui.horizontalLayout_2.replaceWidget(self.ui.openGLWidget, self.glWidget)
         #pushbutton
         self.ui.drawBezierBtn.clicked.connect(lambda state,x=1:self.glWidget.changeStatus(x))
         self.ui.elevateDegreeBezierCurveBtn.clicked.connect(lambda state,x=2:self.glWidget.changeStatus(x))
@@ -31,19 +33,32 @@ class MainWindow(QtWidgets.QMainWindow):
         self.ui.drawBSplineSurfaceBtn.clicked.connect(lambda state, x=7: self.glWidget.changeStatus(x))
         self.ui.drawNURBS_Btn.clicked.connect(lambda state, x=8: self.glWidget.changeStatus(x))
         self.ui.weightNURBS_Btn.clicked.connect(lambda state, x=9: self.glWidget.changeStatus(x))
+        self.ui.bsplineModel_Btn.clicked.connect(lambda state, x=10: self.glWidget.changeStatus(x))
         root=QtWidgets.QTreeWidgetItem(self.ui.scenetreeWidget)
         self.ui.degreeBSplineSurface_spinBox.value()
+        self.ui.bSplineSurface_displayTexture_checkBox.toggled
         #toolbar
         self.ui.actionClearScreen.triggered.connect(lambda state, x=0: self.glWidget.changeStatus(x))
         self.ui.actionSelect_mode.toggled.connect(self.glWidget.changeMode)
         self.ui.degreeBeziercomboBox.currentText()
         self.ui.displayMeshcheckBox.isChecked()
         self.ui.steps_uBezierSurfacespinBox.value()
+# class graphicView(QtWidgets.QGraphicsView):
+#     def __init__(self,parent=None):
+#         super(graphicView, self).__init__(parent)
+#     def drawBackground(self, painter: QtGui.QPainter, rect: QtCore.QRectF) -> None:
+#         if painter.paintEngine().type()!=QtGui.QPaintEngine.OpenGL2:
+#             print("OpenGLScene: drawBackground needs a "
+#                      "QGLWidget to be set as viewport on the "
+#                      "graphics view")
+#     def setViewport(self, widget: QtWidgets.QWidget) -> None:
+#         self.setViewportUpdateMode(QtWidgets.QGraphicsView.FullViewportUpdate)
+#         if widget:
+#             widget.update()
 
-class glWidget(QGLWidget):
-    knotsTypeChanged = QtCore.pyqtSignal(str)
-    def __init__(self, parent):
-        QGLWidget.__init__(self, parent)
+class glWidget(QtWidgets.QOpenGLWidget):
+    def __init__(self, parent=None):
+        super(glWidget, self).__init__(parent)
         self.status=100
         self.lastPos = point(0,0,0)
         self.currentPos=point(0,0,0)
@@ -53,11 +68,14 @@ class glWidget(QGLWidget):
         #self.camera=camera.Camera()
         self.parent=parent
         self.selectionMode=False
+        self.setGeometry(0,0,1000,500)
     def initializeGL(self):
         self.setFocusPolicy(QtCore.Qt.StrongFocus)
         self.setMouseTracking(True)
         glClearDepth(1.0)
         glDepthFunc(GL_LESS)
+        glEnable(GL_CULL_FACE)
+        glCullFace(GL_BACK)
         glEnable(GL_DEPTH_TEST)
         glShadeModel(GL_SMOOTH)
         glEnable(GL_TEXTURE_2D)
@@ -79,17 +97,16 @@ class glWidget(QGLWidget):
         self.weight=[1.0]*len(self.control_points)
         self.element=[]
         self.selectEngine=selectMode.SelectionEngine()
-    def paintGL(self):
+    def paintGL(self) -> None:
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
         glMatrixMode(GL_MODELVIEW)
         self.arcball.cameraUpdate()
-        #self.camera.updateViewMatrix()
+        # self.camera.updateViewMatrix()
         self.drawCoordinateAxis()
         self.instantiateObject()
         # self.drawViewVolume(0.0, 0.5, 0.0, 0.5, 0.0, 1.0)
         self.selectObject()
         self.renderObject()
-
         glFlush()
     def instantiateObject(self):
         if self.status==0:
@@ -120,12 +137,12 @@ class glWidget(QGLWidget):
             self.element.append([self.status, bezier])
         elif self.status==7:
             showPolygon = self.parent.ui.bSplineSurface_displayMeshcheckBox.isChecked()
+            showTexture=self.parent.ui.bSplineSurface_displayTexture_checkBox.isChecked()
             divs = self.parent.ui.divsSplineSurfaceBox_spinBox.value()
             order=self.parent.ui.degreeBSplineSurface_spinBox.value()
             knotsType=self.parent.ui.bSplineSurface_comboBox.currentText()
-            splineSurface = BSplineSurface(self.surface,order,divs,knotsType, showPolygon)
-            splineSurface.getBSplineSurfacePoints()
-            splineSurface.dlbPatch=splineSurface.genMesh()
+            splineSurface = BSplineSurface(self.surface,order,divs,knotsType, showPolygon,showTexture)
+            splineSurface.dlbPatch=splineSurface.genClampedBSplineSurface()
             self.element.append([self.status, splineSurface])
         elif self.status==8:
             nurbs = NURBS(self.control_points,weights=self.weight,order=self.parent.ui.degreeNURBS_spinBox.value(),
@@ -134,6 +151,10 @@ class glWidget(QGLWidget):
         elif self.status==9:
             self.weightForm = weightForm.NURBS_WeightForm(len(self.control_points), self.weight)
             self.weightForm.setupUI()
+        elif self.status==10:
+            model=modelLoader.Model("./teapotCGA.bpt")
+            model.loadModel()
+            self.element.append([self.status, model])
         else:
             self.update()
         self.status=100
@@ -159,9 +180,11 @@ class glWidget(QGLWidget):
                 elif status== 6:
                     shape.drawMultiBeizerCurve()
                 elif status==7:
-                    glCallList(shape.dlbPatch)
+                    glCallLists(shape.dlbPatch)
                 elif status==8:
                     shape.drawNURBS()
+                elif status==10:
+                    shape.renderModel()
                 else:
                     self.update()
 
@@ -172,7 +195,6 @@ class glWidget(QGLWidget):
         self.selectionMode= mode
         #print(self.selectionMode)
         self.update()
-
     def clearScreen(self):
         glFlush()
         self.status=100
@@ -338,6 +360,11 @@ class glWidget(QGLWidget):
         winZ=glReadPixels(x,winY,1,1,GL_DEPTH_COMPONENT,GL_FLOAT)
         posX,posY,posZ=gluUnProject(winX, winY, winZ, modelview, projection, viewport)
         return posX,posY,posZ
+    def createOverlayDialog(self):
+        dialog=QtWidgets.QDialog(self,QtCore.Qt.CustomizeWindowHint|QtCore.Qt.WindowTitleHint)
+        dialog.setWindowOpacity(0.5)
+        dialog.setWindowTitle("Overlay")
+        return dialog
 sys._excepthook = sys.excepthook
 def my_exception_hook(exctype, value, traceback):
     # Print the error and traceback
