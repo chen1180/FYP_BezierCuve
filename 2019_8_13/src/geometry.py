@@ -90,9 +90,9 @@ class surface:
         return controlPoints
 
     @classmethod
-    def convertListToPoint(self,mat):
+    def convertListToPoint(self,matrix):
         controlPoints = []
-        for row in mat:
+        for row in matrix:
             controlPointsRow = []
             for column in row:
                 controlPointsRow.append(point.with_components(column))

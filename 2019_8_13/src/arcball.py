@@ -68,8 +68,6 @@ class Arcball:
             self.angle=0
             self.redrawContinue=False
     def cameraUpdate(self):
-        m = glGetFloatv(GL_MODELVIEW_MATRIX)
-        glLoadIdentity()
         if self.pan:
             glTranslatef(self.lookatCenter.x,self.lookatCenter.y,self.lookatCenter.z)
             self.lookatCenter=point(0,0,0)
@@ -79,7 +77,6 @@ class Arcball:
             self.scale=1.0
         if self.trackingMouse:
             glRotatef(self.angle,self.axis.x,self.axis.y,self.axis.z)
-        glMultMatrixf(m)
     def normalize(self, p):
         length = (p[0] ** 2 + p[1] ** 2 + p[2] ** 2) ** 0.5
         return p * (1 / length)

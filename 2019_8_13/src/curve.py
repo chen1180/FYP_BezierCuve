@@ -1,6 +1,7 @@
 from OpenGL.GL import *
 import numpy as np
 from geometry import point,surface,curve
+from PyQt5.QtWidgets import QMessageBox
 import math
 class BezierCurve:
     def __init__(self,controlPoints,type,divs=10):
@@ -194,7 +195,7 @@ class BezierCurve:
 
 class BSpline:
     def __init__(self,controlPoints,order,knotsType="Clamped",divs=100):
-        self.controlPoints=list(controlPoints)
+        self.controlPoints=controlPoints[:]
         self.order=order
         self.divs=divs
         self.knotsType=knotsType
@@ -233,13 +234,16 @@ class BSpline:
             if u >= knots[idx] and u < knots[idx + 1]:
                 k = idx
                 break
-        N[k] = 1.0
-        for d in range(1, p + 1):
-            N[k - d] = (knots[k + 1] - u) / (knots[k + 1] - knots[(k - d) + 1]) * N[(k - d) + 1]
-            for i in range(k - d + 1, k):
-                N[i] = (u - knots[i]) / (knots[i + d] - knots[i]) * N[i] + (knots[i + d + 1] - u) / (
-                            knots[i + d + 1] - knots[i + 1]) * N[i + 1]
-            N[k] = (u - knots[k]) / (knots[k + d] - knots[k]) * N[k]
+        try:
+            N[k] = 1.0
+            for d in range(1, p + 1):
+                N[k - d] = (knots[k + 1] - u) / (knots[k + 1] - knots[(k - d) + 1]) * N[(k - d) + 1]
+                for i in range(k - d + 1, k):
+                    N[i] = (u - knots[i]) / (knots[i + d] - knots[i]) * N[i] + (knots[i + d + 1] - u) / (
+                                knots[i + d + 1] - knots[i + 1]) * N[i + 1]
+                N[k] = (u - knots[k]) / (knots[k + d] - knots[k]) * N[k]
+        except Exception as e:
+            print("Got error {}".format(e))
         N=N[0:n]
         return N
     def getCoefficent(self):
@@ -277,12 +281,6 @@ class BSpline:
         knots+=[n-k]*(nKnots-n)
         print(knots)
         return knots
-    def createClosedUniformKnots(self, n, k):
-        nKnots = n + k + 1
-        knots = [None] * nKnots
-        for i in range(nKnots):
-            knots[i] = i
-        return knots
     # def createBezierKnots(self, n, k):
     #     #Boehm's Algorithm
     #     #http://web.archive.org/web/20120227050519/http://tom.cs.byu.edu/~455/bs.pdf
@@ -299,9 +297,12 @@ class BSpline:
         elif self.knotsType=="Open":
             knots = self.createOpenUniformKnots(len(self.controlPoints), self.order)
         elif self.knotsType=="Closed":
+            print(self.controlPoints)
             for i in range(self.order):
                 self.controlPoints.append(self.controlPoints[i])
-            knots = self.createClosedUniformKnots(len(self.controlPoints), self.order)
+            print(self.controlPoints)
+            knots = self.createOpenUniformKnots(len(self.controlPoints), self.order)
+            print(knots)
         # elif self.knotsType=="Bezier":
         #     knots=self.createBezierKnots(len(self.controlPoints),self.order)
         return knots
@@ -345,14 +346,14 @@ class BSpline:
             return a * self.deBoor_Cox(i, k - 1, t, knots) + b * self.deBoor_Cox(i + 1, k - 1, t, knots)
 class NURBS:
     def __init__(self,controlPoints,weights,order,knotsType="Clamped",divs=100):
-        self.controlPoints=list(controlPoints)
+        self.controlPoints=controlPoints.copy()
         self.order=order
         self.divs=divs
         self.knotsType=knotsType
         self.knots=self.setKnots()
         self.weights=weights
         self.curvePoints=self.getNURBSPoints()
-    def computeClampedCofficient(self,n,p,u,knots):
+    def computeCofficient(self,n,p,u,knots):
         #for clamped B-Spline
         #reference https://pages.mtu.edu/~shene/COURSES/cs3621/NOTES/spline/B-spline/bspline-curve-coef.html
         N=[0]*(n)
@@ -361,18 +362,23 @@ class NURBS:
             if u>=knots[idx] and u<knots[idx+1]:
                 k=idx
                 break
-        if u==knots[0]:
-            N[0]=1.0
-            return N
-        elif u==knots[-1]:
-            N[-1]=1.0
-            return N
-        N[k]=1.0
-        for d in range(1,p+1):
-            N[k-d]=(knots[k+1]-u)/(knots[k+1]-knots[(k-d)+1])*N[(k-d)+1]
-            for i in range(k-d+1,k):
-                N[i]=(u-knots[i])/(knots[i+d]-knots[i])*N[i]+(knots[i+d+1]-u)/(knots[i+d+1]-knots[i+1])*N[i+1]
-            N[k]=(u-knots[k])/(knots[k+d]-knots[k])*N[k]
+        if self.knotsType=="Clamped" or self.knotsType=="Circle":
+            if u==knots[0]:
+                N[0]=1.0
+                return N
+            elif u==knots[-1]:
+                N[-1]=1.0
+                return N
+        try:
+            N[k]=1.0
+            for d in range(1,p+1):
+                N[k-d]=(knots[k+1]-u)/(knots[k+1]-knots[(k-d)+1])*N[(k-d)+1]
+                for i in range(k-d+1,k):
+                    N[i]=(u-knots[i])/(knots[i+d]-knots[i])*N[i]+(knots[i+d+1]-u)/(knots[i+d+1]-knots[i+1])*N[i+1]
+                N[k]=(u-knots[k])/(knots[k+d]-knots[k])*N[k]
+        except Exception as e:
+            print("Array:",N)
+            print(e)
         return N
     def getNURBSPoints(self):
         tmin = self.knots[self.order]
@@ -381,7 +387,7 @@ class NURBS:
         curve = []
         for i in range(self.divs):
             t = tmin + i * steps
-            coe=self.computeClampedCofficient(len(self.controlPoints),self.order,t,self.knots)
+            coe=self.computeCofficient(len(self.controlPoints),self.order,t,self.knots)
             nwp=point(0,0,0)
             nw=0
             for n,w,p in zip(coe,self.weights,self.controlPoints):
@@ -391,7 +397,7 @@ class NURBS:
                 p=nwp*(1/nw)
                 curve.append(p)
             except Exception as e:
-                print(e)
+                messengeBox=QMessageBox.warning(None,"Warning",e.args[0],QMessageBox.Yes|QMessageBox.No)
         # for row in Nik:
         #       print(row)
         # print(len(Nik))
@@ -401,6 +407,14 @@ class NURBS:
         knots=[0]*(k+1)
         knots+=[i for i in range(1,n-k)]
         knots+=[n-k]*(nKnots-n)
+        print(knots)
+        return knots
+    def createOpenUniformKnots(self,n,k):
+        #For open B-spline curves, the domain is [uk, um-k]. p is the degree,m is n+k+1
+        nKnots = n + k + 1
+        knots = [None] * nKnots
+        for i in range(nKnots):
+            knots[i] = i
         print(knots)
         return knots
     def setWeights(self,w):
@@ -417,6 +431,8 @@ class NURBS:
             for i in range(self.order):
                 self.controlPoints.append(self.controlPoints[i])
             knots = self.createClosedUniformKnots(len(self.controlPoints), self.order)
+        elif self.knotsType=="Circle":
+            knots = [0, 0, 0, 1, 1, 2, 2, 3, 3, 4, 4, 4]
         # elif self.knotsType=="Bezier":
         #     knots=self.createBezierKnots(len(self.controlPoints),self.order)
         return knots
