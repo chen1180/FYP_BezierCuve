@@ -1,12 +1,11 @@
 from OpenGL.GL import *
 from OpenGL.GLU import *
 from PyQt5 import QtGui,QtWidgets,QtCore
-from PyQt5.QtOpenGL import *
-from ui import weightForm, mainForm,textureLoadingDialog
+from ui import weightForm, textureLoadingDialog, cubeOverlay, mainForm
 from geometry import point,surface,curve
 import sys
 from curve import BezierCurve,BSpline,NURBS
-from surface import BeizerSurface,BSplineSurface
+from surface import BeizerSurface,BSplineSurface,NurbsSurface
 import selectMode
 import arcball
 import modelLoader
@@ -39,6 +38,11 @@ class MainWindow(QtWidgets.QMainWindow):
         self.ui.circleNURBS_btn.clicked.connect(lambda state, x=11: self.glWidget.changeStatus(x))
         self.ui.sphereNURBS_Btn.clicked.connect(lambda state, x=12: self.glWidget.changeStatus(x))
         self.ui.bsplineTexture_Btn.clicked.connect(lambda state, x=13: self.glWidget.changeStatus(x))
+        self.ui.cylinderNURBS_Btn.clicked.connect(lambda state, x=14: self.glWidget.changeStatus(x))
+        self.ui.bilinearNURBS_Btn.clicked.connect(lambda state, x=15: self.glWidget.changeStatus(x))
+        self.ui.revolutedShapeNURBS_Btn.clicked.connect(lambda state, x=16: self.glWidget.changeStatus(x))
+        self.ui.sphereNURBS_Btn.clicked.connect(lambda state, x=17: self.glWidget.changeStatus(x))
+        self.ui.torusNURBS_Btn.clicked.connect(lambda state, x=18: self.glWidget.changeStatus(x))
         root=QtWidgets.QTreeWidgetItem(self.ui.scenetreeWidget)
         self.ui.degreeBSplineSurface_spinBox.value()
         self.ui.bSplineSurface_displayTexture_checkBox.toggled
@@ -72,7 +76,7 @@ class graphicView(QtWidgets.QGraphicsView):
         glLoadIdentity();
         gluOrtho2D(0, 1, 0, 1)
 
-class glWidget(QGLWidget):
+class glWidget(QtWidgets.QOpenGLWidget):
     def __init__(self, parent=None):
         super(glWidget, self).__init__()
         self.status=100
@@ -85,13 +89,16 @@ class glWidget(QGLWidget):
         self.parent=parent
         self.selectionMode=False
         self.imgPath=None
+        self.bubble=cubeOverlay.cubeRotator()
     def initializeGL(self):
+        #TODO: Change traditional opengl pipeline to modern opengl pipeline
+        print(self.getOpenglInfo())
         self.setFocusPolicy(QtCore.Qt.StrongFocus)
         self.setMouseTracking(True)
         glClearDepth(1.0)
-        glDepthFunc(GL_LESS)
-        glEnable(GL_CULL_FACE)
-        glCullFace(GL_BACK)
+        # glDepthFunc(GL_LESS)
+        # glEnable(GL_CULL_FACE)
+        # glCullFace(GL_BACK)
         glEnable(GL_DEPTH_TEST)
         glShadeModel(GL_SMOOTH)
         glEnable(GL_TEXTURE_2D)
@@ -100,17 +107,17 @@ class glWidget(QGLWidget):
         gluOrtho2D(-1,1,-1,1)
         #Define data structure for drawing
         self.surface=surface.convertListToPoint(
-            [[[-0.75, -0.75, -0.50], [-0.25, -0.75, 0.00], [0.25, -0.75, 0.00], [0.75, -0.75, -0.50],[1.0,-0.75,-0.5]],
-             [[-0.75, -0.25, -0.75], [-0.25, -0.25, 0.50], [0.25, -0.25, 0.50], [0.75, -0.25, -0.75],[1.0,-0.25,-0.5]],
-             [[-0.75, 0.25, 0.00], [-0.25, 0.25, -0.50], [0.25, 0.25, -0.50], [0.75, 0.25, 0.00],[1.0,0.25,0.0]],
-             [[-0.75, 0.75, -0.50], [-0.25, 0.75, -1.00], [0.25, 0.75, -1.00], [0.75, 0.75, -0.50],[1,0.75,-0.5]],
-             [[-0.75, 1.0, -0.50], [-0.25, 1.0, -1.00], [0.25, 1.0, -1.00], [0.75, 1.0, -0.50],[1,1.0,-0.5]]])
+            [[[-1, -1, -0.5], [-1, 1, -0.5], [1, 1, -0.5], [1, -1, -0.5]],
+             [[-1, -1, -0.2], [-1, 1, -0.2], [1, 1, -0.2], [1, -1,-0.2]],
+              [[-1, -1, 0.2], [-1, 1,  0.2], [1, 1,  0.2], [1, -1,  0.2]],
+               [[-1, -1,  0.5], [-1, 1, 0.5], [1, 1, 0.5], [1, -1, 0.5]],
+                [[-1, -1, 1], [-1, 1, 1], [1, 1, 1], [1, -1, 1]]])
         # self.surface=surface.generateRandomMatrix(dim=[4,4,3])
         #self.control_points = curve.generateMatrix(dim=[8, 3])
         # self.control_points=curve.listToPoint([[-1.0, -0.0, -0.00], [-0.5, -1.0, 0.00], [0.0, 1.0, 0.00],[0.5, 0.5, 0],[0.75, -0.25, -0.50], [1.0, 1.0,0],[1.5, -0.5,0]])
         self.control_points = curve.listToPoint(
-            [[-0.75, -0.75, -0.50], [-0.25, -0.75, 0.00], [0.25, -0.75, 0.00], [0.75, -0.75, -0.50],[1.0,-0.75,-0.5]])
-        self.weight=[1,2**0.5/2,1,2**0.5/2,1,2**0.5/2,1,2**0.5/2,1]
+            [[1,0,0],[2,1,0],[1,1,0],[1,2,0]])
+        self.weight=[1]*len(self.control_points)
         # self.weight=[1.0,2**0.5/2]*len(self.control_points)
         self.element=[]
         self.selectEngine=selectMode.SelectionEngine()
@@ -124,6 +131,16 @@ class glWidget(QGLWidget):
         self.selectObject()
         self.renderObject()
         glFlush()
+    def paintEvent(self, e: QtGui.QPaintEvent) -> None:
+        self.makeCurrent()
+        self.setupViewport(self.width(),self.height())
+        self.paintGL()
+        painter = QtGui.QPainter(self)
+        painter.setPen(QtCore.Qt.white)
+        painter.setRenderHint(QtGui.QPainter.Antialiasing)
+        # painter.drawText(100, 100, "Test")
+        # self.bubble.drawBubble(painter)
+
     def instantiateObject(self):
         if self.status==0:
             self.clearScreen()
@@ -167,7 +184,6 @@ class glWidget(QGLWidget):
         elif self.status==9:
             self.weightForm = weightForm.NURBS_WeightForm(len(self.control_points), self.weight)
             self.weightForm.setupUI()
-
         elif self.status==10:
             model=modelLoader.Model("./teapotCGA.bpt")
             model.loadModel()
@@ -176,13 +192,35 @@ class glWidget(QGLWidget):
             circles=curve.listToPoint(
             [[0.0, 1.0, 0.00], [1.0, 1.0, 0.00], [1, 0, 0.00], [1.0, -1, 0.00], [0, -1, 0.00], [-1, -1, 0.00],
              [-1, 0, 0.00], [-1, 1, 0.00], [0.0, 1.0, 0.00]])
-            nurbs = NURBS(circles,weights=self.weight,order=self.parent.ui.degreeNURBS_spinBox.value(),
-                          knotsType="Circle")
+            weight=[1,2**0.5/2,1,2**0.5/2,1,2**0.5/2,1,2**0.5/2,1]
+            nurbs = NURBS(circles,weights=weight,order=self.parent.ui.degreeNURBS_spinBox.value(),knotsType="Circle")
             print(nurbs.controlPoints)
             self.element.append([self.status, nurbs])
         elif self.status==13:
             self.textureDialog=textureLoadingDialog.textureFileDialog(self)
             self.textureDialog.okButton.clicked.connect(self.textureDialogOk)
+        elif self.status==14:
+            nurbsSurface=NurbsSurface()
+            self.element.append([self.status, nurbsSurface])
+        elif self.status==15:
+            nurbsSurface=NurbsSurface()
+            self.element.append([self.status, nurbsSurface])
+        elif self.status==16:
+            nurbsSurface=NurbsSurface()
+            nurbsSurface.getNURBS_SurfaceRevolution(point(0,0,0),point(0,0,1),360, curve.listToPoint(
+            [[1,0,0],[2,0,1],[1,0,1],[1,0,2]]),[1,1,1,1],knotsType="Clamped",order=3,divs=20)
+            self.element.append([self.status, nurbsSurface])
+        elif self.status==17:
+            nurbsSurface=NurbsSurface()
+            nurbsSurface.getNURBS_SurfaceRevolution(point(0,0,0),point(0,1,0),360, curve.listToPoint(
+            [[0.0, 1.0, 0.00], [1.0, 1.0, 0.00], [1, 0, 0.00], [1.0, -1, 0.00], [0, -1, 0.00]]),[1,2**0.5/2,1,2**0.5/2,1],knotsType="Circle",order=2,divs=20)
+            self.element.append([self.status, nurbsSurface])
+        elif self.status==18:
+            nurbsSurface=NurbsSurface()
+            nurbsSurface.getNURBS_SurfaceRevolution(point(1,0,1),point(0,2,0),360, curve.listToPoint(
+                [[0.0, 1.0, 0.00], [1.0, 1.0, 0.00], [1, 0, 0.00], [1.0, -1, 0.00], [0, -1, 0.00], [-1, -1, 0.00],
+                 [-1, 0, 0.00], [-1, 1, 0.00], [0.0, 1.0, 0.00]]),[1,2**0.5/2,1,2**0.5/2,1,2**0.5/2,1,2**0.5/2,1],knotsType="Circle",order=2,divs=20)
+            self.element.append([self.status, nurbsSurface])
         else:
             self.update()
         self.status=100
@@ -219,9 +257,18 @@ class glWidget(QGLWidget):
                     shape.renderModel()
                 elif status==11:
                     shape.drawNURBS()
+                elif status==14:
+                    shape.drawNURBS_Cylinder()
+                elif status == 15:
+                    shape.drawNURBS_BilinearSurface()
+                elif status == 16:
+                    shape.drawNURBS_SurfaceRevolution(shape.result)
+                elif status == 17:
+                    shape.drawNURBS_SurfaceRevolution(shape.result)
+                elif status == 18:
+                    shape.drawNURBS_SurfaceRevolution(shape.result)
                 else:
                     self.update()
-
     def changeStatus(self,newStatus=0):
         self.status=newStatus
         self.update()
@@ -256,24 +303,24 @@ class glWidget(QGLWidget):
         glVertex3f(0, 0, 0)
         glVertex3f(0, 0, 1)
         glEnd()
-        #x-y plane
-        glColor3f(0.5, 0.5, 0.5)
-        glBegin(GL_QUADS)
-        glVertex3f(-lx/2,0,-ly/2)
-        glVertex3f(lx / 2, 0, -ly / 2)
-        glVertex3f(lx / 2, 0, ly / 2)
-        glVertex3f(-lx / 2, 0, ly / 2)
-        glEnd()
+        # #x-y plane
+        # glColor3f(0.5, 0.5, 0.5)
+        # glBegin(GL_QUADS)
+        # glVertex3f(-lx/2,0,-ly/2)
+        # glVertex3f(lx / 2, 0, -ly / 2)
+        # glVertex3f(lx / 2, 0, ly / 2)
+        # glVertex3f(-lx / 2, 0, ly / 2)
+        # glEnd()
 
     def resizeGL(self, w: int, h: int) -> None:
+        self.setupViewport(w,h)
+    def setupViewport(self,w,h):
         aspect = float(w / h)
         glViewport(0, 0, w, h)
         glMatrixMode(GL_PROJECTION)
         glLoadIdentity()
-        glOrtho(-1,1,-1,1,-1,1)
+        gluOrtho2D(-1, 1, -1, 1)
         glMatrixMode(GL_MODELVIEW)
-        glLoadIdentity()
-
     def wheelEvent(self, a0: QtGui.QWheelEvent) -> None:
         ###http://goldsequence.blogspot.com/2016/04/how-to-zoom-in-in-opengl-qt.html
         degree=a0.angleDelta().y()
@@ -404,6 +451,20 @@ class glWidget(QGLWidget):
         dialog.setWindowOpacity(0.5)
         dialog.setWindowTitle("Overlay")
         return dialog
+    def getOpenglInfo(self):
+     info = """ 
+      Vendor: {0} 
+      Renderer: {1} 
+      OpenGL Version: {2} 
+      Shader Version: {3} 
+     """.format(
+      glGetString(GL_VENDOR),
+      glGetString(GL_RENDERER),
+      glGetString(GL_VERSION),
+      glGetString(GL_SHADING_LANGUAGE_VERSION)
+     )
+     return info
+
 sys._excepthook = sys.excepthook
 def my_exception_hook(exctype, value, traceback):
     # Print the error and traceback
@@ -417,6 +478,9 @@ sys.excepthook = my_exception_hook
 if __name__ == '__main__':
     app = QtWidgets.QApplication(['Yo'])
     window = MainWindow()
+    fmt = QtGui.QSurfaceFormat()
+    fmt.setSamples(4)
+    QtGui.QSurfaceFormat.setDefaultFormat(fmt)
     window.show()
     sys.exit(app.exec_())
 #TODO

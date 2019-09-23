@@ -350,10 +350,10 @@ class NURBS:
         self.order=order
         self.divs=divs
         self.knotsType=knotsType
-        self.knots=self.setKnots()
+        self.knots=self.setKnots(self.knotsType,len(self.controlPoints),self.order)
         self.weights=weights
         self.curvePoints=self.getNURBSPoints()
-    def computeCofficient(self,n,p,u,knots):
+    def computeCofficient(self,n,p,u,knots,knotsType):
         #for clamped B-Spline
         #reference https://pages.mtu.edu/~shene/COURSES/cs3621/NOTES/spline/B-spline/bspline-curve-coef.html
         N=[0]*(n)
@@ -362,7 +362,7 @@ class NURBS:
             if u>=knots[idx] and u<knots[idx+1]:
                 k=idx
                 break
-        if self.knotsType=="Clamped" or self.knotsType=="Circle":
+        if knotsType=="Clamped" or knotsType=="Circle":
             if u==knots[0]:
                 N[0]=1.0
                 return N
@@ -377,7 +377,7 @@ class NURBS:
                     N[i]=(u-knots[i])/(knots[i+d]-knots[i])*N[i]+(knots[i+d+1]-u)/(knots[i+d+1]-knots[i+1])*N[i+1]
                 N[k]=(u-knots[k])/(knots[k+d]-knots[k])*N[k]
         except Exception as e:
-            print("Array:",N)
+            print("Nurbs Coeffecient Error:",N)
             print(e)
         return N
     def getNURBSPoints(self):
@@ -387,7 +387,7 @@ class NURBS:
         curve = []
         for i in range(self.divs):
             t = tmin + i * steps
-            coe=self.computeCofficient(len(self.controlPoints),self.order,t,self.knots)
+            coe=self.computeCofficient(len(self.controlPoints),self.order,t,self.knots,self.knotsType)
             nwp=point(0,0,0)
             nw=0
             for n,w,p in zip(coe,self.weights,self.controlPoints):
@@ -397,7 +397,8 @@ class NURBS:
                 p=nwp*(1/nw)
                 curve.append(p)
             except Exception as e:
-                messengeBox=QMessageBox.warning(None,"Warning",e.args[0],QMessageBox.Yes|QMessageBox.No)
+                # messengeBox=QMessageBox.warning(None,"Warning",e.args[0],QMessageBox.Yes|QMessageBox.No)
+                print("NURBS CURVE ERROR",e)
         # for row in Nik:
         #       print(row)
         # print(len(Nik))
@@ -417,22 +418,31 @@ class NURBS:
             knots[i] = i
         print(knots)
         return knots
+    def createCircleKnots(self,n,k=2):
+        nKnots=n+k+1
+        knots=[]
+        knots+=[0]*(k+1)
+        for i in range(int(n/3)):
+            knots+=[i+1,i+1]
+        knots+=[int(n/3)+1]*(k+1)
+        print("cicle knots",knots)
+        return knots
     def setWeights(self,w):
         weights=[w]*(len(self.controlPoints))
         return weights
 
-    def setKnots(self):
+    def setKnots(self,knotsType,n,order):
         knots = []
-        if self.knotsType == "Clamped":
-            knots = self.createClampedUniformKnots(len(self.controlPoints), self.order)
-        elif self.knotsType == "Open":
-            knots = self.createOpenUniformKnots(len(self.controlPoints), self.order)
-        elif self.knotsType == "Closed":
-            for i in range(self.order):
-                self.controlPoints.append(self.controlPoints[i])
-            knots = self.createClosedUniformKnots(len(self.controlPoints), self.order)
-        elif self.knotsType=="Circle":
-            knots = [0, 0, 0, 1, 1, 2, 2, 3, 3, 4, 4, 4]
+        if knotsType == "Clamped":
+            knots = self.createClampedUniformKnots(n, order)
+        elif knotsType == "Open":
+            knots = self.createOpenUniformKnots(n, order)
+        # elif self.knotsType == "Closed":
+        #     for i in range(self.order):
+        #         self.controlPoints.append(self.controlPoints[i])
+        #     knots = self.createClosedUniformKnots(len(self.controlPoints), self.order)
+        elif knotsType=="Circle":
+            knots = self.createCircleKnots(n, order)
         # elif self.knotsType=="Bezier":
         #     knots=self.createBezierKnots(len(self.controlPoints),self.order)
         return knots

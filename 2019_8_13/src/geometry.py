@@ -16,6 +16,11 @@ class point:
     @classmethod
     def dot(cls, p1, p2):
         return p1.x*p2.x+p1.y*p2.y+p1.z*p2.z
+    def normalize(self):
+        l=self.getLength()
+        if l==0:
+            l=1
+        return point(self.x/l,self.y/l,self.z/l)
     def components(self):
         return [self.x,self.y,self.z]
     def glVertex3(self):
