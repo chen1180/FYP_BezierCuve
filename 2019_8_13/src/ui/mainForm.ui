@@ -468,17 +468,10 @@
           </property>
          </widget>
         </item>
-        <item row="18" column="0" colspan="2">
-         <widget class="QPushButton" name="sphereNURBS_Btn">
+        <item row="14" column="0" colspan="2">
+         <widget class="QPushButton" name="cylinderNURBS_Btn">
           <property name="text">
-           <string> NURBS Sphere</string>
-          </property>
-         </widget>
-        </item>
-        <item row="20" column="0" colspan="2">
-         <widget class="QPushButton" name="torusNURBS_Btn">
-          <property name="text">
-           <string> NURBS Torus</string>
+           <string> NURBS Cylinder</string>
           </property>
          </widget>
         </item>
@@ -489,10 +482,10 @@
           </property>
          </widget>
         </item>
-        <item row="14" column="0" colspan="2">
-         <widget class="QPushButton" name="cylinderNURBS_Btn">
+        <item row="18" column="0" colspan="2">
+         <widget class="QPushButton" name="sphereNURBS_Btn">
           <property name="text">
-           <string> NURBS Cylinder</string>
+           <string> NURBS Sphere</string>
           </property>
          </widget>
         </item>
@@ -551,7 +544,7 @@
    </property>
    <property name="icon">
     <iconset>
-     <normaloff>../../Icons/mouse-pointer.png</normaloff>../../Icons/mouse-pointer.png</iconset>
+     <normaloff>../../../../../../Icons/mouse-pointer.png</normaloff>../../../../../../Icons/mouse-pointer.png</iconset>
    </property>
    <property name="text">
     <string>Select mode</string>
@@ -560,7 +553,7 @@
   <action name="actionPencil">
    <property name="icon">
     <iconset>
-     <normaloff>../../Icons/pencil.png</normaloff>../../Icons/pencil.png</iconset>
+     <normaloff>../../../../../../Icons/pencil.png</normaloff>../../../../../../Icons/pencil.png</iconset>
    </property>
    <property name="text">
     <string>Pencil</string>
@@ -572,7 +565,7 @@
   <action name="actionClearScreen">
    <property name="icon">
     <iconset>
-     <normaloff>../../Icons/eraser.png</normaloff>../../Icons/eraser.png</iconset>
+     <normaloff>../../../../../../Icons/eraser.png</normaloff>../../../../../../Icons/eraser.png</iconset>
    </property>
    <property name="text">
     <string>ClearScreen</string>

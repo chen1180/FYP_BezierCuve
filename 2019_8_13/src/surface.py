@@ -449,6 +449,117 @@ class NurbsSurface(NURBS):
                     print("NURBS Surface V: direction error", e)
             self.result.append(tmp_row.copy())
         self.shape=Pij
+    def getNURBS_Torus(self,S,T,theta,P,W,knotsType="Clamped",order=2,divs=20):
+        '''Input: S: The axis is specified by a point
+                  T: a unit length vector
+                  theta: Angle of revolution
+                  P: control points that define the curve for revolution
+                  W: weights of the curve
+            Output: U: knots vector
+        '''
+        U=[]
+        if theta<=90:
+            narcs=1
+        elif theta<=180:
+            narcs=2
+            U+=[0.5,0.5]
+        elif theta<=270:
+            narcs=3
+            U+=[1/3,1/3,2/3,2/3]
+        else:
+            narcs = 4
+            U+=[1/4,1/4,2/4,2/4,3/4,3/4]
+        dtheta = theta / narcs
+        j = 3 + 2 * (narcs - 1)
+        for i in range(3):
+            U.insert(i,0)
+            U.insert(j,1)
+            j+=1
+        print(U)
+        wm=math.cos(math.radians(dtheta/2.0))
+        angle=0.0
+        cosines=[0]*(narcs+1)
+        sines=[0]*(narcs+1)
+        n = 2 * narcs
+        Pij=[[point(0,0,0)]*len(P) for i in range(n) ]
+        Pij.insert(0,P)
+        Wij=[[0]*len(P)  for i in range(n)]
+        Wij.insert(0,W)
+        for i in range(1,narcs+1):
+            angle+=dtheta
+            cosines[i]=np.cos(math.radians(angle))
+            sines[i]=np.sin(math.radians(angle))
+        print(cosines,sines)
+        for j in range(len(P)): #iterate row of control points
+            O=self.PointToLine(S,T,P[j])
+            X=P[j]-O
+            Y=point.cross(T,X)
+            r=X.normalize().getLength()
+            Pij[0][j]=P[j]
+            Wij[0][j]=W[j]
+            P0,T0,index,angle=P[j],Y,0,0
+            print("{}th point:\n O:{}\n X:{}\n Y:{}\n P:{}".format(j,O,X,Y,P[j]))
+            for i in range(1,narcs+1): #compute u row
+                P2=O+X*r*cosines[i]+Y*r*sines[i]
+                Pij[index + 2][j] = P2
+                Wij[index + 2][j] = W[j]
+                T2 = -sines[i] * X + cosines[i] * Y
+                Pij[index + 1][j]=self.Intersect3DLines(P0, T0, P2, T2)
+                Wij[index + 1][j] = wm * W[j]
+                print("{}th row:\n P2:{}\n T2:{}\n Pij:{}".format(i, P2, T2,  Pij[index + 1][j]))
+                index+= 2
+                if i < narcs:
+                    P0,T0=P2,T2
+        print("Pij")
+        for row in Pij:
+            print(row)
+        print("Wij")
+        for row in Wij:
+            print(row)
+        ###render####
+        vOrder = 2
+        vKnots = U
+        vmin = vKnots[vOrder]
+        vmax = vKnots[len(Pij)]
+        vsteps = float((vmax - vmin) / (divs - 1))
+        vWeight=[ Wij[row][0] for row in range(len(Wij))]
+        uOrder = order
+        uKnots = self.setKnots(knotsType,len(Pij[0]), uOrder)
+        umin = uKnots[uOrder]
+        umax = uKnots[len(Pij[0])]
+        usteps = float((umax - umin) / (divs - 1))
+
+        tmp = [None] * len(Pij)
+        for u in range(divs):
+            py = umin + u * usteps
+            for i, row in enumerate(Pij):
+                Nu = self.computeCofficient(len(row), uOrder, py, uKnots, knotsType)
+                nwp1 = point(0, 0, 0)
+                nw1 = 0
+                for n1, w1, p1 in zip(Nu, Wij[i], row):
+                    nwp1 += n1 * w1 * p1
+                    nw1 += n1 * w1
+                try:
+                    p1 = nwp1 * (1 / nw1)
+                    tmp[i] = p1
+                except Exception as e:
+                    print("NURBS Surface U: direction error", e)
+            tmp_row=[]
+            for v in range(divs):
+                px = vmin + v * vsteps
+                Nv = self.computeCofficient(len(tmp), vOrder, px, vKnots, "Circle")
+                nwp2 = point(0, 0, 0)
+                nw2=0
+                for n2, w2, p2 in zip(Nv, vWeight, tmp):
+                    nwp2 += n2 * w2 * p2
+                    nw2 += n2 * w2
+                try:
+                    p2 = nwp2 * (1 / nw2)
+                    tmp_row.append(p2)
+                except Exception as e:
+                    print("NURBS Surface V: direction error", e)
+            self.result.append(tmp_row.copy())
+        self.shape=Pij
     def drawNURBS_SurfaceRevolution(self,result):
         glColor3f(0.0, 1.0, 0.0)
         glLineWidth(3.0)
@@ -492,19 +603,20 @@ class NurbsSurface(NURBS):
                 p.glVertex3()
         glEnd()
 
-
-    def PointToLine(self,A,B,P):#https://www.qc.edu.hk/math/Advanced%20Level/Point_to_line.htm
-        ab=B-A
-        ap=P-A
+    def PointToLine(self,S,T,P):#https://www.qc.edu.hk/math/Advanced%20Level/Point_to_line.htm
+        st=T-S
+        sp=P-S
         try:
-            result=A+point.dot(ap,ab)/point.dot(ab,ab)*ab
-        except:
+            result=point.dot(st,sp)/point.dot(st,st)*st
+        except Exception as e:
+            print(e)
             result=point(0,0,0)
         return result
     def Intersect3DLines(self,P0, T0, P2, T2):
         #https://math.stackexchange.com/questions/3176543/intersection-point-of-2-lines-defined-by-2-points-each
-        return P0+T0
+        return (P0+T0)
 if __name__ == '__main__':
     b=NurbsSurface()
-    b.getNURBS_SurfaceRevolution(point(0,0,0),point(0,0,1),90, curve.listToPoint(
-            [[1,0,0],[2,0,1],[1,0,1],[1,0,2]]),[1,1,1,1])
+    b.getNURBS_Torus(point(-2,0,0),point(0,1,0),90, curve.listToPoint(
+                [[0.0, 1.0, 0.00], [1.0, 1.0, 0.00], [1, 0, 0.00], [1.0, -1, 0.00], [0, -1, 0.00], [-1, -1, 0.00],
+                 [-1, 0, 0.00], [-1, 1, 0.00], [0.0, 1.0, 0.00]]),[1,2**0.5/2,1,2**0.5/2,1,2**0.5/2,1,2**0.5/2,1],knotsType="Circle",order=2,divs=20)

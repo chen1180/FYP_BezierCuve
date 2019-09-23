@@ -1,6 +1,6 @@
 from OpenGL.GL import *
 from OpenGL.GLU import *
-from PyQt5 import QtGui,QtWidgets,QtCore
+from PyQt5 import QtGui,QtWidgets,QtCore,QtOpenGL
 from ui import weightForm, textureLoadingDialog, cubeOverlay, mainForm
 from geometry import point,surface,curve
 import sys
@@ -42,7 +42,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.ui.bilinearNURBS_Btn.clicked.connect(lambda state, x=15: self.glWidget.changeStatus(x))
         self.ui.revolutedShapeNURBS_Btn.clicked.connect(lambda state, x=16: self.glWidget.changeStatus(x))
         self.ui.sphereNURBS_Btn.clicked.connect(lambda state, x=17: self.glWidget.changeStatus(x))
-        self.ui.torusNURBS_Btn.clicked.connect(lambda state, x=18: self.glWidget.changeStatus(x))
+        # self.ui.torusNURBS_Btn.clicked.connect(lambda state, x=18: self.glWidget.changeStatus(x))
         root=QtWidgets.QTreeWidgetItem(self.ui.scenetreeWidget)
         self.ui.degreeBSplineSurface_spinBox.value()
         self.ui.bSplineSurface_displayTexture_checkBox.toggled
@@ -107,11 +107,11 @@ class glWidget(QtWidgets.QOpenGLWidget):
         gluOrtho2D(-1,1,-1,1)
         #Define data structure for drawing
         self.surface=surface.convertListToPoint(
-            [[[-1, -1, -0.5], [-1, 1, -0.5], [1, 1, -0.5], [1, -1, -0.5]],
-             [[-1, -1, -0.2], [-1, 1, -0.2], [1, 1, -0.2], [1, -1,-0.2]],
-              [[-1, -1, 0.2], [-1, 1,  0.2], [1, 1,  0.2], [1, -1,  0.2]],
-               [[-1, -1,  0.5], [-1, 1, 0.5], [1, 1, 0.5], [1, -1, 0.5]],
-                [[-1, -1, 1], [-1, 1, 1], [1, 1, 1], [1, -1, 1]]])
+            [[[-1, -0.5, -0.5], [-1, 1, -0.5], [1, 1, -0.5], [1, -1, -0.5]],
+             [[-1, -0.2, -0.2], [-1, 1, -0.2], [1, 1, -0.2], [1, -1,-0.2]],
+              [[-1, 0.2, 0.2], [-1, 1,  0.2], [1, 1,  0.2], [1, -1,  0.2]],
+               [[-1, 0.5,  0.5], [-1, 1, 0.5], [1, 1, 0.5], [1, -1, 0.5]],
+                [[-1, 1, 1], [-1, 1, 1], [1, 1, 1], [1, -1, 1]]])
         # self.surface=surface.generateRandomMatrix(dim=[4,4,3])
         #self.control_points = curve.generateMatrix(dim=[8, 3])
         # self.control_points=curve.listToPoint([[-1.0, -0.0, -0.00], [-0.5, -1.0, 0.00], [0.0, 1.0, 0.00],[0.5, 0.5, 0],[0.75, -0.25, -0.50], [1.0, 1.0,0],[1.5, -0.5,0]])
@@ -208,7 +208,7 @@ class glWidget(QtWidgets.QOpenGLWidget):
         elif self.status==16:
             nurbsSurface=NurbsSurface()
             nurbsSurface.getNURBS_SurfaceRevolution(point(0,0,0),point(0,0,1),360, curve.listToPoint(
-            [[1,0,0],[2,0,1],[1,0,1],[1,0,2]]),[1,1,1,1],knotsType="Clamped",order=3,divs=20)
+            [[2,0,-1],[1,0,-1],[1,0,0],[2,0,1],[1,0,1],[1,0,2]]),[1,1,1,1,1,1],knotsType="Clamped",order=3,divs=20)
             self.element.append([self.status, nurbsSurface])
         elif self.status==17:
             nurbsSurface=NurbsSurface()
@@ -217,7 +217,7 @@ class glWidget(QtWidgets.QOpenGLWidget):
             self.element.append([self.status, nurbsSurface])
         elif self.status==18:
             nurbsSurface=NurbsSurface()
-            nurbsSurface.getNURBS_SurfaceRevolution(point(1,0,1),point(0,2,0),360, curve.listToPoint(
+            nurbsSurface.getNURBS_Torus(point(-2,0,0),point(0,1,0),90, curve.listToPoint(
                 [[0.0, 1.0, 0.00], [1.0, 1.0, 0.00], [1, 0, 0.00], [1.0, -1, 0.00], [0, -1, 0.00], [-1, -1, 0.00],
                  [-1, 0, 0.00], [-1, 1, 0.00], [0.0, 1.0, 0.00]]),[1,2**0.5/2,1,2**0.5/2,1,2**0.5/2,1,2**0.5/2,1],knotsType="Circle",order=2,divs=20)
             self.element.append([self.status, nurbsSurface])
