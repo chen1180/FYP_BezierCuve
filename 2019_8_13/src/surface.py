@@ -89,6 +89,7 @@ class BSplineSurface(BSpline):
         self.curvePoints=[]
         self.texture = None
         self.texturePath = texturePath
+        self.textureSize=None
         self.dlbPatch =self.getBSplineSurfacePoints()
 
     def readTexture(self,path):
@@ -100,7 +101,14 @@ class BSplineSurface(BSpline):
 
         img = Image.open(path).transpose(Image.FLIP_TOP_BOTTOM)
         img_data = np.array(list(img.getdata()), np.uint8)
-
+        print("texteure binded:",img.size[0],img.size[1])
+        self.textureSize=(img.size[0],img.size[1])
+        # with open("txture_pixel.txt","w") as filehandle:
+        #     for i in range(img.size[0]):
+        #         for j in range(img.size[1]):
+        #             pixel=img_data[i*img.size[1]+j]
+        #             filehandle.write("[{},{},{}]".format(pixel[0],pixel[1],pixel[2]))
+        #         filehandle.write("\n")
         texture = glGenTextures(1)
         glBindTexture(GL_TEXTURE_2D, texture)
 
@@ -180,9 +188,10 @@ class BSplineSurface(BSpline):
                     coeff = self.computeClampedCofficient(len(temp), self.order, px, self.vKnots)
                 last[v] = self.getBSplinePoint(coeff, temp)
             self.curvePoints.append(last.copy())
-        # for row in self.curvePoints:
-        #     print(row)
     def drawTexture(self):
+        '''
+            Triangular texture mapping
+        '''
         if self.knotsType == "Clamped":
             self.uKnots = self.createClampedUniformKnots(len(self.controlPoints[0]), self.order)
             self.vKnots = self.createClampedUniformKnots(len(self.controlPoints), self.order)
@@ -214,7 +223,6 @@ class BSplineSurface(BSpline):
                 glVertex3f(self.curvePoints[v][u][0],self.curvePoints[v][u][1],self.curvePoints[v][u][2])
                 glTexCoord2f( px / vmax,py_next / umax)
                 glVertex3f(self.curvePoints[v][u+1][0],self.curvePoints[v][u+1][1],self.curvePoints[v][u+1][2])
-                # print("texture coordinate:",(self.curvePoints[v][u],self.curvePoints[v][u+1]))
             glEnd()
         glDisable(GL_TEXTURE_2D)
 class NurbsSurface(NURBS):
@@ -273,7 +281,7 @@ class NurbsSurface(NURBS):
     def drawNURBS_Cylinder(self):
         result=[]
         circles =curve.listToPoint([[0.0, 1.0, 0.00], [1.0, 1.0, 0.00], [1, 0, 0.00], [1.0, -1, 0.00], [0, -1, 0.00], [-1, -1, 0.00],
-             [-1, 0, 0.00], [-1, 1, 0.00], [0.0, 1.0, 0.00]])
+                                    [-1, 0, 0.00], [-1, 1, 0.00], [0.0, 1.0, 0.00]])
         uWeight = [1, 2 ** 0.5 / 2, 1, 2 ** 0.5 / 2, 1, 2 ** 0.5 / 2, 1, 2 ** 0.5 / 2, 1]
         knotsType = "Circle"
         uKnots= [0, 0, 0, 1, 1, 2, 2, 3, 3, 4, 4, 4]
@@ -498,7 +506,7 @@ class NurbsSurface(NURBS):
             Pij[0][j]=P[j]
             Wij[0][j]=W[j]
             P0,T0,index,angle=P[j],Y,0,0
-            print("{}th point:\n O:{}\n X:{}\n Y:{}\n P:{}".format(j,O,X,Y,P[j]))
+            # print("{}th point:\n O:{}\n X:{}\n Y:{}\n P:{}".format(j,O,X,Y,P[j]))
             for i in range(1,narcs+1): #compute u row
                 P2=O+X*r*cosines[i]+Y*r*sines[i]
                 Pij[index + 2][j] = P2
@@ -506,7 +514,7 @@ class NurbsSurface(NURBS):
                 T2 = -sines[i] * X + cosines[i] * Y
                 Pij[index + 1][j]=self.Intersect3DLines(P0, T0, P2, T2)
                 Wij[index + 1][j] = wm * W[j]
-                print("{}th row:\n P2:{}\n T2:{}\n Pij:{}".format(i, P2, T2,  Pij[index + 1][j]))
+                # print("{}th row:\n P2:{}\n T2:{}\n Pij:{}".format(i, P2, T2,  Pij[index + 1][j]))
                 index+= 2
                 if i < narcs:
                     P0,T0=P2,T2
@@ -614,9 +622,18 @@ class NurbsSurface(NURBS):
         return result
     def Intersect3DLines(self,P0, T0, P2, T2):
         #https://math.stackexchange.com/questions/3176543/intersection-point-of-2-lines-defined-by-2-points-each
-        return (P0+T0)
+        #https://blog.csdn.net/u013050857/article/details/40923789
+        # point_T0=P0+T0
+        # point_T2=P2-T2
+        # area_adb=point.cross(T2,point_T0-P2).getLength()
+        # area_acd=point.cross(T2,P2-P0).getLength()
+        # if area_acd==0:
+        #     area_acd=1
+        # k=area_adb/area_acd
+        # return (P0+point_T0*k)*(1/(k+1))
+        return (P0+T0+P2-T2)*0.5
 if __name__ == '__main__':
     b=NurbsSurface()
     b.getNURBS_Torus(point(-2,0,0),point(0,1,0),90, curve.listToPoint(
-                [[0.0, 1.0, 0.00], [1.0, 1.0, 0.00], [1, 0, 0.00], [1.0, -1, 0.00], [0, -1, 0.00], [-1, -1, 0.00],
-                 [-1, 0, 0.00], [-1, 1, 0.00], [0.0, 1.0, 0.00]]),[1,2**0.5/2,1,2**0.5/2,1,2**0.5/2,1,2**0.5/2,1],knotsType="Circle",order=2,divs=20)
+        [[0.0, 1.0, 0.00], [1.0, 1.0, 0.00], [1, 0, 0.00], [1.0, -1, 0.00], [0, -1, 0.00], [-1, -1, 0.00],
+         [-1, 0, 0.00], [-1, 1, 0.00], [0.0, 1.0, 0.00]]),[1,2**0.5/2,1,2**0.5/2,1,2**0.5/2,1,2**0.5/2,1],knotsType="Circle",order=2,divs=20)

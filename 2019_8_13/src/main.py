@@ -42,7 +42,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.ui.bilinearNURBS_Btn.clicked.connect(lambda state, x=15: self.glWidget.changeStatus(x))
         self.ui.revolutedShapeNURBS_Btn.clicked.connect(lambda state, x=16: self.glWidget.changeStatus(x))
         self.ui.sphereNURBS_Btn.clicked.connect(lambda state, x=17: self.glWidget.changeStatus(x))
-        # self.ui.torusNURBS_Btn.clicked.connect(lambda state, x=18: self.glWidget.changeStatus(x))
+        self.ui.torusNURBS_Btn.clicked.connect(lambda state, x=18: self.glWidget.changeStatus(x))
         root=QtWidgets.QTreeWidgetItem(self.ui.scenetreeWidget)
         self.ui.degreeBSplineSurface_spinBox.value()
         self.ui.bSplineSurface_displayTexture_checkBox.toggled
@@ -472,10 +472,10 @@ def my_exception_hook(exctype, value, traceback):
     # Call the normal Exception hook after
     sys._excepthook(exctype, value, traceback)
     sys.exit(1)
-
 # Set the exception hook to our wrapping function
 sys.excepthook = my_exception_hook
 if __name__ == '__main__':
+    QtWidgets.QApplication.setAttribute(QtCore.Qt.AA_EnableHighDpiScaling,True)
     app = QtWidgets.QApplication(['Yo'])
     window = MainWindow()
     fmt = QtGui.QSurfaceFormat()

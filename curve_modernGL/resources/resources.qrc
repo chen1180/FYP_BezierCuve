@@ -1,0 +1,15 @@
+<RCC>
+    <qresource prefix="/">
+        <file>TriangleShader/fragmentShader.frag</file>
+        <file>TriangleShader/vertexShader.vert</file>
+        <file>BezierShader/bezierShader.frag</file>
+        <file>BezierShader/bezierShader.vert</file>
+        <file>BezierShader/bezierShader.cs</file>
+        <file>BezierShader/bezierShader.es</file>
+        <file>BezierShader/bezierShader.gs</file>
+        <file>images/new.png</file>
+        <file>images/print.png</file>
+        <file>images/save.png</file>
+        <file>images/undo.png</file>
+    </qresource>
+</RCC>
