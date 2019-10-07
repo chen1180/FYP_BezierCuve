@@ -7,13 +7,12 @@ from curve_modernGL.view.sceneDockWidget import sceneDockWidget
 from curve_modernGL.model.sceneNode import sceneNode
 import numpy as np
 import curve_modernGL.resources.resources
-class Bezier(QListWidgetItem,sceneNode):
+class BezierPatch(QListWidgetItem,sceneNode):
     def __init__(self,parent=None,name:str=None,data:QVector3D=None):
-        super(Bezier, self).__init__()
+        super(BezierPatch, self).__init__()
         self.setText(str(name))
         self.setData(Qt.UserRole,data)
         self.vertices=self.QVectorListToArray(self.data(Qt.UserRole))
-        print(self.vertices)
         #vertices data
         self.originalData=data
         #camera setting
@@ -31,43 +30,34 @@ class Bezier(QListWidgetItem,sceneNode):
         self.vertices=self.QVectorListToArray(list(data))
 
     def create(self):
-        #initiate all the VBO and VAO
         self.vbo = QOpenGLBuffer(QOpenGLBuffer.VertexBuffer)
         self.vbo.create()
         self.vbo.bind()
         self.vbo.setUsagePattern(QOpenGLBuffer.StaticDraw)
         self.vbo.allocate(self.vertices,self.vertices.shape[0] * self.vertices.itemsize)
-        # bind Opengl shader program
         self.program=QOpenGLShaderProgram()
         # patch vertices
         self.program.addShaderFromSourceFile(QOpenGLShader.Vertex,":BezierShader/bezierShader.vert")
-        # self.program.addShaderFromSourceFile(QOpenGLShader.TessellationControl, ":BezierShader/bezierShader.cs")
+        self.program.addShaderFromSourceFile(QOpenGLShader.TessellationControl, ":BezierShader/bezierShader.cs")
         self.program.addShaderFromSourceFile(QOpenGLShader.TessellationEvaluation, ":BezierShader/bezierShader.es")
         self.program.addShaderFromSourceFile(QOpenGLShader.Fragment, ":BezierShader/bezierShader.frag")
         self.program.link()
-        #Qpengl Tesselation Control Shader attribute
-        self.program.setPatchVertexCount(4)#Maximum patch vertices
-        self.program.setDefaultOuterTessellationLevels([1, 30])#Tessellation level in default without using custom TessellationControl shader file
+        self.program.setPatchVertexCount(4)
         self.vao = QOpenGLVertexArrayObject()
         self.vao.create()
         self.vao.bind()
     def render(self):
-        # Actually rendering of data
         self.program.bind()
         self.program.enableAttributeArray(0)
         self.program.setAttributeBuffer(0, GL_FLOAT, 0, 3)
-        #Camera transformation
         Model=QMatrix4x4()
+        Model.translate(QVector3D(0,0,-1))
         Model=self.model*Model
         self.MVP=self.projection*self.view*Model
         self.program.setUniformValue("MVP", self.MVP)
-        #Draw primitives
         self.vao.bind()
+        # Actually draw the triangles
         glDrawArrays(GL_PATCHES, 0, len(self.vertices))
-        #Clear up cache
-        self.program.release()
-        self.vao.release()
-        self.vbo.release()
     def setupCameraMatrix(self,view,model,projection):
         self.view=view
         self.model=model

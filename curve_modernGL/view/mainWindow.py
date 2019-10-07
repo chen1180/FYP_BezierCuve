@@ -1,5 +1,5 @@
 from PyQt5.QtCore import QDate, QFile, Qt, QTextStream
-from PyQt5.QtGui import (QFont, QIcon, QKeySequence, QTextCharFormat,
+from PyQt5.QtGui import (QFont, QIcon, QKeySequence, QTextCharFormat,QKeyEvent,
         QTextCursor, QTextTableFormat,QVector3D)
 from PyQt5.QtPrintSupport import QPrintDialog, QPrinter
 from PyQt5.QtWidgets import *
@@ -26,101 +26,22 @@ class MainWindow(QMainWindow):
         #Model for rendering and manipulation
         self.model=sceneNode()
         #Model signal and slots
-        self.model.sceneNodeChanged.connect(self.updateSceneDockWidget) # Model update will changes the content in sceneDockWidget
-        self.model.sceneNodeChanged.connect(self.updatePropertyDockWidget)# Model update will changes the content in propertyDockWidget
+        self.model.sceneNodeAdded.connect(self.addItemToWidget)
+        # self.model.sceneNodeChanged.connect(self.updateWidgetStatus)  # Model update will changes the content in sceneDockWidget
+        self.model.sceneNodeDraw.connect(self.glWindow.drawScene)
         #sceneDockWidget view signal and slots
-        self.sceneWidget.itemClicked.connect(self.updatePropertyDockWidget)
+        self.sceneWidget.itemClicked.connect(self.itemClick)
         # propertyDockWidget view signal and slots
         self.propertyWidget.vertexCoordinateWidget.vertTable.itemChanged.connect(self.updateSceneNode)
-    def print_(self):
-        document = self.textEdit.document()
-        printer = QPrinter()
-        dlg = QPrintDialog(printer, self)
-        if dlg.exec_() != QDialog.Accepted:
-            return
-
-        document.print_(printer)
-
-        self.statusBar().showMessage("Ready", 2000)
-
-    def save(self):
-        filename, _ = QFileDialog.getSaveFileName(self,
-                "Choose a file name", '.', "HTML (*.html *.htm)")
-        if not filename:
-            return
-
-        file = QFile(filename)
-        if not file.open(QFile.WriteOnly | QFile.Text):
-            QMessageBox.warning(self, "Dock Widgets",
-                    "Cannot write file %s:\n%s." % (filename, file.errorString()))
-            return
-
-        out = QTextStream(file)
-        QApplication.setOverrideCursor(Qt.WaitCursor)
-        out << self.textEdit.toHtml()
-        QApplication.restoreOverrideCursor()
-
-        self.statusBar().showMessage("Saved '%s'" % filename, 2000)
-
-    def undo(self):
-        document = self.textEdit.document()
-        document.undo()
-
-    def insertCustomer(self, customer):
-        if not customer:
-            return
-        customerList = customer.split(', ')
-        document = self.textEdit.document()
-        cursor = document.find('NAME')
-        if not cursor.isNull():
-            cursor.beginEditBlock()
-            cursor.insertText(customerList[0])
-            oldcursor = cursor
-            cursor = document.find('ADDRESS')
-            if not cursor.isNull():
-                for i in customerList[1:]:
-                    cursor.insertBlock()
-                    cursor.insertText(i)
-                cursor.endEditBlock()
-            else:
-                oldcursor.endEditBlock()
-
-    def addParagraph(self, paragraph):
-        if not paragraph:
-            return
-        document = self.textEdit.document()
-        cursor = document.find("Yours sincerely,")
-        if cursor.isNull():
-            return
-        cursor.beginEditBlock()
-        cursor.movePosition(QTextCursor.PreviousBlock, QTextCursor.MoveAnchor,
-                2)
-        cursor.insertBlock()
-        cursor.insertText(paragraph)
-        cursor.insertBlock()
-        cursor.endEditBlock()
+        # Signal and custom slots
+        self.propertyWidget.vertexCoordinateWidget.vertTable.itemDoubleClicked.connect(self.onItemDoubleClick)
+        # self.propertyWidget.vertexCoordinateWidget.vertTable.currentItemChanged.connect(self.updateTable)
 
     def about(self):
         QMessageBox.about(self, "About FYP",
                 "Under construction")
 
     def createActions(self):
-        # self.newLetterAct = QAction(QIcon(':/images/new.png'), "&New Letter",
-        #         self, shortcut=QKeySequence.New,
-        #         statusTip="Create a new form letter", triggered=None)
-
-        self.saveAct = QAction(QIcon(':/images/save.png'), "&Save...", self,
-                shortcut=QKeySequence.Save,
-                statusTip="Save the current form letter", triggered=self.save)
-
-        self.printAct = QAction(QIcon(':/images/print.png'), "&Print...", self,
-                shortcut=QKeySequence.Print,
-                statusTip="Print the current form letter",
-                triggered=self.print_)
-
-        self.undoAct = QAction(QIcon(':/images/undo.png'), "&Undo", self,
-                shortcut=QKeySequence.Undo,
-                statusTip="Undo the last editing action", triggered=self.undo)
 
         self.quitAct = QAction("&Quit", self, shortcut="Ctrl+Q",
                 statusTip="Quit the application", triggered=self.close)
@@ -137,17 +58,11 @@ class MainWindow(QMainWindow):
                 triggered=self.drawBezierCurve)
     def createMenus(self):
         self.fileMenu = self.menuBar().addMenu("&File")
-        # self.fileMenu.addAction(self.newLetterAct)
-        self.fileMenu.addAction(self.saveAct)
-        self.fileMenu.addAction(self.printAct)
         self.fileMenu.addSeparator()
         self.fileMenu.addAction(self.quitAct)
 
-        self.editMenu = self.menuBar().addMenu("&Edit")
-        self.editMenu.addAction(self.undoAct)
 
         self.viewMenu = self.menuBar().addMenu("&View")
-
         self.menuBar().addSeparator()
 
         self.helpMenu = self.menuBar().addMenu("&Help")
@@ -156,12 +71,6 @@ class MainWindow(QMainWindow):
 
     def createToolBars(self):
         self.fileToolBar = self.addToolBar("File")
-        # self.fileToolBar.addAction(self.newLetterAct)
-        self.fileToolBar.addAction(self.saveAct)
-        self.fileToolBar.addAction(self.printAct)
-
-        self.editToolBar = self.addToolBar("Edit")
-        self.editToolBar.addAction(self.undoAct)
         #Beizer curve tool bar
         self.bezierToolBar=self.addToolBar("add Bezier curve")
         self.bezierToolBar.addAction(self.addBezierCurve)
@@ -175,16 +84,12 @@ class MainWindow(QMainWindow):
         self.sceneWidget =sceneDockWidget(sceneDock)
         #create sceneWidget
         sceneDock.setWidget(self.sceneWidget)
-        # self.glWindow.createScene(item1)
         self.addDockWidget(Qt.RightDockWidgetArea, sceneDock)
         propertyDock = QDockWidget("Property", self)
         propertyDock.setAllowedAreas(Qt.LeftDockWidgetArea | Qt.RightDockWidgetArea)
         self.propertyWidget = propertyDockWidget(propertyDock)
         propertyDock.setWidget(self.propertyWidget)
         self.addDockWidget(Qt.RightDockWidgetArea, propertyDock)
-        # self.viewMenu.addAction(dock.toggleViewAction())
-        # self.customerList.currentTextChanged.connect(self.insertCustomer)
-        # self.paragraphsList.currentTextChanged.connect(self.addParagraph)
         toolDock = QDockWidget("Tool", self)
         toolDock.setAllowedAreas(Qt.LeftDockWidgetArea | Qt.RightDockWidgetArea)
         toolDock.setWidget(self.bezierToolBar)
@@ -195,6 +100,7 @@ class MainWindow(QMainWindow):
     def drawBezierCurve(self):
         item = Bezier(None, "Beizer", [QVector3D(-0.5,0,0),QVector3D(0.5,0,0),QVector3D(0,0.5,0),QVector3D(1,0.5,0)])
         self.model.addNode(item)
+        self.sceneWidget.setCurrentItem(item)
         self.glWindow.drawScene(self.model.sceneNodes)
     #-----------------------------For view operation-----------------------------------#
     def updateSceneNode(self,item:QTableWidgetItem):
@@ -207,14 +113,57 @@ class MainWindow(QMainWindow):
                                float(self.propertyWidget.vertexCoordinateWidget.vertTable.item(i,1).text()),
                                float(self.propertyWidget.vertexCoordinateWidget.vertTable.item(i,2).text()))
                 new_node.append(node)
-            print(self.sceneWidget.currentRow())#return the current selected row of sceneWidget
             currentIndex=self.sceneWidget.currentRow()
+            self.sceneWidget.setCurrentRow(currentIndex)
             self.model.sceneNodes[currentIndex].modifyInputData(new_node)
-            self.glWindow.drawScene(self.model.sceneNodes)
+            self.sceneWidget.setCurrentItem(self.model.sceneNodes[currentIndex])
+            #For debugging
+            # print("current data",self.sceneWidget.currentItem().data(Qt.UserRole))
+            # print("scene node", new_node)
+            # print("scene node item", self.model.sceneNodes[currentIndex].data(Qt.UserRole))
+            # print(self.sceneWidget.currentItem().data(Qt.UserRole))
         except Exception as e:
             print(e)
-    def updateSceneDockWidget(self,item):
+    def updateWidgetStatus(self,position,item):
+        #check current TableWidget item
+        row = self.propertyWidget.vertexCoordinateWidget.vertTable.rowCount()
+        column = self.propertyWidget.vertexCoordinateWidget.vertTable.columnCount()
+        new_node = []
+        for i in range(row):
+            node = QVector3D(float(self.propertyWidget.vertexCoordinateWidget.vertTable.item(i, 0).text()),
+                             float(self.propertyWidget.vertexCoordinateWidget.vertTable.item(i, 1).text()),
+                             float(self.propertyWidget.vertexCoordinateWidget.vertTable.item(i, 2).text()))
+            new_node.append(node)
+        currentIndex = self.sceneWidget.currentRow()
+        self.model.sceneNodes[currentIndex].modifyInputData(new_node)
+        new_Item=self.model.sceneNodes[currentIndex]
+        self.sceneWidget.setCurrentItem(new_Item)
+        print("new item",new_Item.data(Qt.UserRole))
+        print(self.sceneWidget.currentItem().data(Qt.UserRole))
+    def addItemToWidget(self,item):
         self.sceneWidget.addItem(item)
-    def updatePropertyDockWidget(self,item):
-        self.propertyWidget.updateItems(item)
+        self.sceneWidget.setCurrentItem(item)
+        self.propertyWidget.vertexCoordinateWidget.displayTable(item)
+        self.sceneWidget.setCurrentItem(item)
 
+    def onItemDoubleClick(self, item: QTableWidgetItem):
+        # TODO: enable table widget to modify item such as item vertices
+        print("Table item modified", item.row(), item.column(),  self.propertyWidget.vertexCoordinateWidget.vertTable.item(item.row(), item.column()).text())
+
+    def updateTable(self, item: QTableWidgetItem):
+        new_data = list()
+        currentIndex = self.sceneWidget.currentRow()
+        for row in range( self.propertyWidget.vertexCoordinateWidget.vertTable.rowCount()):
+            vector = QVector3D(float( self.propertyWidget.vertexCoordinateWidget.vertTable.item(row, 0).text()),
+                               float( self.propertyWidget.vertexCoordinateWidget.vertTable.item(row, 1).text()),
+                               float( self.propertyWidget.vertexCoordinateWidget.vertTable.item(row, 2).text()), )
+            new_data.append(vector)
+        self.model.sceneNodes[currentIndex].modifyInputData(new_data)
+    def itemClick(self,item):
+        self.sceneWidget.setCurrentItem(item)
+        self.propertyWidget.vertexCoordinateWidget.displayTable(item)
+        self.sceneWidget.setCurrentItem(item)
+    #mouse button event
+    def keyPressEvent(self, a0: QKeyEvent) -> None:
+        super(MainWindow, self).keyPressEvent(a0)
+        self.glWindow.keyPressEvent(a0)

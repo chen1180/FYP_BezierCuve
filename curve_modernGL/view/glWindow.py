@@ -1,7 +1,10 @@
+from builtins import super
+
 from OpenGL.GL import *
 from PyQt5.QtCore import pyqtSignal,QPointF,Qt,qDebug
 from PyQt5.QtWidgets import QApplication,QOpenGLWidget
-from PyQt5.QtGui import QSurfaceFormat,QOpenGLContext,QOpenGLShaderProgram,QOpenGLShader,QOpenGLVersionProfile,QAbstractOpenGLFunctions,QVector3D,QMouseEvent,QMatrix4x4
+from PyQt5.QtGui import (QSurfaceFormat,QOpenGLContext,QOpenGLShaderProgram,
+QOpenGLShader,QOpenGLVersionProfile,QAbstractOpenGLFunctions,QVector3D,QMouseEvent,QWheelEvent,QKeyEvent,QMatrix4x4)
 from curve_modernGL.model.trackBall import Trackball
 import sys
 from curve_modernGL.model.bezier import Bezier
@@ -17,8 +20,9 @@ class openGLWindow(QOpenGLWidget):
         format.setProfile(QSurfaceFormat.CoreProfile)
         self.setFormat(format)
         self.scene=[]
-        self.camera=Trackball(QVector3D(1,1,0),QVector3D(0,0,0),QVector3D(0,1,0))
+        self.camera=Trackball(QVector3D(1,1,-1),QVector3D(0,0,0),QVector3D(0,1,0))
         # self.triangle=Triangle(None, "Beizer", [QVector3D(-0.5,0,0),QVector3D(0.5,0,0),QVector3D(0,0.5,0),QVector3D(1,0.5,0)])
+        self.transform=QMatrix4x4()
     def getFileContent(self,filename):
         return open(filename,"r").read()
     def initializeGL(self) -> None:
@@ -30,13 +34,14 @@ class openGLWindow(QOpenGLWidget):
         Projection=QMatrix4x4()
         Projection.perspective(45.0,self.width()/self.height(),0.1,100)
         View=QMatrix4x4()
+        # View.lookAt(self.camera.cameraPos, self.camera.center, self.camera.WorldUp)
+        View.translate(QVector3D(0,0,-1)*self.camera.zoomFactor)
         View.rotate(self.camera.m_rotation)
         Model=QMatrix4x4()
         MVP=Projection*View*Model
         # self.triangle.program.bind()
         # self.location=self.triangle.program.uniformLocation('MVP')
-        # self.triangle.program.setUniformValue(self.location, View)
-        # print(self.location)
+        # self.triangle.program.setUniformValue(self.location, MVP)
         # self.triangle.render()
         try:
             if self.scene:
@@ -59,12 +64,18 @@ class openGLWindow(QOpenGLWidget):
         if a0.buttons()&Qt.MiddleButton:
             self.camera.pushMiddleButton(self.pixelPosToViewPos(a0.windowPos()))
             a0.accept()
+        if a0.buttons()&Qt.RightButton:
+            self.camera.pushRightButton(self.pixelPosToViewPos(a0.windowPos()))
+            a0.accept()
     def mouseMoveEvent(self, a0: QMouseEvent) -> None:
         super(openGLWindow, self).mouseMoveEvent(a0)
         if a0.isAccepted():
             return
         if a0.buttons() & Qt.MiddleButton:
             self.camera.moveMiddleButton(self.pixelPosToViewPos(a0.windowPos()))
+            a0.accept()
+        if a0.buttons()&Qt.RightButton:
+            self.camera.moveRightButton(self.pixelPosToViewPos(a0.windowPos()))
             a0.accept()
         self.update()
     def mouseReleaseEvent(self, a0: QMouseEvent) -> None:
@@ -74,6 +85,27 @@ class openGLWindow(QOpenGLWidget):
         if a0.buttons() & Qt.MiddleButton:
             self.camera.releaseMiddleButton()
             a0.accept()
+        if a0.buttons()&Qt.RightButton:
+            self.camera.releaseRightButton()
+            a0.accept()
+    def keyPressEvent(self, a0: QKeyEvent) -> None:
+        super(openGLWindow, self).keyPressEvent(a0)
+        if a0.isAccepted():
+            return
+        if a0.key()==Qt.Key_Up:
+            self.transform.translate(QVector3D(0,0.1,0))
+            print("up")
+            a0.accept()
+        if a0.key()==Qt.Key_Down:
+            self.transform.translate(QVector3D(0,-0.1,0))
+            print("down")
+            a0.accept()
+    def wheelEvent(self, a0: QWheelEvent) -> None:
+        super(openGLWindow, self).wheelEvent(a0)
+        if not a0.isAccepted():
+            self.camera.moveMiddleScroller(a0.angleDelta().y())
+            a0.accept()
+        self.update()
 # -----------------------------Debugging-----------------------------------#
 if __name__ == '__main__':
     sys._excepthook = sys.excepthook

@@ -1,7 +1,8 @@
 from PyQt5.QtWidgets import QListWidget,QApplication,QPushButton,QVBoxLayout
-from PyQt5.QtCore import QAbstractListModel,QModelIndex,pyqtSignal
+from PyQt5.QtCore import QAbstractListModel,QModelIndex,pyqtSignal,QObject
 import sys
 class sceneDockWidget(QListWidget):
+    currentItemSelected=pyqtSignal(QObject)
     def __init__(self,parent=None):
         super(sceneDockWidget, self).__init__(None)
         self.setWindowTitle("Scene")
