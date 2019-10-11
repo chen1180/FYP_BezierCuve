@@ -1,5 +1,4 @@
 from builtins import super
-
 from OpenGL.GL import *
 from PyQt5.QtCore import pyqtSignal,QPointF,Qt,qDebug
 from PyQt5.QtWidgets import QApplication,QOpenGLWidget
@@ -8,11 +7,11 @@ QOpenGLShader,QOpenGLVersionProfile,QAbstractOpenGLFunctions,QVector3D,QMouseEve
 from curve_modernGL.model.trackBall import Trackball
 import sys
 from curve_modernGL.model.bezier import Bezier
-from curve_modernGL.model.triangle import Triangle
-class openGLWindow(QOpenGLWidget):
+
+class OpenGLWindow(QOpenGLWidget):
     OPENGL_NEED_UPDATE=pyqtSignal(bool)
     def __init__(self,parent=None):
-        super(openGLWindow, self).__init__(parent)
+        super(OpenGLWindow, self).__init__(parent)
         format = QSurfaceFormat()
         format.setDepthBufferSize(24)
         format.setStencilBufferSize(8)
@@ -20,9 +19,8 @@ class openGLWindow(QOpenGLWidget):
         format.setProfile(QSurfaceFormat.CoreProfile)
         self.setFormat(format)
         self.scene=[]
-        self.camera=Trackball(QVector3D(1,1,-1),QVector3D(0,0,0),QVector3D(0,1,0))
+        self.camera=Trackball(QVector3D(0,0,-10),QVector3D(0,0,0),QVector3D(0,1,0))
         # self.triangle=Triangle(None, "Beizer", [QVector3D(-0.5,0,0),QVector3D(0.5,0,0),QVector3D(0,0.5,0),QVector3D(1,0.5,0)])
-        self.transform=QMatrix4x4()
     def getFileContent(self,filename):
         return open(filename,"r").read()
     def initializeGL(self) -> None:
@@ -35,7 +33,7 @@ class openGLWindow(QOpenGLWidget):
         Projection.perspective(45.0,self.width()/self.height(),0.1,100)
         View=QMatrix4x4()
         # View.lookAt(self.camera.cameraPos, self.camera.center, self.camera.WorldUp)
-        View.translate(QVector3D(0,0,-1)*self.camera.zoomFactor)
+        View.translate(self.camera.cameraPos * self.camera.radius)
         View.rotate(self.camera.m_rotation)
         Model=QMatrix4x4()
         MVP=Projection*View*Model
@@ -47,18 +45,18 @@ class openGLWindow(QOpenGLWidget):
             if self.scene:
                 for item in self.scene:
                     item.setupCameraMatrix(View,Model,Projection)
-                    item.create()
+                    item.initialize()
                     item.render()
         except Exception as e:
             print(e)
         self.update()
-    def drawScene(self,scene):
+    def addToScene(self, scene):
         self.scene=list(scene)
         self.update()
     def pixelPosToViewPos(self,p:QPointF):
         return QPointF(2*p.x()/self.width()-1.0,1.0-2.0*p.y()/self.height())
     def mousePressEvent(self, a0: QMouseEvent) -> None:
-        super(openGLWindow, self).mousePressEvent(a0)
+        super(OpenGLWindow, self).mousePressEvent(a0)
         if a0.isAccepted():
             return
         if a0.buttons()&Qt.MiddleButton:
@@ -68,7 +66,7 @@ class openGLWindow(QOpenGLWidget):
             self.camera.pushRightButton(self.pixelPosToViewPos(a0.windowPos()))
             a0.accept()
     def mouseMoveEvent(self, a0: QMouseEvent) -> None:
-        super(openGLWindow, self).mouseMoveEvent(a0)
+        super(OpenGLWindow, self).mouseMoveEvent(a0)
         if a0.isAccepted():
             return
         if a0.buttons() & Qt.MiddleButton:
@@ -77,31 +75,20 @@ class openGLWindow(QOpenGLWidget):
         if a0.buttons()&Qt.RightButton:
             self.camera.moveRightButton(self.pixelPosToViewPos(a0.windowPos()))
             a0.accept()
+        self.camera.updateCamera()
         self.update()
     def mouseReleaseEvent(self, a0: QMouseEvent) -> None:
-        super(openGLWindow, self).mouseReleaseEvent(a0)
+        super(OpenGLWindow, self).mouseReleaseEvent(a0)
         if a0.isAccepted():
             return
         if a0.buttons() & Qt.MiddleButton:
-            self.camera.releaseMiddleButton()
+            self.camera.releaseMiddleButton(self.pixelPosToViewPos(a0.windowPos()))
             a0.accept()
         if a0.buttons()&Qt.RightButton:
             self.camera.releaseRightButton()
             a0.accept()
-    def keyPressEvent(self, a0: QKeyEvent) -> None:
-        super(openGLWindow, self).keyPressEvent(a0)
-        if a0.isAccepted():
-            return
-        if a0.key()==Qt.Key_Up:
-            self.transform.translate(QVector3D(0,0.1,0))
-            print("up")
-            a0.accept()
-        if a0.key()==Qt.Key_Down:
-            self.transform.translate(QVector3D(0,-0.1,0))
-            print("down")
-            a0.accept()
     def wheelEvent(self, a0: QWheelEvent) -> None:
-        super(openGLWindow, self).wheelEvent(a0)
+        super(OpenGLWindow, self).wheelEvent(a0)
         if not a0.isAccepted():
             self.camera.moveMiddleScroller(a0.angleDelta().y())
             a0.accept()
@@ -124,7 +111,7 @@ if __name__ == '__main__':
     format.setVersion(4,4)
     format.setProfile(QSurfaceFormat.CoreProfile)
     QSurfaceFormat.setDefaultFormat(format) #it must be called before OpenGL window, set OPENGL format globally
-    window = openGLWindow() #Opengl window creation
+    window = OpenGLWindow() #Opengl window creation
     window.show()
     application.exec_()
 

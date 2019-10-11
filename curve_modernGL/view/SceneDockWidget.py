@@ -1,10 +1,10 @@
 from PyQt5.QtWidgets import QListWidget,QApplication,QPushButton,QVBoxLayout
 from PyQt5.QtCore import QAbstractListModel,QModelIndex,pyqtSignal,QObject
 import sys
-class sceneDockWidget(QListWidget):
+class SceneDockWidget(QListWidget):
     currentItemSelected=pyqtSignal(QObject)
     def __init__(self,parent=None):
-        super(sceneDockWidget, self).__init__(None)
+        super(SceneDockWidget, self).__init__(None)
         self.setWindowTitle("Scene")
         self.dragEnabled()
 if __name__ == '__main__':
@@ -18,6 +18,6 @@ if __name__ == '__main__':
     sys.excepthook = my_exception_hook
     application=QApplication([])
     # The follow format can set up the OPENGL context
-    window = sceneDockWidget() #Opengl window creation
+    window = SceneDockWidget() #Opengl window creation
     window.show()
     application.exec_()

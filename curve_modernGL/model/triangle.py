@@ -3,11 +3,11 @@ from PyQt5.QtCore import Qt
 from OpenGL.GL import *
 from PyQt5.QtGui import QVector3D,QOpenGLBuffer,QOpenGLVertexArrayObject,QOpenGLShaderProgram,QOpenGLShader
 import sys
-from curve_modernGL.view.sceneDockWidget import sceneDockWidget
-from curve_modernGL.model.sceneNode import sceneNode
+from curve_modernGL.view.SceneDockWidget import SceneDockWidget
+from curve_modernGL.model.SceneNode import AbstractSceneNode
 import numpy as np
 import curve_modernGL.resources.resources
-class Triangle(QListWidgetItem,sceneNode):
+class Triangle(QListWidgetItem, AbstractSceneNode):
     def __init__(self,parent=None,name:str=None,data:QVector3D=None):
         super(Triangle, self).__init__()
         self.setText(str(name))
@@ -22,7 +22,7 @@ class Triangle(QListWidgetItem,sceneNode):
         return npArray
     def modifyInputData(self,data):
         self.vertices=self.QVectorListToArray(data)
-    def create(self):
+    def initialize(self):
         self.vbo = QOpenGLBuffer(QOpenGLBuffer.VertexBuffer)
         self.vbo.create()
         self.vbo.bind()
@@ -55,7 +55,7 @@ if __name__ == '__main__':
     sys.excepthook = my_exception_hook
     application=QApplication([])
     # The follow format can set up the OPENGL context
-    window = sceneDockWidget() #Opengl window creation
+    window = SceneDockWidget() #Opengl window creation
     window.addItem(Triangle(window,"asd",[QVector3D(0,0,0),QVector3D(0,0,2)]))
     window.show()
     application.exec_()

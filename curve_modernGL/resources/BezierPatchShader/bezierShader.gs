@@ -1,7 +1,7 @@
 #version 410 core
 
 layout (triangles) in;
-layout (line_strip ,max_vertices = 4) out;
+layout (line_strip ,max_vertices = 3) out;
 
 void main(void)
 {

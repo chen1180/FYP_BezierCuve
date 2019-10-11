@@ -1,7 +1,7 @@
 import sys
 import argparse
 from PyQt5.QtWidgets import QApplication
-from mainWindow import MainWindow
+from MainWindow import MainWindow
 
 NAME='System for curve and surface GUI (PyQT)'
 app=QApplication(sys.argv,applicationName=NAME)

@@ -7,6 +7,13 @@
         <file>BezierShader/bezierShader.cs</file>
         <file>BezierShader/bezierShader.es</file>
         <file>BezierShader/bezierShader.gs</file>
+        <file>BezierPatchShader/bezierShader.frag</file>
+        <file>BezierPatchShader/bezierShader.vert</file>
+        <file>BezierPatchShader/bezierShader.cs</file>
+        <file>BezierPatchShader/bezierShader.es</file>
+        <file>BezierPatchShader/bezierShader.gs</file>
+        <file>CommonShader/vertices.frag</file>
+        <file>CommonShader/vertices.vert</file>
         <file>images/new.png</file>
         <file>images/print.png</file>
         <file>images/save.png</file>

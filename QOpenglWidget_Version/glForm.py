@@ -11,7 +11,7 @@ class openGLWindow(QOpenGLWidget):
     def initializeGL(self) -> None:
         QOpenGLWidget.initializeGL(self)
         self.bezier=Bezier(None,"Beizer1",[QVector3D(-0.5,0,0),QVector3D(0.5,0,0),QVector3D(0,0.5,0)])
-        self.bezier.create()
+        self.bezier.initialize()
     def paintGL(self) -> None:
         glClearColor(0.0, 0.0, 0.0, 1.0)
         glClear(GL_COLOR_BUFFER_BIT)

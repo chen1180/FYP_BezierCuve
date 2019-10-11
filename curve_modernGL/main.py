@@ -1,6 +1,6 @@
 from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import *
-from curve_modernGL.view.mainWindow import MainWindow
+from curve_modernGL.view.MainWindow import MainWindow
 import sys
 sys._excepthook = sys.excepthook
 def my_exception_hook(exctype, value, traceback):

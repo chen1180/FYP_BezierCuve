@@ -3,65 +3,97 @@ from PyQt5.QtCore import Qt
 from OpenGL.GL import *
 from PyQt5.QtGui import QVector3D,QOpenGLBuffer,QOpenGLVertexArrayObject,QOpenGLShaderProgram,QOpenGLShader,QMatrix4x4
 import sys
-from curve_modernGL.view.sceneDockWidget import sceneDockWidget
-from curve_modernGL.model.sceneNode import sceneNode
+from curve_modernGL.view.SceneDockWidget import SceneDockWidget
+from curve_modernGL.model.SceneNode import AbstractSceneNode
 import numpy as np
 import curve_modernGL.resources.resources
-class BezierPatch(QListWidgetItem,sceneNode):
+class BezierPatch(QListWidgetItem, AbstractSceneNode):
     def __init__(self,parent=None,name:str=None,data:QVector3D=None):
         super(BezierPatch, self).__init__()
         self.setText(str(name))
         self.setData(Qt.UserRole,data)
-        self.vertices=self.QVectorListToArray(self.data(Qt.UserRole))
+        self.vertices=self.QVec3DtoNumpyArray(self.data(Qt.UserRole))
         #vertices data
         self.originalData=data
-        #camera setting
-        self.model=QMatrix4x4()
-        self.view=QMatrix4x4()
-        self.projection=QMatrix4x4()
-    def QVectorListToArray(self,data):
-        tmp=list()
-        for vector in data:
-            tmp+=[vector[0],vector[1],vector[2]]
-        npArray=np.array(tmp,dtype="float32")
-        return npArray
-    def modifyInputData(self,data):
+    def modifyVertices(self,data):
         self.setData(Qt.UserRole,data) #This step is important, Qlistwidget item may return to original state without this statement
-        self.vertices=self.QVectorListToArray(list(data))
+        self.vertices=self.QVec3DtoNumpyArray(list(data))
 
-    def create(self):
-        self.vbo = QOpenGLBuffer(QOpenGLBuffer.VertexBuffer)
-        self.vbo.create()
-        self.vbo.bind()
-        self.vbo.setUsagePattern(QOpenGLBuffer.StaticDraw)
-        self.vbo.allocate(self.vertices,self.vertices.shape[0] * self.vertices.itemsize)
-        self.program=QOpenGLShaderProgram()
-        # patch vertices
-        self.program.addShaderFromSourceFile(QOpenGLShader.Vertex,":BezierShader/bezierShader.vert")
-        self.program.addShaderFromSourceFile(QOpenGLShader.TessellationControl, ":BezierShader/bezierShader.cs")
-        self.program.addShaderFromSourceFile(QOpenGLShader.TessellationEvaluation, ":BezierShader/bezierShader.es")
-        self.program.addShaderFromSourceFile(QOpenGLShader.Fragment, ":BezierShader/bezierShader.frag")
-        self.program.link()
-        self.program.setPatchVertexCount(4)
-        self.vao = QOpenGLVertexArrayObject()
-        self.vao.create()
-        self.vao.bind()
-    def render(self):
+    def setupMainShaderProgram(self):
+            # patch vertices
+            self.program=QOpenGLShaderProgram()
+            self.program.addShaderFromSourceFile(QOpenGLShader.Vertex,":BezierPatchShader/bezierShader.vert")
+            self.program.addShaderFromSourceFile(QOpenGLShader.TessellationControl, ":BezierPatchShader/bezierShader.cs")
+            self.program.addShaderFromSourceFile(QOpenGLShader.TessellationEvaluation, ":BezierPatchShader/bezierShader.es")
+            self.program.addShaderFromSourceFile(QOpenGLShader.Fragment, ":BezierPatchShader/bezierShader.frag")
+            self.program.link()
+            self.program.bind()
+            self.program.setPatchVertexCount(16)
+
+            self.vao = QOpenGLVertexArrayObject()
+            self.vao.create()
+            self.vao.bind()
+
+            self.vbo = QOpenGLBuffer(QOpenGLBuffer.VertexBuffer)
+            self.vbo.create()
+            self.vbo.bind()
+            self.vbo.setUsagePattern(QOpenGLBuffer.StaticDraw)
+            self.vbo.allocate(self.vertices, self.vertices.shape[0] * self.vertices.itemsize)
+            self.program.enableAttributeArray(0)
+            self.program.setAttributeBuffer(0, GL_FLOAT, 0, 3)
+
+            self.vbo.release()
+            self.vao.release()
+            self.program.release()
+            # normal program
+            self.commonProgram = QOpenGLShaderProgram()
+            self.commonProgram.addShaderFromSourceFile(QOpenGLShader.Vertex, ":CommonShader/vertices.vert")
+            self.commonProgram.addShaderFromSourceFile(QOpenGLShader.Fragment, ":CommonShader/vertices.frag")
+            self.commonProgram.link()
+            self.commonProgram.bind()
+            self.verticesVao = QOpenGLVertexArrayObject()
+            self.verticesVao.create()
+            self.verticesVao.bind()
+            self.vbo.bind()
+            self.commonProgram.enableAttributeArray(0)
+            self.commonProgram.setAttributeBuffer(0, GL_FLOAT, 0, 3)
+            # release
+            self.vbo.release()
+            self.vao.release()
+            self.commonProgram.release()
+    def drawItem(self):
+        Model = QMatrix4x4()
+        Model.translate(self.transform)
+        Model = self.model * Model
+        self.MVP = self.projection * self.view * Model
+
         self.program.bind()
-        self.program.enableAttributeArray(0)
-        self.program.setAttributeBuffer(0, GL_FLOAT, 0, 3)
-        Model=QMatrix4x4()
-        Model.translate(QVector3D(0,0,-1))
-        Model=self.model*Model
-        self.MVP=self.projection*self.view*Model
         self.program.setUniformValue("MVP", self.MVP)
-        self.vao.bind()
+        self.program.setUniformValue("in_color", self.color)
         # Actually draw the triangles
-        glDrawArrays(GL_PATCHES, 0, len(self.vertices))
-    def setupCameraMatrix(self,view,model,projection):
-        self.view=view
-        self.model=model
-        self.projection=projection
+        self.vao.bind()
+        glDrawArrays(GL_PATCHES, 0, self.vertices.shape[0]//3)# (draw type,start_vertices,total_vertices)
+        self.program.release()
+        self.vao.release()
+        #Draw vertices and polygon
+        # Draw vertices
+        # Actually rendering of data
+        self.commonProgram.bind()
+        self.commonProgram.setUniformValue("MVP", self.MVP)
+        self.commonProgram.setUniformValue("color", self.polygonColor)
+        self.verticesVao.bind()
+
+        glDrawArrays(GL_LINE_STRIP, 0, self.vertices.shape[0] // 3)
+
+        glPointSize(5)
+        self.commonProgram.setUniformValue("color", self.verticesColor)
+        glDrawArrays(GL_POINTS, 0, self.vertices.shape[0] // 3)
+
+        # Clear up cache
+        self.commonProgram.release()
+        self.program.release()
+        self.verticesVao.release()
+        self.vbo.release()
 #For debug purpose
 if __name__ == '__main__':
     sys._excepthook = sys.excepthook
@@ -74,7 +106,7 @@ if __name__ == '__main__':
     sys.excepthook = my_exception_hook
     application=QApplication([])
     # The follow format can set up the OPENGL context
-    window = sceneDockWidget() #Opengl window creation
-    window.addItem(Bezier(window,"asd",[QVector3D(0,0,0),QVector3D(0,0,2)]))
+    window = SceneDockWidget() #Opengl window creation
+    window.addItem(BezierPatch(window,"asd",[QVector3D(0,0,0),QVector3D(0,0,2)]))
     window.show()
     application.exec_()
