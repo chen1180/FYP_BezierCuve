@@ -25,8 +25,8 @@ class Bezier(QListWidgetItem, AbstractSceneNode):
         # patch vertices
         self.program=QOpenGLShaderProgram()
         self.program.addShaderFromSourceFile(QOpenGLShader.Vertex,":BezierShader/bezierShader.vert")
-        self.program.addShaderFromSourceFile(QOpenGLShader.TessellationControl, ":BezierShader/bezierShader.cs")
-        self.program.addShaderFromSourceFile(QOpenGLShader.TessellationEvaluation, ":BezierShader/bezierShader.es")
+        self.program.addShaderFromSourceFile(QOpenGLShader.TessellationControl, ":BezierShader/bezierShader.tesc")
+        self.program.addShaderFromSourceFile(QOpenGLShader.TessellationEvaluation, ":BezierShader/bezierShader.tese")
         self.program.addShaderFromSourceFile(QOpenGLShader.Fragment, ":BezierShader/bezierShader.frag")
         self.program.link()
         self.program.bind()
@@ -48,8 +48,9 @@ class Bezier(QListWidgetItem, AbstractSceneNode):
         self.vbo.release()
         self.vao.release()
         self.program.release()
-        #normal program
-        self.commonProgram=QOpenGLShaderProgram()
+    def setupCommonShaderProgram(self):
+        # normal program
+        self.commonProgram = QOpenGLShaderProgram()
         self.commonProgram.addShaderFromSourceFile(QOpenGLShader.Vertex, ":CommonShader/vertices.vert")
         self.commonProgram.addShaderFromSourceFile(QOpenGLShader.Fragment, ":CommonShader/vertices.frag")
         self.commonProgram.link()
@@ -60,11 +61,11 @@ class Bezier(QListWidgetItem, AbstractSceneNode):
         self.vbo.bind()
         self.commonProgram.enableAttributeArray(0)
         self.commonProgram.setAttributeBuffer(0, GL_FLOAT, 0, 3)
-        #release
+        # release
         self.vbo.release()
         self.vao.release()
         self.commonProgram.release()
-    def drawItem(self):
+    def render(self):
         # Camera transformation
         Model = QMatrix4x4()
         Model.translate(self.transform)
@@ -73,7 +74,11 @@ class Bezier(QListWidgetItem, AbstractSceneNode):
         # Actually rendering of data
         self.program.bind()
         self.program.setUniformValue("MVP", self.MVP)
-        self.program.setUniformValue("in_color", self.color)
+        # Rencently add code for lighting
+        # ------------------------------------------------------------------------------
+        self.program.setUniformValue("objectColor", self.color)
+        self.program.setUniformValue("lightColor", QVector3D(1, 1, 1))
+        # ------------------------------------------------------------------------------
         #Draw primitives
         self.vao.bind()
         glDrawArrays(GL_PATCHES, 0, self.vertices.shape[0]//3)

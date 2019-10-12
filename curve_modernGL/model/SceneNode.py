@@ -30,22 +30,11 @@ class AbstractSceneNode(QObject):
         self.setupMainShaderProgram()
         self.setupCommonShaderProgram()
     def render(self):
-        if self.m_showPoint==True:
-            self.drawVertices()
-        if self.m_showPolygon==True:
-            self.drawPolygons()
-        self.drawItem()
+        pass
     #Setup shader
     def setupCommonShaderProgram(self):
         pass
     def setupMainShaderProgram(self):
-        pass
-    #Drawing method
-    def drawVertices(self):
-        pass
-    def drawPolygons(self):
-        pass
-    def drawItem(self):
         pass
     #Camera matrix
     def setupCameraMatrix(self,view,model,projection):

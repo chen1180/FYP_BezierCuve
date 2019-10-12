@@ -15,64 +15,74 @@ class BezierPatch(QListWidgetItem, AbstractSceneNode):
         self.vertices=self.QVec3DtoNumpyArray(self.data(Qt.UserRole))
         #vertices data
         self.originalData=data
+        self.counter=0
     def modifyVertices(self,data):
         self.setData(Qt.UserRole,data) #This step is important, Qlistwidget item may return to original state without this statement
         self.vertices=self.QVec3DtoNumpyArray(list(data))
-
     def setupMainShaderProgram(self):
-            # patch vertices
-            self.program=QOpenGLShaderProgram()
-            self.program.addShaderFromSourceFile(QOpenGLShader.Vertex,":BezierPatchShader/bezierShader.vert")
-            self.program.addShaderFromSourceFile(QOpenGLShader.TessellationControl, ":BezierPatchShader/bezierShader.cs")
-            self.program.addShaderFromSourceFile(QOpenGLShader.TessellationEvaluation, ":BezierPatchShader/bezierShader.es")
-            self.program.addShaderFromSourceFile(QOpenGLShader.Fragment, ":BezierPatchShader/bezierShader.frag")
-            self.program.link()
-            self.program.bind()
-            self.program.setPatchVertexCount(16)
+        # patch vertices
+        self.program=QOpenGLShaderProgram()
+        self.program.addShaderFromSourceFile(QOpenGLShader.Vertex,":BezierPatchShader/bezierShader.vert")
+        self.program.addShaderFromSourceFile(QOpenGLShader.TessellationControl, ":BezierPatchShader/bezierShader.tesc")
+        self.program.addShaderFromSourceFile(QOpenGLShader.TessellationEvaluation, ":BezierPatchShader/bezierShader.tese")
+        self.program.addShaderFromSourceFile(QOpenGLShader.Fragment, ":BezierPatchShader/bezierShader.frag")
+        self.program.link()
+        self.program.bind()
+        self.program.setPatchVertexCount(16)
 
-            self.vao = QOpenGLVertexArrayObject()
-            self.vao.create()
-            self.vao.bind()
+        self.vao = QOpenGLVertexArrayObject()
+        self.vao.create()
+        self.vao.bind()
 
-            self.vbo = QOpenGLBuffer(QOpenGLBuffer.VertexBuffer)
-            self.vbo.create()
-            self.vbo.bind()
-            self.vbo.setUsagePattern(QOpenGLBuffer.StaticDraw)
-            self.vbo.allocate(self.vertices, self.vertices.shape[0] * self.vertices.itemsize)
-            self.program.enableAttributeArray(0)
-            self.program.setAttributeBuffer(0, GL_FLOAT, 0, 3)
+        self.vbo = QOpenGLBuffer(QOpenGLBuffer.VertexBuffer)
+        self.vbo.create()
+        self.vbo.bind()
+        self.vbo.setUsagePattern(QOpenGLBuffer.StaticDraw)
+        self.vbo.allocate(self.vertices, self.vertices.shape[0] * self.vertices.itemsize)
+        self.program.enableAttributeArray(0)
+        self.program.setAttributeBuffer(0, GL_FLOAT, 0, 3)
 
-            self.vbo.release()
-            self.vao.release()
-            self.program.release()
-            # normal program
-            self.commonProgram = QOpenGLShaderProgram()
-            self.commonProgram.addShaderFromSourceFile(QOpenGLShader.Vertex, ":CommonShader/vertices.vert")
-            self.commonProgram.addShaderFromSourceFile(QOpenGLShader.Fragment, ":CommonShader/vertices.frag")
-            self.commonProgram.link()
-            self.commonProgram.bind()
-            self.verticesVao = QOpenGLVertexArrayObject()
-            self.verticesVao.create()
-            self.verticesVao.bind()
-            self.vbo.bind()
-            self.commonProgram.enableAttributeArray(0)
-            self.commonProgram.setAttributeBuffer(0, GL_FLOAT, 0, 3)
-            # release
-            self.vbo.release()
-            self.vao.release()
-            self.commonProgram.release()
-    def drawItem(self):
+        self.vbo.release()
+        self.vao.release()
+        self.program.release()
+    def setupCommonShaderProgram(self):
+        # normal program
+        self.commonProgram = QOpenGLShaderProgram()
+        self.commonProgram.addShaderFromSourceFile(QOpenGLShader.Vertex, ":CommonShader/vertices.vert")
+        self.commonProgram.addShaderFromSourceFile(QOpenGLShader.Geometry, ":CommonShader/vertices.gs")
+        self.commonProgram.addShaderFromSourceFile(QOpenGLShader.Fragment, ":CommonShader/vertices.frag")
+        self.commonProgram.link()
+        self.commonProgram.bind()
+        self.verticesVao = QOpenGLVertexArrayObject()
+        self.verticesVao.create()
+        self.verticesVao.bind()
+        self.vbo.bind()
+        self.commonProgram.enableAttributeArray(0)
+        self.commonProgram.setAttributeBuffer(0, GL_FLOAT, 0, 3)
+        # release
+        self.vbo.release()
+        self.vao.release()
+        self.commonProgram.release()
+    def render(self):
+        self.counter+=1
         Model = QMatrix4x4()
         Model.translate(self.transform)
-        Model = self.model * Model
+        self.model = Model*self.model
         self.MVP = self.projection * self.view * Model
-
         self.program.bind()
-        self.program.setUniformValue("MVP", self.MVP)
-        self.program.setUniformValue("in_color", self.color)
+        self.program.setUniformValue("Model", self.model)
+        self.program.setUniformValue("View", self.view)
+        self.program.setUniformValue("Projection", self.projection)
+        #------------------------------------------------------------------------------
+        self.program.setUniformValue("objectColor", self.color)
+        self.program.setUniformValue("lightColor", QVector3D(1,1,1))
+        self.program.setUniformValue("lightPos", QVector3D(np.cos(self.counter/100),np.sin(self.counter/100),1))
+        #------------------------------------------------------------------------------
         # Actually draw the triangles
         self.vao.bind()
+        # glPolygonMode(GL_FRONT_AND_BACK, GL_LINE)
         glDrawArrays(GL_PATCHES, 0, self.vertices.shape[0]//3)# (draw type,start_vertices,total_vertices)
+        # glPolygonMode(GL_FRONT_AND_BACK, GL_FILL)
         self.program.release()
         self.vao.release()
         #Draw vertices and polygon
@@ -81,10 +91,11 @@ class BezierPatch(QListWidgetItem, AbstractSceneNode):
         self.commonProgram.bind()
         self.commonProgram.setUniformValue("MVP", self.MVP)
         self.commonProgram.setUniformValue("color", self.polygonColor)
+
         self.verticesVao.bind()
-
-        glDrawArrays(GL_LINE_STRIP, 0, self.vertices.shape[0] // 3)
-
+        #draw polygon connection in row
+        for i in range(0,self.vertices.shape[0] // 3,4):
+            glDrawArrays(GL_LINE_STRIP, i,4)
         glPointSize(5)
         self.commonProgram.setUniformValue("color", self.verticesColor)
         glDrawArrays(GL_POINTS, 0, self.vertices.shape[0] // 3)

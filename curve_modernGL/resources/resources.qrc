@@ -4,14 +4,14 @@
         <file>TriangleShader/vertexShader.vert</file>
         <file>BezierShader/bezierShader.frag</file>
         <file>BezierShader/bezierShader.vert</file>
-        <file>BezierShader/bezierShader.cs</file>
-        <file>BezierShader/bezierShader.es</file>
-        <file>BezierShader/bezierShader.gs</file>
+        <file>BezierShader/bezierShader.tesc</file>
+        <file>BezierShader/bezierShader.tese</file>
+        <file>BezierShader/bezierShader.geom</file>
         <file>BezierPatchShader/bezierShader.frag</file>
         <file>BezierPatchShader/bezierShader.vert</file>
-        <file>BezierPatchShader/bezierShader.cs</file>
-        <file>BezierPatchShader/bezierShader.es</file>
-        <file>BezierPatchShader/bezierShader.gs</file>
+        <file>BezierPatchShader/bezierShader.tesc</file>
+        <file>BezierPatchShader/bezierShader.tese</file>
+        <file>BezierPatchShader/bezierShader.geom</file>
         <file>CommonShader/vertices.frag</file>
         <file>CommonShader/vertices.vert</file>
         <file>images/new.png</file>

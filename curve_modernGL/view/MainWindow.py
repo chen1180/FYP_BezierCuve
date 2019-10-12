@@ -3,7 +3,7 @@ from PyQt5.QtGui import (QFont, QIcon, QKeySequence, QTextCharFormat,QKeyEvent,
         QTextCursor, QTextTableFormat,QVector3D,QColor)
 from PyQt5.QtPrintSupport import QPrintDialog, QPrinter
 from PyQt5.QtWidgets import *
-import GLWindow
+from curve_modernGL.view.GLWindow import *
 from curve_modernGL.view.SceneDockWidget import SceneDockWidget
 from curve_modernGL.view.PropertyDockWidget import PropertyDockWidget
 from curve_modernGL.model.triangle import Triangle
@@ -13,7 +13,7 @@ from curve_modernGL.controller import SceneManager,GLWindowController,PropertyWi
 class MainWindow(QMainWindow):
     def __init__(self):
         super(MainWindow, self).__init__()
-        self.glWindow =GLWindow.OpenGLWindow(self)
+        self.glWindow =OpenGLWindow(self)
         self.setCentralWidget(self.glWindow)
 
         self.createActions()
@@ -107,10 +107,10 @@ class MainWindow(QMainWindow):
         self.sceneWidget.setCurrentItem(item)
         self.glWindow.addToScene(self.model.sceneNodes)
     def drawBezierPatch(self):
-        item = BezierPatch(None, "BeizerPatch", [QVector3D(-1, -0.5, -0.5),QVector3D(-1, 1, -0.5),QVector3D(1, 1, -0.5),QVector3D(1, -1, -0.5),
-                                            QVector3D(-1, -0.2, -0.2),QVector3D(-1, 0.7, -0.2),QVector3D(1, 0.7, -0.2),QVector3D(1, -0.7, -0.2),
-                                            QVector3D(-1, 0.1, 0.2),QVector3D(-1, 0.4, 0.2),QVector3D(1, 0.4, 0.2),QVector3D(1, -1, 0.2),
-                                            QVector3D(-1, -0.2, 0.5),QVector3D(-1, 0.1, -0.2),QVector3D(1, 0.1, 0.5),QVector3D(1, -1.3, 0.5)])
+        item = BezierPatch(None, "BeizerPatch", [QVector3D(-1, -0.5, -0.5),QVector3D(-1, 1, -0.5),QVector3D(0, 1, -0.5),QVector3D(1, -1, -0.5),
+                                            QVector3D(-1, -0.2, -0.2),QVector3D(-1, 0.7, -0.2),QVector3D(0, 0.7, -0.2),QVector3D(1, -1.3, -0.2),
+                                            QVector3D(-1, 0.1, 0.2),QVector3D(-1, 0.4, 0.2),QVector3D(0, 0.4, 0.2),QVector3D(1, -1.6, 0.2),
+                                            QVector3D(-1, -0.2, 0.5),QVector3D(-1, 0.1, 0.5),QVector3D(0, 0.1, 0.5),QVector3D(1, -1.8, 0.5)])
         self.model.addNode(item)
         self.sceneWidget.setCurrentItem(item)
         self.glWindow.addToScene(self.model.sceneNodes)

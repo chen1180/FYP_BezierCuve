@@ -1,12 +1,30 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="6a09952a-ec81-4d01-8f36-3024081bb193" name="Default Changelist" comment="">
+    <list default="true" id="71f34409-af08-4aa9-b276-cdfd8362f18a" name="Default Changelist" comment="">
+      <change afterPath="$PROJECT_DIR$/.idea/inspectionProfiles/profiles_settings.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/curve_modernGL/model/lighting.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/curve_modernGL/view/ScrollWidget.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/FYP.iml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/FYP_BezierCuve.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/FYP_BezierCuve.iml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/inspectionProfiles/Project_Default.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/modules.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/modules.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/2019_8_13/src/curve.py" beforeDir="false" afterPath="$PROJECT_DIR$/2019_8_13/src/curve.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/2019_8_13/src/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/2019_8_13/src/main.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/2019_8_13/src/mainForm.py" beforeDir="false" afterPath="$PROJECT_DIR$/2019_8_13/src/mainForm.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/2019_8_13/src/mainForm.ui" beforeDir="false" afterPath="$PROJECT_DIR$/2019_8_13/src/mainForm.ui" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/curve_modernGL/model/SceneNode.py" beforeDir="false" afterPath="$PROJECT_DIR$/curve_modernGL/model/SceneNode.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/curve_modernGL/model/bezier.py" beforeDir="false" afterPath="$PROJECT_DIR$/curve_modernGL/model/bezier.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/curve_modernGL/model/bezierPatch.py" beforeDir="false" afterPath="$PROJECT_DIR$/curve_modernGL/model/bezierPatch.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/curve_modernGL/resources/BezierPatchShader/bezierShader.cs" beforeDir="false" afterPath="$PROJECT_DIR$/curve_modernGL/resources/BezierPatchShader/bezierShader.tesc" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/curve_modernGL/resources/BezierPatchShader/bezierShader.es" beforeDir="false" afterPath="$PROJECT_DIR$/curve_modernGL/resources/BezierPatchShader/bezierShader.tese" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/curve_modernGL/resources/BezierPatchShader/bezierShader.frag" beforeDir="false" afterPath="$PROJECT_DIR$/curve_modernGL/resources/BezierPatchShader/bezierShader.frag" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/curve_modernGL/resources/BezierPatchShader/bezierShader.gs" beforeDir="false" afterPath="$PROJECT_DIR$/curve_modernGL/resources/BezierPatchShader/bezierShader.geom" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/curve_modernGL/resources/BezierShader/bezierShader.cs" beforeDir="false" afterPath="$PROJECT_DIR$/curve_modernGL/resources/BezierShader/bezierShader.tesc" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/curve_modernGL/resources/BezierShader/bezierShader.es" beforeDir="false" afterPath="$PROJECT_DIR$/curve_modernGL/resources/BezierShader/bezierShader.tese" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/curve_modernGL/resources/BezierShader/bezierShader.frag" beforeDir="false" afterPath="$PROJECT_DIR$/curve_modernGL/resources/BezierShader/bezierShader.frag" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/curve_modernGL/resources/BezierShader/bezierShader.gs" beforeDir="false" afterPath="$PROJECT_DIR$/curve_modernGL/resources/BezierShader/bezierShader.geom" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/curve_modernGL/resources/resources.py" beforeDir="false" afterPath="$PROJECT_DIR$/curve_modernGL/resources/resources.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/curve_modernGL/resources/resources.qrc" beforeDir="false" afterPath="$PROJECT_DIR$/curve_modernGL/resources/resources.qrc" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/curve_modernGL/view/MainWindow.py" beforeDir="false" afterPath="$PROJECT_DIR$/curve_modernGL/view/MainWindow.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -14,20 +32,29 @@
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
     <option name="LAST_RESOLUTION" value="IGNORE" />
   </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="Python Script" />
+      </list>
+    </option>
+  </component>
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
-  <component name="ProjectLevelVcsManager" settingsEditedManually="true">
+  <component name="ProjectId" id="1S5QFpoFifV9rfaxHJtB7Q485xa" />
+  <component name="ProjectLevelVcsManager">
     <ConfirmationsSetting value="2" id="Add" />
   </component>
   <component name="PropertiesComponent">
+    <property name="ASKED_ADD_EXTERNAL_FILES" value="true" />
     <property name="SHARE_PROJECT_CONFIGURATION_FILES" value="true" />
-    <property name="last_opened_file_path" value="$PROJECT_DIR$" />
-    <property name="settings.editor.selected.configurable" value="preferences.externalTools" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/curve_modernGL/resources/CommonShader" />
+    <property name="settings.editor.selected.configurable" value="preferences.keymap" />
   </component>
   <component name="RecentsManager">
-    <key name="MoveFile.RECENT_KEYS">
-      <recent name="C:\Users\chen1180\Documents\GitHub\FYP_BezierCuve" />
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="C:\Users\Chen Baocheng\Documents\GitHub\FYP_BezierCuve\curve_modernGL\resources\CommonShader" />
     </key>
   </component>
   <component name="RunDashboard">
@@ -43,32 +70,7 @@
     </option>
   </component>
   <component name="RunManager" selected="Python.main">
-    <configuration name="curve" type="PythonConfigurationType" factoryName="Python" temporary="true">
-      <module name="FYP" />
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <envs>
-        <env name="PYTHONUNBUFFERED" value="1" />
-      </envs>
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/2019_8_13/src" />
-      <option name="IS_MODULE_SDK" value="true" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/2019_8_13/src/curve.py" />
-      <option name="PARAMETERS" value="" />
-      <option name="SHOW_COMMAND_LINE" value="false" />
-      <option name="EMULATE_TERMINAL" value="false" />
-      <option name="MODULE_MODE" value="false" />
-      <option name="REDIRECT_INPUT" value="false" />
-      <option name="INPUT_FILE" value="" />
-      <method v="2" />
-    </configuration>
-<<<<<<< Updated upstream
-    <configuration name="main" type="PythonConfigurationType" factoryName="Python">
-      <module name="FYP" />
-=======
-    <configuration name="geometry" type="PythonConfigurationType" factoryName="Python" temporary="true">
+    <configuration name="ScrollWidget" type="PythonConfigurationType" factoryName="Python" temporary="true">
       <module name="FYP_BezierCuve" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
@@ -76,11 +78,11 @@
         <env name="PYTHONUNBUFFERED" value="1" />
       </envs>
       <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/2019_8_13/src" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/curve_modernGL/view" />
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/2019_8_13/src/geometry.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/curve_modernGL/view/ScrollWidget.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -91,67 +93,65 @@
     </configuration>
     <configuration name="main" type="PythonConfigurationType" factoryName="Python" temporary="true">
       <module name="FYP_BezierCuve" />
->>>>>>> Stashed changes
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
       <envs>
         <env name="PYTHONUNBUFFERED" value="1" />
       </envs>
-      <option name="SDK_HOME" value="C:\Users\Chen Baocheng\AppData\Local\Programs\Python\Python37-32\python.exe" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/2019_8_13/src" />
-      <option name="IS_MODULE_SDK" value="false" />
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/curve_modernGL" />
+      <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/2019_8_13/src/main.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/curve_modernGL/main.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
       <option name="MODULE_MODE" value="false" />
       <option name="REDIRECT_INPUT" value="false" />
       <option name="INPUT_FILE" value="" />
-      <method v="2" />
+      <method v="2">
+        <option name="ToolBeforeRunTask" enabled="true" actionId="Tool_External Tools_Pyrcc" />
+      </method>
     </configuration>
     <list>
       <item itemvalue="Python.main" />
-      <item itemvalue="Python.curve" />
+      <item itemvalue="Python.ScrollWidget" />
     </list>
     <recent_temporary>
       <list>
-        <item itemvalue="Python.curve" />
+        <item itemvalue="Python.main" />
+        <item itemvalue="Python.ScrollWidget" />
       </list>
     </recent_temporary>
-  </component>
-  <component name="ServiceViewManager">
-    <option name="allServicesViewState">
-      <serviceView>
-        <treeState>
-          <expand />
-          <select />
-        </treeState>
-      </serviceView>
-    </option>
   </component>
   <component name="SvnConfiguration">
     <configuration />
   </component>
   <component name="TaskManager">
     <task active="true" id="Default" summary="Default task">
-      <changelist id="7e4bd2b0-cccb-4b4b-9232-f6ac4c513c44" name="Default" comment="" />
-      <created>1566964047305</created>
+      <changelist id="71f34409-af08-4aa9-b276-cdfd8362f18a" name="Default Changelist" comment="" />
+      <created>1570850875841</created>
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
-      <updated>1566964047305</updated>
+      <updated>1570850875841</updated>
     </task>
     <servers />
   </component>
-  <component name="Vcs.Log.History.Properties">
-    <option name="COLUMN_ORDER">
-      <list>
-        <option value="0" />
-        <option value="2" />
-        <option value="3" />
-        <option value="1" />
-      </list>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State>
+              <option name="COLUMN_ORDER" />
+            </State>
+          </value>
+        </entry>
+      </map>
     </option>
+  </component>
+  <component name="VcsManagerConfiguration">
+    <option name="ADD_EXTERNAL_FILES_SILENTLY" value="true" />
   </component>
 </project>
