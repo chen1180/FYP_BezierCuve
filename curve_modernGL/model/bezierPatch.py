@@ -1,7 +1,7 @@
 from PyQt5.QtWidgets import QListWidgetItem,QApplication
-from PyQt5.QtCore import Qt
+from PyQt5.QtCore import Qt,qDebug
 from OpenGL.GL import *
-from PyQt5.QtGui import QVector3D,QOpenGLBuffer,QOpenGLVertexArrayObject,QOpenGLShaderProgram,QOpenGLShader,QMatrix4x4
+from PyQt5.QtGui import QVector3D,QOpenGLBuffer,QOpenGLVertexArrayObject,QOpenGLShaderProgram,QOpenGLShader,QMatrix4x4,QOpenGLTexture
 import sys
 from curve_modernGL.view.SceneDockWidget import SceneDockWidget
 from curve_modernGL.model.SceneNode import AbstractSceneNode
@@ -41,6 +41,11 @@ class BezierPatch(QListWidgetItem, AbstractSceneNode):
         self.vbo.allocate(self.vertices, self.vertices.shape[0] * self.vertices.itemsize)
         self.program.enableAttributeArray(0)
         self.program.setAttributeBuffer(0, GL_FLOAT, 0, 3)
+        #Texture creation
+        buffer=self.loadTexture(":texture/texture1.jpg")
+        self.textureID = QOpenGLTexture(buffer.mirrored(), QOpenGLTexture.GenerateMipMaps)
+        self.textureID.setMinificationFilter(QOpenGLTexture.LinearMipMapLinear)
+        self.textureID.setMagnificationFilter(QOpenGLTexture.Linear)
 
         self.vbo.release()
         self.vao.release()
@@ -70,19 +75,28 @@ class BezierPatch(QListWidgetItem, AbstractSceneNode):
         self.model = Model*self.model
         self.MVP = self.projection * self.view * Model
         self.program.bind()
+        # --------------------------------Transformation---------------------------------------
         self.program.setUniformValue("Model", self.model)
         self.program.setUniformValue("View", self.view)
         self.program.setUniformValue("Projection", self.projection)
-        #------------------------------------------------------------------------------
+        #---------------------------------Light---------------------------------------
         self.program.setUniformValue("objectColor", self.color)
         self.program.setUniformValue("lightColor", QVector3D(1,1,1))
-        self.program.setUniformValue("lightPos", QVector3D(1,1,1))
-        #------------------------------------------------------------------------------
+        self.program.setUniformValue("lightPos", QVector3D(0,-2,-1))
+        self.program.setUniformValue("viewPos", self.cameraViewPos)
+
+        #---------------------------------Texture---------------------------------------------
+        self.textureID.bind()
+        self.program.setUniformValue("texture0", 0)
+        qDebug(self.program.log())
+
         # Actually draw the triangles
         self.vao.bind()
+
         # glPolygonMode(GL_FRONT_AND_BACK, GL_LINE)
         glDrawArrays(GL_PATCHES, 0, self.vertices.shape[0]//3)# (draw type,start_vertices,total_vertices)
         # glPolygonMode(GL_FRONT_AND_BACK, GL_FILL)
+        self.textureID.release()
         self.program.release()
         self.vao.release()
         #Draw vertices and polygon

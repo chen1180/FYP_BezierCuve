@@ -19,7 +19,7 @@ class OpenGLWindow(QOpenGLWidget):
         format.setProfile(QSurfaceFormat.CoreProfile)
         self.setFormat(format)
         self.scene=[]
-        self.camera=Trackball(QVector3D(0,0,-10),QVector3D(0,0,0),QVector3D(0,1,0))
+        self.camera=Trackball(QVector3D(0,0,-2),QVector3D(0,0,0),QVector3D(0,1,0))
         # self.triangle=Triangle(None, "Beizer", [QVector3D(-0.5,0,0),QVector3D(0.5,0,0),QVector3D(0,0.5,0),QVector3D(1,0.5,0)])
     def getFileContent(self,filename):
         return open(filename,"r").read()
@@ -32,18 +32,7 @@ class OpenGLWindow(QOpenGLWidget):
         Projection=QMatrix4x4()
         Projection.perspective(45.0,self.width()/self.height(),0.1,100)
         View=QMatrix4x4()
-        '''
-        RightX      RightY      RightZ      0
-        UpX         UpY         UpZ         0
-        LookX       LookY       LookZ       0
-        PosX        PosY        PosZ        1
-        '''
-        # View.lookAt(self.camera.cameraPos, self.camera.center, self.camera.WorldUp)
-        View.translate(self.camera.cameraPos * self.camera.radius)
-        View.rotate(self.camera.m_rotation)
-        ViewMatrix=View.data()
-        cameraPos=QVector3D(ViewMatrix[8],ViewMatrix[9],ViewMatrix[10])
-        print(cameraPos,self.camera.m_rotation.vector())
+        View.lookAt(self.camera.cameraPos, self.camera.targetPos, self.camera.cameraUp)
         Model=QMatrix4x4()
         MVP=Projection*View*Model
         # self.triangle.program.bind()
@@ -53,8 +42,8 @@ class OpenGLWindow(QOpenGLWidget):
         try:
             if self.scene:
                 for item in self.scene:
-                    item.setupMatrix(View,Model,Projection)
-                    item.setupCamera(cameraPos)
+                    item.setupMatrix(View, Model, Projection)
+                    item.setupCamera(self.camera.cameraPos)
                     item.initialize()
                     item.render()
         except Exception as e:

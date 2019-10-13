@@ -5,6 +5,8 @@ import numpy as np
 class AbstractSceneNode(QObject):
     def __init__(self):
         super(AbstractSceneNode, self).__init__()
+        #status
+        self.STATUS_Changed= True
         #sceneNode common properties
         self.vertices=[]
         self.transform=QVector3D(0,0,0)
@@ -16,7 +18,9 @@ class AbstractSceneNode(QObject):
         #color
         self.verticesColor=QVector3D(1,1,1)
         self.polygonColor=QVector3D(0,1,0)
-        self.color=QVector3D(1,0,0)
+        self.color=QVector3D(1,1,1)
+        #texture
+        self.textureID=None
         #Camera transformation
         self.viewMatrix=QMatrix4x4()
         self.modelMatrix=QMatrix4x4()
@@ -26,6 +30,7 @@ class AbstractSceneNode(QObject):
         self.m_showPoint=False
         self.m_showPolygon=False
         self.m_showWireframe=False
+
 
     def initialize(self):
         self.setupMainShaderProgram()
@@ -42,8 +47,8 @@ class AbstractSceneNode(QObject):
         self.view = view
         self.model = model
         self.projection = projection
-    def setupCamera(self,lookat):
-        self.lookat=lookat
+    def setupCamera(self,cameraViewPos):
+        self.cameraViewPos=cameraViewPos
     #common method
     def QVec3DtoNumpyArray(self, data):
         tmp=[]
@@ -61,3 +66,11 @@ class AbstractSceneNode(QObject):
         self.color=color
     def modifyVertices(self, data):
         pass
+    def loadTexture(self,filePath:str):
+        buffer=QImage()
+        if buffer.load(filePath)==False:
+            qWarning("Can't open the image..")
+            dummy=QImage(128,128,QImage.Format_RGB32)
+            dummy.fill(Qt.green)
+            buffer=dummy
+        return buffer

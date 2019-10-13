@@ -1,14 +1,20 @@
 #version 410 core
 layout(quads) in;
 
+//Transformation input
 uniform mat4 Model;
 uniform mat4 View;
 uniform mat4 Projection;
+
+//Light input
 uniform vec3 lightPos;
 
+//Light output
 out vec3 normal;
 out vec3 FragPos;
 out vec3 LightPos;
+//Texture coordinate output
+out vec2 textureCoord;
 
 float Berstern(int i,float u)
 {
@@ -56,7 +62,7 @@ void main()
 {
     vec4 p=vec4(0);
     // The tessellation u coordinate
-    float u = gl_TessCoord.x;
+    float u =gl_TessCoord.x;
     float v=gl_TessCoord.y;
     for (int j=0;j<4;++j)
     {
@@ -66,10 +72,17 @@ void main()
         vec4 p3=gl_in[j*4+3].gl_Position;
         p+=Berstern(j,v)*ComputeCubicBezier(u,p0,p1,p2,p3);
     }
+    //Normal vector on each vertices
     vec3 dU=dUBezier(u,v);
     vec3 dV=dVBezier(u,v);
-    normal=normalize(cross(dU,dV));
+    vec3 Normal=normalize(cross(dU,dV));
+    normal = mat3(transpose(inverse(Model))) * Normal;
+    //Vertices coordinate in View space(Used for light calculation)
     FragPos = vec3(View *Model*p);
+    //Light position in View space
     LightPos=vec3(View * vec4(lightPos, 1.0));
+    //Texture coordinate
+    textureCoord=vec2(u,v);
+    //Fragment position in Projection space
     gl_Position = Projection*View*Model*p;
 }

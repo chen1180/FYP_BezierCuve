@@ -3,21 +3,32 @@ from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
 import math
 class Trackball(QObject):
-    def __init__(self,cameraPos:QVector3D,center:QVector3D,WorldUp:QVector3D):
+    def __init__(self,cameraPos:QVector3D,targetPos:QVector3D,WorldUp:QVector3D):
         self.cameraPos=cameraPos
-        self.center=center
-        self.WorldUp=WorldUp
-        self.eye=self.cameraPos-self.center
-        self.cameraRight=QVector3D.crossProduct(self.eye,self.WorldUp).normalized()
-        self.cameraUp=QVector3D.crossProduct(self.cameraRight,self.eye).normalized()
-        self.radius=1.0
+        self.targetPos=targetPos
+        self.cameraUp=WorldUp
+        self.radius=(self.cameraPos-self.targetPos).length()
         #camera state
         self.m_rotationTrigger=False
         self.m_panningTrigger=False
         self.m_rotation=QQuaternion()
         self.m_lastPos=QPointF()
+        self.updateCamera()
     def updateCamera(self):
-        pass
+        RotationMatrix = QMatrix4x4()
+        RotationMatrix.rotate(self.m_rotation)
+        '''
+                        RightX      RightY      RightZ      0
+                        UpX         UpY         UpZ         0
+                        LookX       LookY       LookZ       0
+                        PosX        PosY        PosZ        1
+        '''
+        ViewMatrix = RotationMatrix.data()
+        viewDir = QVector3D(ViewMatrix[8], ViewMatrix[9], ViewMatrix[10])
+        #update camera position
+        self.cameraPos = viewDir * self.radius + self.targetPos
+        self.cameraUp = QVector3D(ViewMatrix[4], ViewMatrix[5], ViewMatrix[6])
+
     # camera rotation
     def pushMiddleButton(self,p:QPointF):
         self.m_rotationTrigger=True
@@ -37,13 +48,17 @@ class Trackball(QObject):
             currentPos3D.setZ(math.sqrt(sqrZ))
         else:
             currentPos3D.normalize()
-        axis=QVector3D.crossProduct(lastPos3D,currentPos3D)
-        angle=math.degrees(math.asin(axis.length()))
-        axis.normalize()
-        self.m_rotation=QQuaternion.fromAxisAndAngle(axis,angle)*self.m_rotation
-        self.m_lastPos=p
-    def releaseMiddleButton(self):
+        if lastPos3D!= currentPos3D:
+            axis=QVector3D.crossProduct(lastPos3D,currentPos3D).normalized()
+            angle=math.degrees(math.acos(QVector3D.dotProduct(lastPos3D,currentPos3D)))
+            self.m_rotation=QQuaternion.fromAxisAndAngle(axis,angle)*self.m_rotation
+            self.updateCamera()
+            self.m_lastPos = p
+
+
+    def releaseMiddleButton(self,p:QPointF):
         self.m_rotationTrigger=False
+
     #camera panning
     def pushRightButton(self,p:QPointF):
         self.m_panningTrigger = True
@@ -53,22 +68,27 @@ class Trackball(QObject):
             return
         dx = (p - self.m_lastPos).x()
         dy = (p - self.m_lastPos).y()
-        look = self.cameraPos-self.center
-        right = QVector3D.crossProduct(look, self.WorldUp)
-        up = QVector3D.crossProduct(look, right)
+        look = self.cameraPos-self.targetPos
+        right = QVector3D.crossProduct(look, self.cameraUp).normalized()
+        up = QVector3D.crossProduct(look, right).normalized()
         # self.cameraPos+=transVec
-        self.center+= (right * dx + up * dy)*0.1
+        self.targetPos+= (right * dx + up * dy)
         self.m_lastPos = p
+        self.updateCamera()
     def releaseRightButton(self):
         self.m_panningTrigger=False
 
     #camere zooming
     def moveMiddleScroller(self,angleDelta):
         if angleDelta>0:
-            self.radius+=0.1
-        if angleDelta<0:
-            self.radius-=0.1
-        print(self.radius)
+            self.radius+=1
+        else:
+            self.radius-=1
+        if self.radius<=0.5:
+            self.radius=0.5
+        if self.radius>=20:
+            self.radius=20
+        self.updateCamera()
 
 
 
