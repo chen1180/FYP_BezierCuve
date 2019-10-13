@@ -3,7 +3,7 @@ from OpenGL.GL import *
 from PyQt5.QtCore import pyqtSignal,QPointF,Qt,qDebug
 from PyQt5.QtWidgets import QApplication,QOpenGLWidget
 from PyQt5.QtGui import (QSurfaceFormat,QOpenGLContext,QOpenGLShaderProgram,
-QOpenGLShader,QOpenGLVersionProfile,QAbstractOpenGLFunctions,QVector3D,QMouseEvent,QWheelEvent,QKeyEvent,QMatrix4x4)
+                         QOpenGLShader,QOpenGLVersionProfile,QAbstractOpenGLFunctions,QVector3D,QMouseEvent,QWheelEvent,QKeyEvent,QMatrix4x4)
 from curve_modernGL.model.trackBall import Trackball
 import sys
 from curve_modernGL.model.bezier import Bezier
@@ -32,9 +32,18 @@ class OpenGLWindow(QOpenGLWidget):
         Projection=QMatrix4x4()
         Projection.perspective(45.0,self.width()/self.height(),0.1,100)
         View=QMatrix4x4()
+        '''
+        RightX      RightY      RightZ      0
+        UpX         UpY         UpZ         0
+        LookX       LookY       LookZ       0
+        PosX        PosY        PosZ        1
+        '''
         # View.lookAt(self.camera.cameraPos, self.camera.center, self.camera.WorldUp)
         View.translate(self.camera.cameraPos * self.camera.radius)
         View.rotate(self.camera.m_rotation)
+        ViewMatrix=View.data()
+        cameraPos=QVector3D(ViewMatrix[8],ViewMatrix[9],ViewMatrix[10])
+        print(cameraPos,self.camera.m_rotation.vector())
         Model=QMatrix4x4()
         MVP=Projection*View*Model
         # self.triangle.program.bind()
@@ -44,7 +53,8 @@ class OpenGLWindow(QOpenGLWidget):
         try:
             if self.scene:
                 for item in self.scene:
-                    item.setupCameraMatrix(View,Model,Projection)
+                    item.setupMatrix(View,Model,Projection)
+                    item.setupCamera(cameraPos)
                     item.initialize()
                     item.render()
         except Exception as e:

@@ -21,6 +21,7 @@ class AbstractSceneNode(QObject):
         self.viewMatrix=QMatrix4x4()
         self.modelMatrix=QMatrix4x4()
         self.projectionMatrix=QMatrix4x4()
+        self.lookat=QVector3D()
         #Display Properties
         self.m_showPoint=False
         self.m_showPolygon=False
@@ -37,10 +38,12 @@ class AbstractSceneNode(QObject):
     def setupMainShaderProgram(self):
         pass
     #Camera matrix
-    def setupCameraMatrix(self,view,model,projection):
+    def setupMatrix(self,view,model,projection):
         self.view = view
         self.model = model
         self.projection = projection
+    def setupCamera(self,lookat):
+        self.lookat=lookat
     #common method
     def QVec3DtoNumpyArray(self, data):
         tmp=[]

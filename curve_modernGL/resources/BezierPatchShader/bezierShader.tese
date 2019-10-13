@@ -4,9 +4,11 @@ layout(quads) in;
 uniform mat4 Model;
 uniform mat4 View;
 uniform mat4 Projection;
+uniform vec3 lightPos;
 
 out vec3 normal;
 out vec3 FragPos;
+out vec3 LightPos;
 
 float Berstern(int i,float u)
 {
@@ -67,6 +69,7 @@ void main()
     vec3 dU=dUBezier(u,v);
     vec3 dV=dVBezier(u,v);
     normal=normalize(cross(dU,dV));
-    FragPos = vec3(Model *p);
+    FragPos = vec3(View *Model*p);
+    LightPos=vec3(View * vec4(lightPos, 1.0));
     gl_Position = Projection*View*Model*p;
 }

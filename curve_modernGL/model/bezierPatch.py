@@ -76,7 +76,7 @@ class BezierPatch(QListWidgetItem, AbstractSceneNode):
         #------------------------------------------------------------------------------
         self.program.setUniformValue("objectColor", self.color)
         self.program.setUniformValue("lightColor", QVector3D(1,1,1))
-        self.program.setUniformValue("lightPos", QVector3D(np.cos(self.counter/100),np.sin(self.counter/100),1))
+        self.program.setUniformValue("lightPos", QVector3D(1,1,1))
         #------------------------------------------------------------------------------
         # Actually draw the triangles
         self.vao.bind()

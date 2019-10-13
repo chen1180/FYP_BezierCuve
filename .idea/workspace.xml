@@ -2,29 +2,13 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="71f34409-af08-4aa9-b276-cdfd8362f18a" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/.idea/inspectionProfiles/profiles_settings.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/curve_modernGL/model/lighting.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/curve_modernGL/view/ScrollWidget.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/FYP.iml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/FYP_BezierCuve.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/FYP_BezierCuve.iml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/inspectionProfiles/Project_Default.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/modules.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/modules.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/curve_modernGL/model/SceneNode.py" beforeDir="false" afterPath="$PROJECT_DIR$/curve_modernGL/model/SceneNode.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/curve_modernGL/model/bezier.py" beforeDir="false" afterPath="$PROJECT_DIR$/curve_modernGL/model/bezier.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/curve_modernGL/model/bezierPatch.py" beforeDir="false" afterPath="$PROJECT_DIR$/curve_modernGL/model/bezierPatch.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/curve_modernGL/resources/BezierPatchShader/bezierShader.cs" beforeDir="false" afterPath="$PROJECT_DIR$/curve_modernGL/resources/BezierPatchShader/bezierShader.tesc" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/curve_modernGL/resources/BezierPatchShader/bezierShader.es" beforeDir="false" afterPath="$PROJECT_DIR$/curve_modernGL/resources/BezierPatchShader/bezierShader.tese" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/curve_modernGL/resources/BezierPatchShader/bezierShader.frag" beforeDir="false" afterPath="$PROJECT_DIR$/curve_modernGL/resources/BezierPatchShader/bezierShader.frag" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/curve_modernGL/resources/BezierPatchShader/bezierShader.gs" beforeDir="false" afterPath="$PROJECT_DIR$/curve_modernGL/resources/BezierPatchShader/bezierShader.geom" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/curve_modernGL/resources/BezierShader/bezierShader.cs" beforeDir="false" afterPath="$PROJECT_DIR$/curve_modernGL/resources/BezierShader/bezierShader.tesc" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/curve_modernGL/resources/BezierShader/bezierShader.es" beforeDir="false" afterPath="$PROJECT_DIR$/curve_modernGL/resources/BezierShader/bezierShader.tese" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/curve_modernGL/resources/BezierShader/bezierShader.frag" beforeDir="false" afterPath="$PROJECT_DIR$/curve_modernGL/resources/BezierShader/bezierShader.frag" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/curve_modernGL/resources/BezierShader/bezierShader.gs" beforeDir="false" afterPath="$PROJECT_DIR$/curve_modernGL/resources/BezierShader/bezierShader.geom" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/curve_modernGL/resources/BezierPatchShader/bezierShader.tese" beforeDir="false" afterPath="$PROJECT_DIR$/curve_modernGL/resources/BezierPatchShader/bezierShader.tese" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/curve_modernGL/resources/resources.py" beforeDir="false" afterPath="$PROJECT_DIR$/curve_modernGL/resources/resources.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/curve_modernGL/resources/resources.qrc" beforeDir="false" afterPath="$PROJECT_DIR$/curve_modernGL/resources/resources.qrc" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/curve_modernGL/view/MainWindow.py" beforeDir="false" afterPath="$PROJECT_DIR$/curve_modernGL/view/MainWindow.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/curve_modernGL/view/GLWindow.py" beforeDir="false" afterPath="$PROJECT_DIR$/curve_modernGL/view/GLWindow.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
