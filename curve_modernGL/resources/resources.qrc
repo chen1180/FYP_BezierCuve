@@ -7,11 +7,15 @@
         <file>BezierShader/bezierShader.tesc</file>
         <file>BezierShader/bezierShader.tese</file>
         <file>BezierShader/bezierShader.geom</file>
-        <file>BezierPatchShader/bezierShader.frag</file>
-        <file>BezierPatchShader/bezierShader.vert</file>
-        <file>BezierPatchShader/bezierShader.tesc</file>
-        <file>BezierPatchShader/bezierShader.tese</file>
-        <file>BezierPatchShader/bezierShader.geom</file>
+        <file>BezierPatchShader/bezierPatchShader.frag</file>
+        <file>BezierPatchShader/bezierPatchShader.vert</file>
+        <file>BezierPatchShader/bezierPatchShader.tesc</file>
+        <file>BezierPatchShader/bezierPatchShader.tese</file>
+        <file>BezierPatchShader/bezierPatchShader.geom</file>
+        <file>NurbsShader/nurbsShader.frag</file>
+        <file>NurbsShader/nurbsShader.vert</file>
+        <file>NurbsShader/nurbsShader.tesc</file>
+        <file>NurbsShader/nurbsShader.tese</file>
         <file>CommonShader/vertices.frag</file>
         <file>CommonShader/vertices.vert</file>
         <file>CommonShader/axis.frag</file>

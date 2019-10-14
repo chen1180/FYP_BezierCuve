@@ -11,7 +11,7 @@ class Trackball(QObject):
         #camera state
         self.m_rotationTrigger=False
         self.m_panningTrigger=False
-        self.m_rotation=QQuaternion()
+        self.m_rotation=QQuaternion().fromDirection(self.cameraPos-self.targetPos,WorldUp)
         self.m_lastPos=QPointF()
         self.sensitivity=2.5
 
@@ -28,7 +28,9 @@ class Trackball(QObject):
         viewDir = QVector3D(ViewMatrix[8], ViewMatrix[9], ViewMatrix[10])
         #update camera position
         self.cameraPos = viewDir * self.radius + self.targetPos
-        self.cameraUp = QVector3D(ViewMatrix[4], ViewMatrix[5], ViewMatrix[6])
+        #calculate roll of camera
+        # self.cameraUp = QVector3D(ViewMatrix[4], ViewMatrix[5], ViewMatrix[6])
+
 
     # camera rotation
     def pushMiddleButton(self,p:QPointF):

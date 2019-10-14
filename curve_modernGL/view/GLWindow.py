@@ -3,7 +3,7 @@ from OpenGL.GL import *
 from PyQt5.QtCore import pyqtSignal,QPointF,Qt,qDebug
 from PyQt5.QtWidgets import QApplication,QOpenGLWidget
 from PyQt5.QtGui import (QSurfaceFormat,QOpenGLContext,QOpenGLShaderProgram,
-                         QOpenGLShader,QOpenGLVersionProfile,QAbstractOpenGLFunctions,QVector3D,QMouseEvent,QWheelEvent,QKeyEvent,QMatrix4x4)
+                         QOpenGLShader,QOpenGLVersionProfile,QAbstractOpenGLFunctions,QVector3D,QMouseEvent,QWheelEvent,QKeyEvent,QMatrix4x4,QQuaternion)
 from curve_modernGL.model.trackBall import Trackball
 import sys
 from curve_modernGL.model.planes import Quads
@@ -31,6 +31,10 @@ class OpenGLWindow(QOpenGLWidget):
     def paintGL(self) -> None:
         glClearColor(0, 0, 0, 1.0)
         glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT)
+        # self.setDisplayViewPort(0,0,self.width()//2,self.height()//2,QQuaternion())
+        # self.setDisplayViewPort(self.width() // 2,0, self.width() // 2, self.height() //2, QQuaternion().fromAxisAndAngle(QVector3D(0,1,0),-90))
+        # self.setDisplayViewPort(0,self.height()//2, self.width() // 2, self.height() // 2, QQuaternion().fromAxisAndAngle(QVector3D(1,0,0),-90))
+        # glViewport(self.width()//2,self.height()//2, self.width() // 2, self.height() // 2)
         Projection=QMatrix4x4()
         Projection.perspective(45.0,self.width()/self.height(),0.1,100)
         View=QMatrix4x4()
@@ -52,6 +56,28 @@ class OpenGLWindow(QOpenGLWidget):
         except Exception as e:
             print(e)
         self.update()
+    def setDisplayViewPort(self,x,y,width,height,rotation):
+        glViewport(x,y,width,height)
+        Projection = QMatrix4x4()
+        Projection.ortho(-1,1,-1,1,-1,1)
+        View = QMatrix4x4()
+        View.rotate(rotation)
+        Model = QMatrix4x4()
+        MVP = Projection * View * Model
+        try:
+            self.quads.setupMatrix(View, Model, Projection)
+            self.quads.render()
+        except Exception as e:
+            print(e)
+        try:
+            if self.scene:
+                for item in self.scene:
+                    item.setupMatrix(View, Model, Projection)
+                    item.setupCamera(self.camera.cameraPos)
+                    item.initialize()
+                    item.render()
+        except Exception as e:
+            print(e)
     def addToScene(self, scene):
         self.scene=list(scene)
         self.update()

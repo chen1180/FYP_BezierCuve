@@ -8,6 +8,7 @@ from curve_modernGL.view.SceneDockWidget import SceneDockWidget
 from curve_modernGL.view.PropertyDockWidget import PropertyDockWidget
 from curve_modernGL.model.triangle import Triangle
 from curve_modernGL.model.bezier import Bezier
+from curve_modernGL.model.nurb import Nurbs
 from curve_modernGL.model.bezierPatch import BezierPatch
 from curve_modernGL.controller import SceneManager,GLWindowController,PropertyWidgetController,SceneWidgetController
 class MainWindow(QMainWindow):
@@ -102,7 +103,8 @@ class MainWindow(QMainWindow):
     #-----------------------------For model operation-----------------------------------#
 
     def drawBezierCurve(self):
-        item = Bezier(None, "Beizer", [QVector3D(0,-1,0),QVector3D(0.5,0,0),QVector3D(1.0,0,0),QVector3D(1,0.5,0),QVector3D(0.5,0.5,0)])
+        # item = Bezier(None, "Beizer", [QVector3D(0,-1,0),QVector3D(0.5,0,0),QVector3D(1.0,0,0),QVector3D(1,0.5,0),QVector3D(0.5,0.5,0)])
+        item = Nurbs(None, "Nurbs",[QVector3D(0, -1, 0), QVector3D(0.5, 0, 0), QVector3D(1.0, 0, 0), QVector3D(1, 0.5, 0)])
         self.model.addNode(item)
         self.sceneWidget.setCurrentItem(item)
         self.glWindow.addToScene(self.model.sceneNodes)
