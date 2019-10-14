@@ -6,7 +6,7 @@ from PyQt5.QtGui import (QSurfaceFormat,QOpenGLContext,QOpenGLShaderProgram,
                          QOpenGLShader,QOpenGLVersionProfile,QAbstractOpenGLFunctions,QVector3D,QMouseEvent,QWheelEvent,QKeyEvent,QMatrix4x4)
 from curve_modernGL.model.trackBall import Trackball
 import sys
-from curve_modernGL.model.bezier import Bezier
+from curve_modernGL.model.planes import Quads
 
 class OpenGLWindow(QOpenGLWidget):
     OPENGL_NEED_UPDATE=pyqtSignal(bool)
@@ -19,15 +19,17 @@ class OpenGLWindow(QOpenGLWidget):
         format.setProfile(QSurfaceFormat.CoreProfile)
         self.setFormat(format)
         self.scene=[]
-        self.camera=Trackball(QVector3D(0,0,-2),QVector3D(0,0,0),QVector3D(0,1,0))
-        # self.triangle=Triangle(None, "Beizer", [QVector3D(-0.5,0,0),QVector3D(0.5,0,0),QVector3D(0,0.5,0),QVector3D(1,0.5,0)])
-    def getFileContent(self,filename):
-        return open(filename,"r").read()
+        self.camera=Trackball(QVector3D(0,1,-5),QVector3D(0,0,0),QVector3D(0,1,0))
+        self.quads=Quads(10,1)
     def initializeGL(self) -> None:
         QOpenGLWidget.initializeGL(self)
-        # self.triangle.create()
+        glEnable(GL_DEPTH_TEST)
+        try:
+            self.quads.initialize()
+        except Exception as e:
+            print(e)
     def paintGL(self) -> None:
-        glClearColor(0.0, 0.0, 0.0, 1.0)
+        glClearColor(0, 0, 0, 1.0)
         glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT)
         Projection=QMatrix4x4()
         Projection.perspective(45.0,self.width()/self.height(),0.1,100)
@@ -35,10 +37,11 @@ class OpenGLWindow(QOpenGLWidget):
         View.lookAt(self.camera.cameraPos, self.camera.targetPos, self.camera.cameraUp)
         Model=QMatrix4x4()
         MVP=Projection*View*Model
-        # self.triangle.program.bind()
-        # self.location=self.triangle.program.uniformLocation('MVP')
-        # self.triangle.program.setUniformValue(self.location, MVP)
-        # self.triangle.render()
+        try:
+            self.quads.setupMatrix(View, Model, Projection)
+            self.quads.render()
+        except Exception as e:
+            print(e)
         try:
             if self.scene:
                 for item in self.scene:
@@ -74,7 +77,6 @@ class OpenGLWindow(QOpenGLWidget):
         if a0.buttons()&Qt.RightButton:
             self.camera.moveRightButton(self.pixelPosToViewPos(a0.windowPos()))
             a0.accept()
-        self.camera.updateCamera()
         self.update()
     def mouseReleaseEvent(self, a0: QMouseEvent) -> None:
         super(OpenGLWindow, self).mouseReleaseEvent(a0)

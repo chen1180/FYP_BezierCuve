@@ -13,10 +13,11 @@ class Trackball(QObject):
         self.m_panningTrigger=False
         self.m_rotation=QQuaternion()
         self.m_lastPos=QPointF()
-        self.updateCamera()
-    def updateCamera(self):
+        self.sensitivity=2.5
+
+    def updateCamera(self,rotation):
         RotationMatrix = QMatrix4x4()
-        RotationMatrix.rotate(self.m_rotation)
+        RotationMatrix.rotate(rotation)
         '''
                         RightX      RightY      RightZ      0
                         UpX         UpY         UpZ         0
@@ -49,10 +50,16 @@ class Trackball(QObject):
         else:
             currentPos3D.normalize()
         if lastPos3D!= currentPos3D:
+
             axis=QVector3D.crossProduct(lastPos3D,currentPos3D).normalized()
             angle=math.degrees(math.acos(QVector3D.dotProduct(lastPos3D,currentPos3D)))
-            self.m_rotation=QQuaternion.fromAxisAndAngle(axis,angle)*self.m_rotation
-            self.updateCamera()
+
+            for i in range(10):
+                previousRotation=self.m_rotation
+                nextRotation=QQuaternion.fromAxisAndAngle(axis,angle*self.sensitivity)*self.m_rotation
+                rotation=QQuaternion.slerp(previousRotation,nextRotation,i/9)
+                self.updateCamera(rotation)
+            self.m_rotation=QQuaternion.fromAxisAndAngle(axis,angle*self.sensitivity)*self.m_rotation
             self.m_lastPos = p
 
 
@@ -74,7 +81,7 @@ class Trackball(QObject):
         # self.cameraPos+=transVec
         self.targetPos+= (right * dx + up * dy)
         self.m_lastPos = p
-        self.updateCamera()
+        self.updateCamera(self.m_rotation)
     def releaseRightButton(self):
         self.m_panningTrigger=False
 
@@ -88,7 +95,7 @@ class Trackball(QObject):
             self.radius=0.5
         if self.radius>=20:
             self.radius=20
-        self.updateCamera()
+        self.updateCamera(self.m_rotation)
 
 
 
