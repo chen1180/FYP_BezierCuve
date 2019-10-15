@@ -13,13 +13,13 @@ class Nurbs(QListWidgetItem, AbstractSceneNode):
         self.setData(Qt.UserRole,data)
         self.vertices=self.QVec3DtoNumpyArray(self.data(Qt.UserRole))
         self.order=2
-        self.knots=self.generateKnots(len(data),2)
+        self.knots=self.generateKnots(len(data),self.order)
     def generateKnots(self,n,k):
         #For open B-spline curves, the domain is [uk, um-k]. k is the degree,m is n+k+1
         nKnots = n + k + 1
         knots = []
         for i in range(nKnots):
-            knots.append([i])
+            knots.append([i/(nKnots-1)])
         print(knots)
         return knots
     def modifyVertices(self, data):
@@ -52,7 +52,6 @@ class Nurbs(QListWidgetItem, AbstractSceneNode):
         self.vbo.allocate(self.vertices, self.vertices.shape[0] * self.vertices.itemsize)
         self.program.enableAttributeArray(0)
         self.program.setAttributeBuffer(0, GL_FLOAT, 0, 3)
-
         #release
         self.vbo.release()
         self.vao.release()
@@ -90,7 +89,8 @@ class Nurbs(QListWidgetItem, AbstractSceneNode):
         self.program.setUniformValueArray("knots", self.knots)
         self.program.setUniformValue("knots_size",len(self.knots))
         self.program.setUniformValue("order", self.order)
-        qDebug(self.program.log())
+        if self.program.log():
+            qDebug(self.program.log())
         # ------------------------------------------------------------------------------
         #Draw primitives
         self.vao.bind()

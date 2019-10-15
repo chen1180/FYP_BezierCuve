@@ -2,23 +2,17 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="71f34409-af08-4aa9-b276-cdfd8362f18a" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/curve_modernGL/model/nurb.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/curve_modernGL/resources/NurbsShader/nurbsShader.frag" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/curve_modernGL/resources/NurbsShader/nurbsShader.tesc" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/curve_modernGL/resources/NurbsShader/nurbsShader.tese" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/curve_modernGL/resources/NurbsShader/nurbsShader.vert" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/curve_modernGL/resources/Shaders/nurbsShader.frag" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/curve_modernGL/resources/Shaders/nurbsShader.tesc" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/curve_modernGL/resources/Shaders/nurbsShader.tese" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/curve_modernGL/resources/Shaders/nurbsShader.vert" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/curve_modernGL/test/deboors.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/curve_modernGL/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/curve_modernGL/main.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/curve_modernGL/model/bezierPatch.py" beforeDir="false" afterPath="$PROJECT_DIR$/curve_modernGL/model/bezierPatch.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/curve_modernGL/model/trackBall.py" beforeDir="false" afterPath="$PROJECT_DIR$/curve_modernGL/model/trackBall.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/curve_modernGL/resources/BezierPatchShader/bezierShader.frag" beforeDir="false" afterPath="$PROJECT_DIR$/curve_modernGL/resources/BezierPatchShader/bezierPatchShader.frag" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/curve_modernGL/resources/BezierPatchShader/bezierShader.geom" beforeDir="false" afterPath="$PROJECT_DIR$/curve_modernGL/resources/BezierPatchShader/bezierPatchShader.geom" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/curve_modernGL/resources/BezierPatchShader/bezierShader.tesc" beforeDir="false" afterPath="$PROJECT_DIR$/curve_modernGL/resources/BezierPatchShader/bezierPatchShader.tesc" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/curve_modernGL/resources/BezierPatchShader/bezierShader.tese" beforeDir="false" afterPath="$PROJECT_DIR$/curve_modernGL/resources/BezierPatchShader/bezierPatchShader.tese" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/curve_modernGL/resources/BezierPatchShader/bezierShader.vert" beforeDir="false" afterPath="$PROJECT_DIR$/curve_modernGL/resources/BezierPatchShader/bezierPatchShader.vert" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/curve_modernGL/model/nurb.py" beforeDir="false" afterPath="$PROJECT_DIR$/curve_modernGL/model/nurb.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/curve_modernGL/resources/NurbsShader/nurbsShader.tese" beforeDir="false" afterPath="$PROJECT_DIR$/curve_modernGL/resources/NurbsShader/nurbsShader.tese" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/curve_modernGL/resources/resources.py" beforeDir="false" afterPath="$PROJECT_DIR$/curve_modernGL/resources/resources.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/curve_modernGL/resources/resources.qrc" beforeDir="false" afterPath="$PROJECT_DIR$/curve_modernGL/resources/resources.qrc" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/curve_modernGL/view/GLWindow.py" beforeDir="false" afterPath="$PROJECT_DIR$/curve_modernGL/view/GLWindow.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/curve_modernGL/view/MainWindow.py" beforeDir="false" afterPath="$PROJECT_DIR$/curve_modernGL/view/MainWindow.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -29,8 +23,8 @@
   <component name="FileTemplateManagerImpl">
     <option name="RECENT_TEMPLATES">
       <list>
-        <option value="Python Script" />
         <option value="GLSL Shader" />
+        <option value="Python Script" />
       </list>
     </option>
   </component>
@@ -44,19 +38,20 @@
   <component name="PropertiesComponent">
     <property name="ASKED_ADD_EXTERNAL_FILES" value="true" />
     <property name="SHARE_PROJECT_CONFIGURATION_FILES" value="true" />
-    <property name="last_opened_file_path" value="$USER_HOME$/AppData/Local/Continuum/anaconda3/Scripts/pyrcc5.exe" />
-    <property name="settings.editor.selected.configurable" value="preferences.externalTools" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/curve_modernGL/resources/Shaders" />
+    <property name="settings.editor.selected.configurable" value="com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable" />
   </component>
   <component name="RecentsManager">
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="C:\Users\Chen Baocheng\Documents\GitHub\FYP_BezierCuve\curve_modernGL" />
+      <recent name="C:\Users\Chen Baocheng\Documents\GitHub\FYP_BezierCuve" />
+    </key>
     <key name="CopyFile.RECENT_KEYS">
+      <recent name="C:\Users\Chen Baocheng\Documents\GitHub\FYP_BezierCuve\curve_modernGL\resources\Shaders" />
       <recent name="C:\Users\Chen Baocheng\Documents\GitHub\FYP_BezierCuve\curve_modernGL\resources\NurbsShader" />
       <recent name="C:\Users\Chen Baocheng\Documents\GitHub\FYP_BezierCuve\curve_modernGL\resources" />
       <recent name="C:\Users\Chen Baocheng\Documents\GitHub\FYP_BezierCuve\curve_modernGL\model" />
       <recent name="C:\Users\Chen Baocheng\Documents\GitHub\FYP_BezierCuve\curve_modernGL\resources\CommonShader" />
-    </key>
-    <key name="MoveFile.RECENT_KEYS">
-      <recent name="C:\Users\Chen Baocheng\Documents\GitHub\FYP_BezierCuve\curve_modernGL" />
-      <recent name="C:\Users\Chen Baocheng\Documents\GitHub\FYP_BezierCuve" />
     </key>
   </component>
   <component name="RunDashboard">
@@ -85,6 +80,27 @@
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <option name="SCRIPT_NAME" value="$PROJECT_DIR$/curve_modernGL/view/ScrollWidget.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration name="deboors" type="PythonConfigurationType" factoryName="Python" temporary="true">
+      <module name="FYP_BezierCuve" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/curve_modernGL/test" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/curve_modernGL/test/deboors.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -161,10 +177,12 @@
       <item itemvalue="Python.main" />
       <item itemvalue="Python.ScrollWidget" />
       <item itemvalue="Python.main (1)" />
+      <item itemvalue="Python.deboors" />
     </list>
     <recent_temporary>
       <list>
         <item itemvalue="Python.main" />
+        <item itemvalue="Python.deboors" />
         <item itemvalue="Python.main (1)" />
         <item itemvalue="Python.ScrollWidget" />
       </list>

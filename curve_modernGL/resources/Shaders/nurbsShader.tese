@@ -1,5 +1,5 @@
 #version 410 core
-#define MAX_KNOTS 16
+#define MAX_KNOTS 32
 layout(isolines) in;
 //The dynamic array is not support in 4.1 glsl version, constant must be passed into array.
 uniform float knots[MAX_KNOTS];
@@ -19,9 +19,11 @@ vec3 computeNURBS(float u){
     //check position of u in knots vector
     int k=0;
     for (int i=0;i<knots_size-1;i++){
-        if ((u>=knots[i])&&((u<knots[i+1]))){
+        if (u>=knots[i]){
+            if (u<knots[i+1]){
                 k=i;
                 break;
+            }
         }
     }
     N[k] = 1.0;
@@ -29,11 +31,13 @@ vec3 computeNURBS(float u){
         N[k - d] = (knots[k + 1] - u) / (knots[k + 1] - knots[(k - d) + 1]) * N[(k - d) + 1];
         for(int i=k-d+1;i<k;++i){
             float d1=knots[i + d] - knots[i];
-            if (d1==0)
+            if (d1==0){
                 d1=1.0;
+            }
             float d2=knots[i + d + 1] - knots[i + 1];
-            if (d2==0)
+            if (d2==0){
                 d2=1.0;
+            }
             N[i] = (u - knots[i]) /d1 * N[i] + (knots[i + d + 1] - u) / d2 * N[i + 1];
         }
         N[k] = (u - knots[k]) / (knots[k + d] - knots[k]) * N[k];
@@ -43,46 +47,6 @@ vec3 computeNURBS(float u){
         lastP+=gl_in[i].gl_Position.xyz*N[i];
     }
     return lastP;
-}
-vec3 computeNURBSPoint(float u){
-    int p=order;
-    //check position of u in knots vector
-    int k=0;
-    for (int i=0;i<knots_size-1;i++){
-        if ((u>=knots[i])&&(u<knots[i+1])){
-            k=i;
-            break;
-        }
-    }
-    //define basic function
-    float left[MAX_KNOTS];
-    float right[MAX_KNOTS];
-    float N[MAX_KNOTS];
-    //initialize array
-    for (int i=0;i<p+1;i++){
-        left[i]=0.0;
-        right[i]=0.0;
-        N[i]=1.0;
-    }
-    for (int j=1;j<p+1;j++)
-    {
-        left[j]=u-knots[k+1-j];
-        right[j]=knots[k+j]-u;
-        float saved=0.0;
-        for (int r=0;r<j;r++){
-            float temp=N[r] / (right[r + 1] + left[j - r]);
-            N[r] = saved + right[r + 1] * temp;
-            saved = left[j - r] * temp;
-        }
-        N[j]=saved;
-    }
-    vec3 point=vec3(0,0,0);
-    for (int i=0;i<p+1;i++){
-        point+=N[i] * gl_in[i].gl_Position.xyz;
-    }
-    return point;
-
-
 }
 vec3 ComputeCubicBezier(float u,vec3 p0,vec3 p1,vec3 p2,vec3 p3){
     // The patch vertices (control points)
@@ -134,7 +98,6 @@ void main()
 //    vec3 p=ComputeCubicBezier(u,p0,p1,p2,p3);
 //    tangent=cross(ComputeCubicBezierDerivative(u,p0,p1,p2,p3),vec3(1,1,0));
     //    vec3 p=computeNURBS(u);
-//    vec3 p=computeBezierPoint(u);
-    vec3 p=computeNURBSPoint(u);
+    vec3 p=computeBezierPoint(u);
     gl_Position = MVP*vec4(p,1.0);
 }

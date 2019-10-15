@@ -54,7 +54,6 @@ class BezierPatch(QListWidgetItem, AbstractSceneNode):
         # normal program
         self.commonProgram = QOpenGLShaderProgram()
         self.commonProgram.addShaderFromSourceFile(QOpenGLShader.Vertex, ":CommonShader/vertices.vert")
-        self.commonProgram.addShaderFromSourceFile(QOpenGLShader.Geometry, ":CommonShader/vertices.gs")
         self.commonProgram.addShaderFromSourceFile(QOpenGLShader.Fragment, ":CommonShader/vertices.frag")
         self.commonProgram.link()
         self.commonProgram.bind()
@@ -88,7 +87,8 @@ class BezierPatch(QListWidgetItem, AbstractSceneNode):
         #---------------------------------Texture---------------------------------------------
         self.textureID.bind()
         self.program.setUniformValue("texture0", 0)
-        qDebug(self.program.log())
+        if self.program.log():
+            qDebug(self.program.log())
 
         # Actually draw the triangles
         self.vao.bind()
