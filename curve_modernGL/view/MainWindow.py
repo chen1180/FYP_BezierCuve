@@ -104,7 +104,7 @@ class MainWindow(QMainWindow):
 
     def drawBezierCurve(self):
         # item = Bezier(None, "Beizer", [QVector3D(0,-1,0),QVector3D(0.5,0,0),QVector3D(1.0,0,0),QVector3D(1,0.5,0),QVector3D(0.5,0.5,0)])
-        item = Nurbs(None, "Nurbs",[QVector3D(0, -1, 0), QVector3D(0.5, 0, 0), QVector3D(1.0, 0, 0), QVector3D(1, 0.5, 0)])
+        item = Nurbs(None, "Nurbs",[QVector3D(0, 0, 0), QVector3D(0.5, 0, 0), QVector3D(1.0, 0, 0), QVector3D(1, 0.5, 0), QVector3D(1, 1.5, 0), QVector3D(1.5, 0.5, 0)])
         self.model.addNode(item)
         self.sceneWidget.setCurrentItem(item)
         self.glWindow.addToScene(self.model.sceneNodes)

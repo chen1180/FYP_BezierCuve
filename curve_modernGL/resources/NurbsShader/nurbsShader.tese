@@ -67,16 +67,37 @@ vec3 ComputeCubicBezierDerivative(float u,vec3 p0,vec3 p1,vec3 p2,vec3 p3){
     vec3 c=3*(p3-p2);
     return a * pow(1-u,2) + 2 * b * (1-u) * u + c * pow(u,2);
 }
+int factorial(int n) {
+    int result = 1;
+    for (int i = n; i > 1; i--)
+    result *= i;
+    return result;
+}
+float binomial_coefficient(int i, int n) {
+  return 1.0f * factorial(n) / (factorial(i) * factorial(n-i));
+}
+float bernstein_polynomial(int i, int n, float u) {
+  return binomial_coefficient(i, n) * float(pow(u, i)) * float(pow(1.0-u, n-i));
+}
+vec3 computeBezierPoint(float u){
+    int n=gl_PatchVerticesIn;
+    vec3 lastP=vec3(0.0,0.0,0.0);
+    for(int i=0;i<n;i++){
+        lastP+=gl_in[i].gl_Position.xyz*bernstein_polynomial(i, n-1, u);
+    }
+    return lastP;
+}
 void main()
 {
     // The tessellation u coordinate
     float u = gl_TessCoord.x;
-    vec3 p0 = gl_in[0].gl_Position.xyz;
-    vec3 p1 = gl_in[1].gl_Position.xyz;
-    vec3 p2 = gl_in[2].gl_Position.xyz;
-    vec3 p3 = gl_in[3].gl_Position.xyz;
-    vec3 p=ComputeCubicBezier(u,p0,p1,p2,p3);
-    tangent=cross(ComputeCubicBezierDerivative(u,p0,p1,p2,p3),vec3(1,1,0));
-//    vec3 p=computeNURBS(u);
+//    vec3 p0 = gl_in[0].gl_Position.xyz;
+//    vec3 p1 = gl_in[1].gl_Position.xyz;
+//    vec3 p2 = gl_in[2].gl_Position.xyz;
+//    vec3 p3 = gl_in[3].gl_Position.xyz;
+//    vec3 p=ComputeCubicBezier(u,p0,p1,p2,p3);
+//    tangent=cross(ComputeCubicBezierDerivative(u,p0,p1,p2,p3),vec3(1,1,0));
+    //    vec3 p=computeNURBS(u);
+    vec3 p=computeBezierPoint(u);
     gl_Position = MVP*vec4(p,1.0);
 }

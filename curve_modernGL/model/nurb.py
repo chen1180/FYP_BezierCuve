@@ -37,10 +37,9 @@ class Nurbs(QListWidgetItem, AbstractSceneNode):
         self.program.bind()
         #Tesslation control shader attribute
         #(No need to use tesslation control shader since all the property can be modified by the following command)
-        self.program.setPatchVertexCount(4)
-        self.program.setDefaultOuterTessellationLevels([1, 10])
+        self.program.setDefaultOuterTessellationLevels([1, 20])
         # Qpengl Tesselation Control Shader attribute
-        self.program.setPatchVertexCount(4)  # Maximum patch vertices
+        self.program.setPatchVertexCount(self.vertices.shape[0] // 3)  # Maximum patch vertices
         #setup vao
         self.vao = QOpenGLVertexArrayObject()
         self.vao.create()
