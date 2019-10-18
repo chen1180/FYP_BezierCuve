@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
+<<<<<<< Updated upstream
     <list default="true" id="71f34409-af08-4aa9-b276-cdfd8362f18a" name="Default Changelist" comment="">
       <change afterPath="$PROJECT_DIR$/curve_modernGL/model/nurb.py" afterDir="false" />
       <change afterPath="$PROJECT_DIR$/curve_modernGL/resources/NurbsShader/nurbsShader.frag" afterDir="false" />
@@ -20,6 +21,9 @@
       <change beforePath="$PROJECT_DIR$/curve_modernGL/view/GLWindow.py" beforeDir="false" afterPath="$PROJECT_DIR$/curve_modernGL/view/GLWindow.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/curve_modernGL/view/MainWindow.py" beforeDir="false" afterPath="$PROJECT_DIR$/curve_modernGL/view/MainWindow.py" afterDir="false" />
     </list>
+=======
+    <list default="true" id="71f34409-af08-4aa9-b276-cdfd8362f18a" name="Default Changelist" comment="" />
+>>>>>>> Stashed changes
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
