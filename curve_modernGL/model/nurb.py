@@ -12,20 +12,31 @@ class Nurbs(QListWidgetItem, AbstractSceneNode):
         self.setText(str(name))
         self.setData(Qt.UserRole,data)
         self.vertices=self.QVec3DtoNumpyArray(self.data(Qt.UserRole))
-        self.order=2
-        self.knots=self.generateKnots(len(data),self.order)
-    def generateKnots(self,n,k):
+        self.order=3
+        self.clamped=True
+        self.knots=self.generateKnots(len(data),self.order,clamped=self.clamped)
+        self.weights=self.generateWeights(len(data),self.order)
+    def generateKnots(self,n,k,clamped):
         #For open B-spline curves, the domain is [uk, um-k]. k is the degree,m is n+k+1
         nKnots = n + k + 1
         knots = []
-        for i in range(nKnots):
-            knots.append([i/(nKnots-1)])
+        if clamped==False:
+            for i in range(nKnots):
+                knots.append(i/(nKnots-1))
+        else:
+            knots = [0.0] * (k + 1)
+            knots += [i/(n - k) for i in range(1, n - k)]
+            knots += [1.0] * (nKnots - n)
         print(knots)
         return knots
+    def generateWeights(self,n,k):
+        nWeights=n
+        weights=[1.0]*nWeights;
+        return weights
     def modifyVertices(self, data):
         self.setData(Qt.UserRole,data) #This step is important, Qlistwidget item may return to original state without this statement
         self.vertices=self.QVec3DtoNumpyArray(data)
-        print(self.vertices,self.vertices.shape[0]/3.0)
+        print(self.vertices,self.vertices.shape[0]/3)
     def setupMainShaderProgram(self):
         # patch vertices
         self.program=QOpenGLShaderProgram()
@@ -37,7 +48,7 @@ class Nurbs(QListWidgetItem, AbstractSceneNode):
         self.program.bind()
         #Tesslation control shader attribute
         #(No need to use tesslation control shader since all the property can be modified by the following command)
-        self.program.setDefaultOuterTessellationLevels([1, 20])
+        self.program.setDefaultOuterTessellationLevels([1, 30])
         # Qpengl Tesselation Control Shader attribute
         self.program.setPatchVertexCount(self.vertices.shape[0] // 3)  # Maximum patch vertices
         #setup vao
@@ -86,15 +97,22 @@ class Nurbs(QListWidgetItem, AbstractSceneNode):
         # ------------------------------------------------------------------------------
         self.program.setUniformValue("objectColor", self.color)
         self.program.setUniformValue("lightColor", QVector3D(1, 1, 1))
-        self.program.setUniformValueArray("knots", self.knots)
+        for i in range(len(self.knots)):
+            self.program.setUniformValue("knots[{}]".format(i), self.knots[i])
+        for i in range(len(self.weights)):
+            self.program.setUniformValue("weights[{}]".format(i), self.weights[i])
         self.program.setUniformValue("knots_size",len(self.knots))
+        self.program.setUniformValue("clamped", self.clamped)
         self.program.setUniformValue("order", self.order)
         if self.program.log():
             qDebug(self.program.log())
         # ------------------------------------------------------------------------------
-        #Draw primitives
-        self.vao.bind()
-        glDrawArrays(GL_PATCHES, 0, self.vertices.shape[0]//3)
+        try:
+            #Draw primitives
+            self.vao.bind()
+            glDrawArrays(GL_PATCHES, 0, self.vertices.shape[0]//3)
+        except Exception as e:
+            print(e)
         #Draw vertices
         # Actually rendering of data
         self.commonProgram.bind()

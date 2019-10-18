@@ -2,17 +2,13 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="71f34409-af08-4aa9-b276-cdfd8362f18a" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/curve_modernGL/resources/Shaders/nurbsShader.frag" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/curve_modernGL/resources/Shaders/nurbsShader.tesc" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/curve_modernGL/resources/Shaders/nurbsShader.tese" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/curve_modernGL/resources/Shaders/nurbsShader.vert" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/curve_modernGL/test/deboors.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/curve_modernGL/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/curve_modernGL/main.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/curve_modernGL/model/bezierPatch.py" beforeDir="false" afterPath="$PROJECT_DIR$/curve_modernGL/model/bezierPatch.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/curve_modernGL/model/nurb.py" beforeDir="false" afterPath="$PROJECT_DIR$/curve_modernGL/model/nurb.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/curve_modernGL/resources/NurbsShader/nurbsShader.tese" beforeDir="false" afterPath="$PROJECT_DIR$/curve_modernGL/resources/NurbsShader/nurbsShader.tese" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/curve_modernGL/resources/Shaders/nurbsShader.tese" beforeDir="false" afterPath="$PROJECT_DIR$/curve_modernGL/resources/Shaders/nurbsShader.tese" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/curve_modernGL/resources/resources.py" beforeDir="false" afterPath="$PROJECT_DIR$/curve_modernGL/resources/resources.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/curve_modernGL/view/GLWindow.py" beforeDir="false" afterPath="$PROJECT_DIR$/curve_modernGL/view/GLWindow.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/curve_modernGL/view/MainWindow.py" beforeDir="false" afterPath="$PROJECT_DIR$/curve_modernGL/view/MainWindow.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -182,8 +178,8 @@
     <recent_temporary>
       <list>
         <item itemvalue="Python.main" />
-        <item itemvalue="Python.deboors" />
         <item itemvalue="Python.main (1)" />
+        <item itemvalue="Python.deboors" />
         <item itemvalue="Python.ScrollWidget" />
       </list>
     </recent_temporary>

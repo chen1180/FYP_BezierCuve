@@ -8,46 +8,6 @@ uniform int order;
 uniform mat4 MVP;
 out vec3 tangent;
 //compute coefficient
-vec3 computeNURBS(float u){
-    int n=gl_PatchVerticesIn;
-    int p=order;
-    //Initialize N array
-    float N[MAX_KNOTS];
-    for (int i=0;i<knots_size;i++){
-        N[i]=0.0;
-    }
-    //check position of u in knots vector
-    int k=0;
-    for (int i=0;i<knots_size-1;i++){
-        if (u>=knots[i]){
-            if (u<knots[i+1]){
-                k=i;
-                break;
-            }
-        }
-    }
-    N[k] = 1.0;
-    for(int d=1;d<p+1;++d){
-        N[k - d] = (knots[k + 1] - u) / (knots[k + 1] - knots[(k - d) + 1]) * N[(k - d) + 1];
-        for(int i=k-d+1;i<k;++i){
-            float d1=knots[i + d] - knots[i];
-            if (d1==0){
-                d1=1.0;
-            }
-            float d2=knots[i + d + 1] - knots[i + 1];
-            if (d2==0){
-                d2=1.0;
-            }
-            N[i] = (u - knots[i]) /d1 * N[i] + (knots[i + d + 1] - u) / d2 * N[i + 1];
-        }
-        N[k] = (u - knots[k]) / (knots[k + d] - knots[k]) * N[k];
-    }
-    vec3 lastP=vec3(0,0,0);
-    for(int i=0;i<n;i++){
-        lastP+=gl_in[i].gl_Position.xyz*N[i];
-    }
-    return lastP;
-}
 vec3 ComputeCubicBezier(float u,vec3 p0,vec3 p1,vec3 p2,vec3 p3){
     // The patch vertices (control points)
     float u1 = (1.0 - u);
@@ -91,13 +51,6 @@ void main()
 {
     // The tessellation u coordinate
     float u = gl_TessCoord.x;
-//    vec3 p0 = gl_in[0].gl_Position.xyz;
-//    vec3 p1 = gl_in[1].gl_Position.xyz;
-//    vec3 p2 = gl_in[2].gl_Position.xyz;
-//    vec3 p3 = gl_in[3].gl_Position.xyz;
-//    vec3 p=ComputeCubicBezier(u,p0,p1,p2,p3);
-//    tangent=cross(ComputeCubicBezierDerivative(u,p0,p1,p2,p3),vec3(1,1,0));
-    //    vec3 p=computeNURBS(u);
     vec3 p=computeBezierPoint(u);
     gl_Position = MVP*vec4(p,1.0);
 }
