@@ -14,12 +14,15 @@ void basicFunction(float u,int k,int p,inout float N[MAX_KNOTS]){
     //u: step (0~1)
     //k: step position in knots vector
     //p: order of the curve
-    if (u==1.0){
-        N[gl_PatchVerticesIn-1]=1.0;
-        return;
-    } else if(u==0.0){
-        N[0]=1.0;
-        return;
+    if (clamped==true){
+        if (u==1.0){
+            N[gl_PatchVerticesIn-1]=1.0;
+            return;
+        } else if(u==0.0){
+            N[0]=1.0;
+            return;
+        }
+
     }
     N[k] = 1.0;
     for(int d=1;d<p+1;d++){

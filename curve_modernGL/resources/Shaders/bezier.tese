@@ -2,9 +2,6 @@
 #define MAX_KNOTS 32
 layout(isolines) in;
 //The dynamic array is not support in 4.1 glsl version, constant must be passed into array.
-uniform float knots[MAX_KNOTS];
-uniform int knots_size;
-uniform int order;
 uniform mat4 MVP;
 out vec3 tangent;
 //compute coefficient

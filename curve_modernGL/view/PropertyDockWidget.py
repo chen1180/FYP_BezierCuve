@@ -104,15 +104,17 @@ class SplineProperty(QTableWidget):
             self.degreeForm.setValue(degree)
             self.clampedTickBox.setChecked(clamped)
             #knots vector view
-            knots = item.knots
-            self.knotsTable.setRowCount(len(knots))
-            for i, val in enumerate(knots):
-                self.knotsTable.setItem(i, 0, QTableWidgetItem(str(round(val,3))))
-            weights = item.weights
-            #weights vector view
-            self.weightsTable.setRowCount(len(weights))
-            for i, val in enumerate(weights):
-                self.weightsTable.setItem(i, 0, QTableWidgetItem(str(round(val, 3))))
+            if item.knots:
+                knots = list(item.knots) #process copy of list
+                self.knotsTable.setRowCount(len(knots))
+                for i, val in enumerate(knots):
+                    self.knotsTable.setItem(i, 0, QTableWidgetItem(str(round(val,3))))
+            if item.weights:
+                weights = list(item.weights) #process copy of list
+                #weights vector view
+                self.weightsTable.setRowCount(len(weights))
+                for i, val in enumerate(weights):
+                    self.weightsTable.setItem(i, 0, QTableWidgetItem(str(round(val, 3))))
         except Exception as e:
             print(e)
 class TransformationProperty(QTabWidget):

@@ -7,7 +7,7 @@ from PyQt5.QtGui import (QSurfaceFormat,QOpenGLContext,QOpenGLShaderProgram,
 from curve_modernGL.model.trackBall import Trackball
 import sys
 from curve_modernGL.model.planes import Quads
-
+from curve_modernGL.model.bezier import *
 class OpenGLWindow(QOpenGLWidget):
     OPENGL_NEED_UPDATE=pyqtSignal(bool)
     def __init__(self,parent=None):
@@ -38,6 +38,8 @@ class OpenGLWindow(QOpenGLWidget):
         # glViewport(self.width()//2,self.height()//2, self.width() // 2, self.height() // 2)
         Projection=QMatrix4x4()
         Projection.perspective(45.0,self.width()/self.height(),0.1,100)
+        # Projection.ortho(-1*self.camera.radius, 1*self.camera.radius, -1*self.camera.radius, 1*self.camera.radius, 0.1, 100)
+
         View=QMatrix4x4()
         View.lookAt(self.camera.cameraPos, self.camera.targetPos, self.camera.cameraUp)
         Model=QMatrix4x4()

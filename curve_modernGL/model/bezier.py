@@ -5,7 +5,6 @@ from PyQt5.QtGui import QVector3D,QOpenGLBuffer,QOpenGLVertexArrayObject,QOpenGL
 import sys
 from curve_modernGL.view.SceneDockWidget import SceneDockWidget
 from curve_modernGL.model.SceneNode import AbstractSceneNode
-import numpy as np
 import curve_modernGL.resources.resources
 class Bezier(QListWidgetItem, AbstractSceneNode):
     def __init__(self,parent=None,name:str=None,data:QVector3D=None):
@@ -15,6 +14,7 @@ class Bezier(QListWidgetItem, AbstractSceneNode):
         self.vertices=self.QVec3DtoNumpyArray(self.data(Qt.UserRole))
         #vertices data
         self.originalData=data
+        self.order=len(self.data(Qt.UserRole))-1
         #camera setting
     def modifyVertices(self, data):
         self.setData(Qt.UserRole,data) #This step is important, Qlistwidget item may return to original state without this statement
@@ -22,10 +22,9 @@ class Bezier(QListWidgetItem, AbstractSceneNode):
     def setupMainShaderProgram(self):
         # patch vertices
         self.program=QOpenGLShaderProgram()
-        self.program.addShaderFromSourceFile(QOpenGLShader.Vertex,":BezierShader/bezierShader.vert")
-        # self.program.addShaderFromSourceFile(QOpenGLShader.TessellationControl, ":BezierShader/bezierShader.tesc")
-        self.program.addShaderFromSourceFile(QOpenGLShader.TessellationEvaluation, ":BezierShader/bezierShader.tese")
-        self.program.addShaderFromSourceFile(QOpenGLShader.Fragment, ":BezierShader/bezierShader.frag")
+        self.program.addShaderFromSourceFile(QOpenGLShader.Vertex,":Shaders/bezier.vert")
+        self.program.addShaderFromSourceFile(QOpenGLShader.TessellationEvaluation, ":Shaders/bezier.tese")
+        self.program.addShaderFromSourceFile(QOpenGLShader.Fragment, ":Shaders/bezier.frag")
         self.program.link()
         self.program.bind()
         self.program.setDefaultOuterTessellationLevels([1, self.resolution])

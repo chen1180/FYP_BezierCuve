@@ -40,9 +40,9 @@ class Nurbs(QListWidgetItem, AbstractSceneNode):
     def setupMainShaderProgram(self):
         # patch vertices
         self.program=QOpenGLShaderProgram()
-        self.program.addShaderFromSourceFile(QOpenGLShader.Vertex,":NurbsShader/nurbsShader.vert")
-        self.program.addShaderFromSourceFile(QOpenGLShader.TessellationEvaluation, ":NurbsShader/nurbsShader.tese")
-        self.program.addShaderFromSourceFile(QOpenGLShader.Fragment, ":NurbsShader/nurbsShader.frag")
+        self.program.addShaderFromSourceFile(QOpenGLShader.Vertex,":Shaders/nurbs.vert")
+        self.program.addShaderFromSourceFile(QOpenGLShader.TessellationEvaluation, ":Shaders/nurbs.tese")
+        self.program.addShaderFromSourceFile(QOpenGLShader.Fragment, ":Shaders/nurbs.frag")
         self.program.link()
         self.program.bind()
         #Tesslation control shader attribute

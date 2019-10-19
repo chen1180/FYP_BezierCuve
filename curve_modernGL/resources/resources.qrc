@@ -12,14 +12,16 @@
         <file>BezierPatchShader/bezierPatchShader.tesc</file>
         <file>BezierPatchShader/bezierPatchShader.tese</file>
         <file>BezierPatchShader/bezierPatchShader.geom</file>
-        <file>NurbsShader/nurbsShader.frag</file>
-        <file>NurbsShader/nurbsShader.vert</file>
-        <file>NurbsShader/nurbsShader.tesc</file>
-        <file>NurbsShader/nurbsShader.tese</file>
         <file>CommonShader/vertices.frag</file>
         <file>CommonShader/vertices.vert</file>
         <file>CommonShader/axis.frag</file>
         <file>CommonShader/axis.vert</file>
+        <file>Shaders/bezier.frag</file>
+        <file>Shaders/bezier.vert</file>
+        <file>Shaders/bezier.tese</file>
+        <file>Shaders/nurbs.frag</file>
+        <file>Shaders/nurbs.vert</file>
+        <file>Shaders/nurbs.tese</file>
         <!--command icon-->
         <file>images/new.png</file>
         <file>images/print.png</file>
