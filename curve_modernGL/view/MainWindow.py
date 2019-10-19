@@ -18,6 +18,7 @@ class MainWindow(QMainWindow):
         self.setCentralWidget(self.glWindow)
 
         self.createActions()
+        self.createDrawActions()
         self.createMenus()
         self.createToolBars()
         self.createStatusBar()
@@ -38,7 +39,12 @@ class MainWindow(QMainWindow):
         self.propertyWidget.coordinateForm.table.itemChanged.connect(self.updateSceneNode)
         # Signal and custom slots
         self.propertyWidget.coordinateForm.table.itemDoubleClicked.connect(self.onItemDoubleClick)
-
+        #Signal and custom slots: Curve property widget
+        self.propertyWidget.splineWidget.degreeForm.valueChanged.connect(self.changeCurve_Degree)
+        self.propertyWidget.splineWidget.resolutionForm.valueChanged.connect(self.changeCurve_Resolution)
+        self.propertyWidget.splineWidget.clampedTickBox.stateChanged.connect(self.changeCurve_Clamped)
+        self.propertyWidget.splineWidget.knotsTable.itemChanged.connect(self.changeCurve_Knots)
+        self.propertyWidget.splineWidget.weightsTable.itemChanged.connect(self.changeCurve_Weights)
         #Transformation from signal and slots
         self.propertyWidget.transformWidget.lineEditFinished.connect(self.changeTransform)
         #color widget signal and slots
@@ -55,10 +61,18 @@ class MainWindow(QMainWindow):
         self.aboutAct = QAction("&About", self,
                 statusTip="Show the application's About box",
                 triggered=self.about)
-        self.addBezierCurve=QAction("Add Bezier Curve", self,
-                statusTip="Add a cubic Bezier curve",
-                triggered=self.drawBezierCurve)
-        self.addBezierPatch = QAction("Add Bezier Patch", self,
+    def createDrawActions(self):
+        self.addBezierCurve = QAction(QIcon(":images/bezier.png"),"Add Bezier Curve", self,
+                                      statusTip="Add a cubic Bezier curve",
+                                      triggered=self.drawBezierCurve)
+        self.addBSplineCurve = QAction(QIcon(":images/spline.png"),"Add B Spline Curve", self,
+                                       statusTip="Add a B Spline curve",
+                                       triggered=self.drawBSpline)
+        self.addNurbs = QAction(QIcon(":images/nurbs.png"),"Add a NURB", self,
+                                       statusTip="Add a Nurb curve",
+                                       triggered=self.drawNurbs)
+
+        self.addBezierPatch = QAction(QIcon(":images/bezier_patch.png"),"Add Bezier Patch", self,
                                       statusTip="Add a cubic Bezier Patch",
                                       triggered=self.drawBezierPatch)
     def createMenus(self):
@@ -76,10 +90,14 @@ class MainWindow(QMainWindow):
     def createToolBars(self):
         self.fileToolBar = self.addToolBar("File")
         #Beizer curve tool bar
-        self.bezierToolBar=self.addToolBar("add Bezier curve")
-        self.bezierToolBar.addAction(self.addBezierCurve)
-        self.bezierPatchToolBar = self.addToolBar("add Bezier patch")
-        self.bezierToolBar.addAction(self.addBezierPatch)
+        self.curveToolBar=QToolBar("Curve")
+        self.curveToolBar.setOrientation(Qt.Vertical)
+        self.curveToolBar.addAction(self.addBezierCurve)
+        self.curveToolBar.addAction(self.addBSplineCurve)
+        self.curveToolBar.addAction(self.addNurbs)
+        self.surfaceToolBar=QToolBar("Surface")
+        self.surfaceToolBar.setOrientation(Qt.Vertical)
+        self.surfaceToolBar.addAction(self.addBezierPatch)
     def createStatusBar(self):
         self.statusBar().showMessage("Ready")
 
@@ -90,24 +108,46 @@ class MainWindow(QMainWindow):
         #create sceneWidget
         sceneDock.setWidget(self.sceneWidget)
         self.addDockWidget(Qt.RightDockWidgetArea, sceneDock)
+        #create propertyWidget
         propertyDock = QDockWidget("Property", self)
         propertyDock.setAllowedAreas(Qt.LeftDockWidgetArea | Qt.RightDockWidgetArea)
         self.propertyWidget = PropertyDockWidget(propertyDock)
         propertyDock.setWidget(self.propertyWidget)
         self.addDockWidget(Qt.RightDockWidgetArea, propertyDock)
+        #create toolWidget
         toolDock = QDockWidget("Tool", self)
         toolDock.setAllowedAreas(Qt.LeftDockWidgetArea | Qt.RightDockWidgetArea)
-        toolDock.setWidget(self.bezierToolBar)
+        #set two vertical toolbar in the tool widget
+        layout=QHBoxLayout()
+        toolBarContainer=QWidget()
+        layout.addWidget(self.curveToolBar)
+        layout.addWidget(self.surfaceToolBar)
+        toolBarContainer.setLayout(layout)
+        toolDock.setWidget(toolBarContainer)
         self.addDockWidget(Qt.LeftDockWidgetArea, toolDock)
 
     #-----------------------------For model operation-----------------------------------#
 
     def drawBezierCurve(self):
-        # item = Bezier(None, "Beizer", [QVector3D(0,-1,0),QVector3D(0.5,0,0),QVector3D(1.0,0,0),QVector3D(1,0.5,0),QVector3D(0.5,0.5,0)])
-        item = Nurbs(None, "Nurbs",[QVector3D(-1, -0.5, -0.5),QVector3D(-1, 1, -0.5),QVector3D(0, 1, -0.5),QVector3D(1, -1, -0.5),
-                                            QVector3D(-1, -0.2, -0.2),QVector3D(-1, 0.7, -0.2),QVector3D(0, 0.7, -0.2),QVector3D(1, -1.3, -0.2),
-                                            QVector3D(-1, 0.1, 0.2),QVector3D(-1, 0.4, 0.2),QVector3D(0, 0.4, 0.2),QVector3D(1, -1.6, 0.2),
-                                            QVector3D(-1, -0.2, 0.5),QVector3D(-1, 0.1, 0.5),QVector3D(0, 0.1, 0.5),QVector3D(1, -1.8, 0.5)])
+        item = Bezier(None, "Beizer", [QVector3D(0,-1,0),QVector3D(0.5,0,0),QVector3D(1.0,0,0),QVector3D(1,0.5,0),QVector3D(0.5,0.5,0)])
+        self.model.addNode(item)
+        self.sceneWidget.setCurrentItem(item)
+        self.glWindow.addToScene(self.model.sceneNodes)
+    def drawBSpline(self):
+        item = Nurbs(None, "B Spline",
+                     [QVector3D(-1, -0.5, -0.5), QVector3D(-1, 1, -0.5), QVector3D(0, 1, -0.5), QVector3D(1, -1, -0.5),
+                      QVector3D(-1, -0.2, -0.2)])
+        self.model.addNode(item)
+        self.sceneWidget.setCurrentItem(item)
+        self.glWindow.addToScene(self.model.sceneNodes)
+    def drawNurbs(self):
+        item = Nurbs(None, "nurb",
+                     [QVector3D(-1, -0.5, -0.5), QVector3D(-1, 1, -0.5), QVector3D(0, 1, -0.5), QVector3D(1, -1, -0.5),
+                      QVector3D(-1, -0.2, -0.2), QVector3D(-1, 0.7, -0.2), QVector3D(0, 0.7, -0.2),
+                      QVector3D(1, -1.3, -0.2),
+                      QVector3D(-1, 0.1, 0.2), QVector3D(-1, 0.4, 0.2), QVector3D(0, 0.4, 0.2), QVector3D(1, -1.6, 0.2),
+                      QVector3D(-1, -0.2, 0.5), QVector3D(-1, 0.1, 0.5), QVector3D(0, 0.1, 0.5),
+                      QVector3D(1, -1.8, 0.5)])
         self.model.addNode(item)
         self.sceneWidget.setCurrentItem(item)
         self.glWindow.addToScene(self.model.sceneNodes)
@@ -153,11 +193,18 @@ class MainWindow(QMainWindow):
         print("new item",new_Item.data(Qt.UserRole))
         print(self.sceneWidget.currentItem().data(Qt.UserRole))
     def addItemToWidget(self,item):
+        #scene widget update view
         self.sceneWidget.addItem(item)
         self.sceneWidget.setCurrentItem(item)
+        #subwidget: coordinate form
         self.propertyWidget.coordinateForm.displayTable(item)
+        #subwidget: spline widget
+        self.propertyWidget.splineWidget.updateView(item)
+        #subwidget: transform widget
         self.propertyWidget.transformWidget.setLineEdit(item.transform)
+        #subwidget: color widget
         self.propertyWidget.colorWidget.setColor(item)
+
         self.sceneWidget.setCurrentItem(item)
 
     def onItemDoubleClick(self, item: QTableWidgetItem):
@@ -194,12 +241,6 @@ class MainWindow(QMainWindow):
             z=float(z)
             self.model.sceneNodes[currentIndex].modifyTransform(x, y, z)
         except Exception as e:
-            # msg = QMessageBox()
-            # msg.setIcon(QMessageBox.Warning)
-            # msg.setText(str(e))
-            # msg.setInformativeText("Please enter valid number!")
-            # msg.setStandardButtons(QMessageBox.Ok | QMessageBox.Cancel)
-            # msg.exec_()
             print(e)
     #Color widget slots
     def changeColor(self):
@@ -212,5 +253,49 @@ class MainWindow(QMainWindow):
         polygonColor=QColorToQVector3D(self.propertyWidget.colorWidget.polygonColor)
         color=QColorToQVector3D(self.propertyWidget.colorWidget.color)
         self.model.sceneNodes[currentIndex].modifyColor(verticesColor,polygonColor,color)
+    #Spline widget slots
+    def changeCurve_Degree(self,new_degree:int):
+        currentIndex = self.sceneWidget.currentRow()
+        nControlPoints = len(self.model.sceneNodes[currentIndex].data(Qt.UserRole))
+        clamped = self.model.sceneNodes[currentIndex].clamped
+        # update nurb model
+        self.model.sceneNodes[currentIndex].changeOrder(new_degree)
+        self.model.sceneNodes[currentIndex].knots = self.model.sceneNodes[currentIndex].generateKnots(nControlPoints,new_degree, clamped)
+        # update widget view
+        self.propertyWidget.splineWidget.updateView(self.model.sceneNodes[currentIndex])
+    def changeCurve_Resolution(self, new_resolution: int):
+        currentIndex = self.sceneWidget.currentRow()
+        self.model.sceneNodes[currentIndex].changeResolution(new_resolution)
 
+    def changeCurve_Clamped(self,new_type:int):
+        currentIndex = self.sceneWidget.currentRow()
+        # if the curve endpoint type is changed, its weights and knots need to be changed too!!
+        nControlPoints=len(self.model.sceneNodes[currentIndex].data(Qt.UserRole))
+        degree=self.model.sceneNodes[currentIndex].order
+        new_type=bool(new_type)
+        self.model.sceneNodes[currentIndex].changeEndPointType(new_type)
+        self.model.sceneNodes[currentIndex].knots=self.model.sceneNodes[currentIndex].generateKnots(nControlPoints,degree,new_type)
+        self.model.sceneNodes[currentIndex].weights=self.model.sceneNodes[currentIndex].generateWeights(nControlPoints)
+        # update widget view
+        self.propertyWidget.splineWidget.updateView(self.model.sceneNodes[currentIndex])
+    def changeCurve_Knots(self,item:QTableWidgetItem):
+        try:
+            row=self.propertyWidget.splineWidget.knotsTable.currentRow()
+            column=self.propertyWidget.splineWidget.knotsTable.currentColumn()
+            new_knot_value=float(item.text())
+            if type(new_knot_value) is float:
+                currentIndex=self.sceneWidget.currentRow()
+                self.model.sceneNodes[currentIndex].changeKnots(row,new_knot_value)
+        except Exception as e:
+            print(e)
 
+    def changeCurve_Weights(self,item:QTableWidgetItem):
+        try:
+            row=self.propertyWidget.splineWidget.weightsTable.currentRow()
+            column=self.propertyWidget.splineWidget.weightsTable.currentColumn()
+            new_knot_value=float(item.text())
+            if type(new_knot_value) is float:
+                currentIndex=self.sceneWidget.currentRow()
+                self.model.sceneNodes[currentIndex].changeWeights(row,new_knot_value)
+        except Exception as e:
+            print(e)

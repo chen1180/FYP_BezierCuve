@@ -2,13 +2,20 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="71f34409-af08-4aa9-b276-cdfd8362f18a" name="Default Changelist" comment="">
+      <change afterPath="$PROJECT_DIR$/curve_modernGL/resources/images/bezier.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/curve_modernGL/resources/images/bezier_patch.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/curve_modernGL/resources/images/nurbs.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/curve_modernGL/resources/images/spline.png" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/curve_modernGL/model/SceneNode.py" beforeDir="false" afterPath="$PROJECT_DIR$/curve_modernGL/model/SceneNode.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/curve_modernGL/model/bezier.py" beforeDir="false" afterPath="$PROJECT_DIR$/curve_modernGL/model/bezier.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/curve_modernGL/model/nurb.py" beforeDir="false" afterPath="$PROJECT_DIR$/curve_modernGL/model/nurb.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/curve_modernGL/resources/NurbsShader/nurbsShader.tese" beforeDir="false" afterPath="$PROJECT_DIR$/curve_modernGL/resources/NurbsShader/nurbsShader.tese" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/curve_modernGL/resources/Shaders/nurbsShader.tese" beforeDir="false" afterPath="$PROJECT_DIR$/curve_modernGL/resources/Shaders/nurbsShader.tese" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/curve_modernGL/resources/NurbsShader/nurbsShader.tesc" beforeDir="false" afterPath="$PROJECT_DIR$/curve_modernGL/resources/NurbsShader/nurbsShader.tesc" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/curve_modernGL/resources/resources.py" beforeDir="false" afterPath="$PROJECT_DIR$/curve_modernGL/resources/resources.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/curve_modernGL/resources/resources.qrc" beforeDir="false" afterPath="$PROJECT_DIR$/curve_modernGL/resources/resources.qrc" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/curve_modernGL/view/GLWindow.py" beforeDir="false" afterPath="$PROJECT_DIR$/curve_modernGL/view/GLWindow.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/curve_modernGL/view/MainWindow.py" beforeDir="false" afterPath="$PROJECT_DIR$/curve_modernGL/view/MainWindow.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/curve_modernGL/view/PropertyDockWidget.py" beforeDir="false" afterPath="$PROJECT_DIR$/curve_modernGL/view/PropertyDockWidget.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -35,7 +42,7 @@
     <property name="ASKED_ADD_EXTERNAL_FILES" value="true" />
     <property name="SHARE_PROJECT_CONFIGURATION_FILES" value="true" />
     <property name="last_opened_file_path" value="$PROJECT_DIR$/curve_modernGL/resources/Shaders" />
-    <property name="settings.editor.selected.configurable" value="com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable" />
+    <property name="settings.editor.selected.configurable" value="preferences.externalTools" />
   </component>
   <component name="RecentsManager">
     <key name="MoveFile.RECENT_KEYS">

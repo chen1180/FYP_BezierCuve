@@ -12,10 +12,12 @@ class Nurbs(QListWidgetItem, AbstractSceneNode):
         self.setText(str(name))
         self.setData(Qt.UserRole,data)
         self.vertices=self.QVec3DtoNumpyArray(self.data(Qt.UserRole))
+        #NURBS property
+        self.resolution=50
         self.order=3
         self.clamped=True
         self.knots=self.generateKnots(len(data),self.order,clamped=self.clamped)
-        self.weights=self.generateWeights(len(data),self.order)
+        self.weights=self.generateWeights(len(data))
     def generateKnots(self,n,k,clamped):
         #For open B-spline curves, the domain is [uk, um-k]. k is the degree,m is n+k+1
         nKnots = n + k + 1
@@ -27,28 +29,25 @@ class Nurbs(QListWidgetItem, AbstractSceneNode):
             knots = [0.0] * (k + 1)
             knots += [i/(n - k) for i in range(1, n - k)]
             knots += [1.0] * (nKnots - n)
-        print(knots)
         return knots
-    def generateWeights(self,n,k):
+    def generateWeights(self,n):
         nWeights=n
         weights=[1.0]*nWeights;
         return weights
     def modifyVertices(self, data):
         self.setData(Qt.UserRole,data) #This step is important, Qlistwidget item may return to original state without this statement
         self.vertices=self.QVec3DtoNumpyArray(data)
-        print(self.vertices,self.vertices.shape[0]/3)
     def setupMainShaderProgram(self):
         # patch vertices
         self.program=QOpenGLShaderProgram()
         self.program.addShaderFromSourceFile(QOpenGLShader.Vertex,":NurbsShader/nurbsShader.vert")
-        # self.program.addShaderFromSourceFile(QOpenGLShader.TessellationControl, ":NurbsShader/nurbsShader.tesc")
         self.program.addShaderFromSourceFile(QOpenGLShader.TessellationEvaluation, ":NurbsShader/nurbsShader.tese")
         self.program.addShaderFromSourceFile(QOpenGLShader.Fragment, ":NurbsShader/nurbsShader.frag")
         self.program.link()
         self.program.bind()
         #Tesslation control shader attribute
         #(No need to use tesslation control shader since all the property can be modified by the following command)
-        self.program.setDefaultOuterTessellationLevels([1, 30])
+        self.program.setDefaultOuterTessellationLevels([1, self.resolution])
         # Qpengl Tesselation Control Shader attribute
         self.program.setPatchVertexCount(self.vertices.shape[0] // 3)  # Maximum patch vertices
         #setup vao

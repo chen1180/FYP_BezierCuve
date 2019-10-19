@@ -20,10 +20,18 @@
         <file>CommonShader/vertices.vert</file>
         <file>CommonShader/axis.frag</file>
         <file>CommonShader/axis.vert</file>
+        <!--command icon-->
         <file>images/new.png</file>
         <file>images/print.png</file>
         <file>images/save.png</file>
         <file>images/undo.png</file>
+        <!--curve icon-->
+        <file>images/bezier.png</file>
+        <file>images/spline.png</file>
+        <file>images/nurbs.png</file>
+        <!--surcace icon-->
+        <file>images/bezier_patch.png</file>
+        <!--textures-->
         <file>texture/texture1.jpg</file>
     </qresource>
 </RCC>

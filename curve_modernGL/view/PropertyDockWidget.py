@@ -2,16 +2,19 @@ from PyQt5.QtWidgets import *
 from PyQt5.QtGui import QVector3D,QPalette,QColor
 from PyQt5.QtCore import Qt,QEvent,pyqtSignal
 from curve_modernGL.model.SceneNode import *
+from curve_modernGL.model.nurb import *
 class PropertyDockWidget(QTabWidget):
     def __init__(self,parent=None,item:QListWidgetItem=None):
         super(PropertyDockWidget, self).__init__(parent)
         self.setTabPosition(QTabWidget.West)
-        self.coordinateForm=VerticiesProperty(None)
-        self.transformWidget=TransformationProperty(None)
-        self.colorWidget = ColorProperty(None)
+        self.coordinateForm=VerticiesProperty(self)
+        self.splineWidget=SplineProperty(self)
+        self.transformWidget=TransformationProperty(self)
+        self.colorWidget = ColorProperty(self)
         self.insertTab(0, self.coordinateForm, "Vertices")
-        self.insertTab(1, self.transformWidget, "Transform")
-        self.insertTab(2,self.colorWidget,"Color")
+        self.insertTab(1, self.splineWidget, "Spline")
+        self.insertTab(2, self.transformWidget, "Transform")
+        self.insertTab(3,self.colorWidget,"Color")
 class VerticiesProperty(QTabWidget):
     dataChanged=pyqtSignal(QVector3D)
     def __init__(self,parent=None):
@@ -24,6 +27,8 @@ class VerticiesProperty(QTabWidget):
         vertLabel=QLabel("Coordinates")
         #setup table to display vertices coordinate
         self.table=QTableWidget()
+        #set Qtablewidget auto resize its height
+        self.table.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
         self.table.setColumnCount(3)
         self.table.setColumnWidth(0, 2)
         self.table.setColumnWidth(1, 2)
@@ -34,18 +39,82 @@ class VerticiesProperty(QTabWidget):
         gridLayout.addWidget(vertLabel, 1, 0)
         gridLayout.addWidget(self.table, 2, 0)
         self.setLayout(gridLayout)
-        self.setGeometry(300, 300, 350, 300)
     def displayTable(self,item):
         try:
             vertices = item.data(Qt.UserRole)
             size = len(vertices)
             self.table.setRowCount(size)
             for i, data in enumerate(vertices):
-                self.table.setItem(i, 0, QTableWidgetItem(str(data.x())))
-                self.table.setItem(i, 1, QTableWidgetItem(str(data.y())))
-                self.table.setItem(i, 2, QTableWidgetItem(str(data.z())))
+                self.table.setItem(i, 0, QTableWidgetItem(str(round(data.x(),3))))
+                self.table.setItem(i, 1, QTableWidgetItem(str(round(data.y(),3))))
+                self.table.setItem(i, 2, QTableWidgetItem(str(round(data.z(),3))))
         except Exception as e:
             print(e, "Table data doesn't exist")
+class SplineProperty(QTableWidget):
+    '''
+    This widget display several properties for construction of splines
+     * ``resolution``: number of division of curves. *Default: 50*
+     * ``clamped``: decide if curve passes throught two end points. *Default: True*
+     * ``degree``: degree of the curve. *Default: 3*
+     * ``knots``: a knots vector of length (n+k+1). *Default: for n=4,k=3,knots=[0,1/7,2/7,3/7,4/7,5/7,6/7,1]*
+     * ``weights``: a weight vector of length n. *Default: for n=4,weights=[1.0,1.0,1.0,1.0]*
+    '''
+    def __init__(self,parent=None):
+        super(SplineProperty, self).__init__(parent)
+        formLayout = QFormLayout()
+        #resolution form
+        self.resolutionForm=QSpinBox()
+        self.resolutionForm.setMaximum(1000)
+        self.resolutionForm.setMinimum(1)
+        self.resolutionForm.setValue(50)
+        self.resolutionForm.setSingleStep(1)
+        #clamped tick box
+        self.clampedTickBox=QCheckBox()
+        self.clampedTickBox.setChecked(True)
+        # clamped tick box
+        self.degreeForm = QSpinBox()
+        self.degreeForm.setValue(3)
+        self.degreeForm.setMinimum(1)
+        self.degreeForm.setSingleStep(1)
+        #knots
+        self.knotsTable=QTableWidget()
+        self.knotsTable.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
+        self.knotsTable.setColumnCount(1)
+        self.knotsTable.setColumnWidth(0, 1)
+        self.knotsTable.setHorizontalHeaderItem(0, QTableWidgetItem("Knot"))
+        #weights
+        self.weightsTable = QTableWidget()
+        self.weightsTable.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
+        self.weightsTable.setColumnCount(1)
+        self.weightsTable.setColumnWidth(0, 1)
+        self.weightsTable.setHorizontalHeaderItem(0, QTableWidgetItem("Weight"))
+        #Add all the forms in the layout
+        formLayout.addRow("Resolution", self.resolutionForm)
+        formLayout.addRow("Clamped", self.clampedTickBox)
+        formLayout.addRow("Degree", self.degreeForm)
+        formLayout.addRow("Knots",self.knotsTable)
+        formLayout.addRow("Weights", self.weightsTable)
+        self.setLayout(formLayout)
+    def updateView(self,item:Nurbs):
+        try:
+            degree=item.order
+            clamped=item.clamped
+            resolution=item.resolution
+            self.resolutionForm.setValue(resolution)
+            self.degreeForm.setValue(degree)
+            self.clampedTickBox.setChecked(clamped)
+            #knots vector view
+            knots = item.knots
+            self.knotsTable.setRowCount(len(knots))
+            for i, val in enumerate(knots):
+                self.knotsTable.setItem(i, 0, QTableWidgetItem(str(round(val,3))))
+            weights = item.weights
+            #weights vector view
+            self.weightsTable.setRowCount(len(weights))
+            for i, val in enumerate(weights):
+                self.weightsTable.setItem(i, 0, QTableWidgetItem(str(round(val, 3))))
+        except Exception as e:
+            print(e)
 class TransformationProperty(QTabWidget):
     lineEditFinished=pyqtSignal()
     def __init__(self,parent=None):
@@ -53,12 +122,15 @@ class TransformationProperty(QTabWidget):
         self.setWindowTitle("Transform")
         formLayout = QFormLayout()
 
+        self.localTransformTitle=QLabel()
         self.xEdit=QLineEdit()
         self.yEdit = QLineEdit()
         self.zEdit = QLineEdit()
+
         self.xEdit.editingFinished.connect(self.sendSignal)
         self.yEdit.editingFinished.connect(self.sendSignal)
         self.zEdit.editingFinished.connect(self.sendSignal)
+        formLayout.addRow("Local Transform",self.localTransformTitle)
         formLayout.addRow("X", self.xEdit)
         formLayout.addRow("Y", self.yEdit)
         formLayout.addRow("Z", self.zEdit)

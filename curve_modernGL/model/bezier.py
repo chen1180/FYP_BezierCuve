@@ -16,22 +16,21 @@ class Bezier(QListWidgetItem, AbstractSceneNode):
         #vertices data
         self.originalData=data
         #camera setting
-        print(self.vertices)
     def modifyVertices(self, data):
         self.setData(Qt.UserRole,data) #This step is important, Qlistwidget item may return to original state without this statement
         self.vertices=self.QVec3DtoNumpyArray(data)
-        print(self.vertices,self.vertices.shape[0]/3.0)
     def setupMainShaderProgram(self):
         # patch vertices
         self.program=QOpenGLShaderProgram()
         self.program.addShaderFromSourceFile(QOpenGLShader.Vertex,":BezierShader/bezierShader.vert")
-        self.program.addShaderFromSourceFile(QOpenGLShader.TessellationControl, ":BezierShader/bezierShader.tesc")
+        # self.program.addShaderFromSourceFile(QOpenGLShader.TessellationControl, ":BezierShader/bezierShader.tesc")
         self.program.addShaderFromSourceFile(QOpenGLShader.TessellationEvaluation, ":BezierShader/bezierShader.tese")
         self.program.addShaderFromSourceFile(QOpenGLShader.Fragment, ":BezierShader/bezierShader.frag")
         self.program.link()
         self.program.bind()
+        self.program.setDefaultOuterTessellationLevels([1, self.resolution])
         # Qpengl Tesselation Control Shader attribute
-        self.program.setPatchVertexCount(4)  # Maximum patch vertices
+        self.program.setPatchVertexCount(self.vertices.shape[0] // 3)  # Maximum patch vertices
         #setup vao
         self.vao = QOpenGLVertexArrayObject()
         self.vao.create()

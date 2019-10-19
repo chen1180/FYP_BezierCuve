@@ -30,7 +30,7 @@ class OpenGLWindow(QOpenGLWidget):
         except Exception as e:
             print(e)
     def paintGL(self) -> None:
-        glClearColor(0.3, 0.3, 0.3, 1.0)
+        glClearColor(0, 0, 0, 1.0)
         glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT)
         # self.setDisplayViewPort(0,0,self.width()//2,self.height()//2,QQuaternion())
         # self.setDisplayViewPort(self.width() // 2,0, self.width() // 2, self.height() //2, QQuaternion().fromAxisAndAngle(QVector3D(0,1,0),-90))

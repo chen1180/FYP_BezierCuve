@@ -15,6 +15,12 @@ class AbstractSceneNode(QObject):
         self.program=QOpenGLShaderProgram()
         self.commonProgram=QOpenGLShaderProgram()
         self.lightProgram=QOpenGLShaderProgram()
+        #curve
+        self.resolution = 50
+        self.order = 3
+        self.clamped = True
+        self.knots = None
+        self.weights = None
         #color
         self.verticesColor=QVector3D(1,1,1)
         self.polygonColor=QVector3D(0,1,0)
@@ -30,7 +36,6 @@ class AbstractSceneNode(QObject):
         self.m_showPoint=False
         self.m_showPolygon=False
         self.m_showWireframe=False
-
 
     def initialize(self):
         self.setupMainShaderProgram()
@@ -74,3 +79,15 @@ class AbstractSceneNode(QObject):
             dummy.fill(Qt.green)
             buffer=dummy
         return buffer
+    #Curve property method
+    def changeResolution(self,new_resolution:int):
+        self.resolution=new_resolution
+    def changeEndPointType(self,new_clamped:bool):
+        self.clamped=new_clamped
+    def changeOrder(self,new_order:int):
+        self.order=new_order
+    def changeKnots(self,pos:int,value:float):
+        self.knots[pos]=value
+    def changeWeights(self,pos:int,value:float):
+        self.weights[pos]=value
+

@@ -10,5 +10,5 @@ void main()
         gl_in[gl_InvocationID].gl_Position;
        // Calculate the tessellation levels
        gl_TessLevelOuter[0] =1;
-       gl_TessLevelOuter[1] = 10;
+       gl_TessLevelOuter[1] = 100;
    }
