@@ -50,7 +50,9 @@ class VerticiesProperty(QTabWidget):
                 self.table.setItem(i, 2, QTableWidgetItem(str(round(data.z(),3))))
         except Exception as e:
             print(e, "Table data doesn't exist")
-class SplineProperty(QTableWidget):
+    def clearTable(self):
+        self.table.clearContents()
+class SplineProperty(QTabWidget):
     '''
     This widget display several properties for construction of splines
      * ``resolution``: number of division of curves. *Default: 50*

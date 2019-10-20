@@ -33,6 +33,7 @@ class MainWindow(QMainWindow):
         self.model=SceneManager.SceneObjects()
         #Model signal and slots
         self.model.sceneNodeAdded.connect(self.addItemToWidget)
+        self.model.sceneNodeDeleted.connect(self.removeItemFromWidget)
         self.model.sceneNodeDraw.connect(self.glWindow.addToScene)
         #sceneDockWidget view signal and slots
         self.sceneWidget.itemClicked.connect(self.itemClick)
@@ -77,6 +78,9 @@ class MainWindow(QMainWindow):
                                           statusTip="Transform to XZ plane",
                                           triggered=self.changeViewPort_XZ)
     def createDrawActions(self):
+        self.deleteItem_action = QAction(QIcon(":images/bezier.png"), "Delete a selection", self,
+                                      statusTip="Delete an item",
+                                      triggered=self.deleteItem)
         self.addBezierCurve = QAction(QIcon(":images/bezier.png"),"Add Bezier Curve", self,
                                       statusTip="Add a cubic Bezier curve",
                                       triggered=self.drawBezierCurve)
@@ -107,6 +111,9 @@ class MainWindow(QMainWindow):
 
     def createToolBars(self):
         self.fileToolBar = self.addToolBar("File")
+        # Common action tool bar
+        self.commonToolBar=self.addToolBar("Common commands")
+        self.commonToolBar.addAction(self.deleteItem_action)
         # Projection tool bar
         self.viewToolBar = self.addToolBar("Projection & View")
         self.viewToolBar.addAction(self.changeProjection_action)
@@ -154,7 +161,11 @@ class MainWindow(QMainWindow):
         self.addDockWidget(Qt.LeftDockWidgetArea, toolDock)
 
     #-----------------------------For model operation-----------------------------------#
-
+    def deleteItem(self):
+        if self.model.sceneNodes:
+            currentIndex = self.sceneWidget.currentRow()
+            selection = self.model.sceneNodes[currentIndex]
+            self.model.deleteNode(selection)
     def drawBezierCurve(self):
         item = Bezier(None, "Beizer", [QVector3D(-1, -0.5, -0.5), QVector3D(-1, 1, -0.5), QVector3D(0, 1, -0.5),QVector3D(-1, 0.1, 0.2), QVector3D(-1, 0.4, 0.2)])
         self.model.addNode(item)
@@ -226,7 +237,6 @@ class MainWindow(QMainWindow):
         self.sceneWidget.addItem(item)
         self.sceneWidget.setCurrentItem(item)
         #subwidget: coordinate form
-
         self.propertyWidget.coordinateForm.displayTable(item)
         #subwidget: spline widget
         if (type(item) == Nurbs or type(item) == NurbsPatch):
@@ -237,7 +247,9 @@ class MainWindow(QMainWindow):
         self.propertyWidget.colorWidget.setColor(item)
 
         self.sceneWidget.setCurrentItem(item)
-
+    def removeItemFromWidget(self,item):
+        self.sceneWidget.takeItem(self.sceneWidget.currentRow())
+        self.glWindow.removeFromScene(item)
     def onItemDoubleClick(self, item: QTableWidgetItem):
         # TODO: enable table widget to modify item such as item vertices
         print("Table item modified", item.row(), item.column(), self.propertyWidget.coordinateForm.table.item(item.row(), item.column()).text())

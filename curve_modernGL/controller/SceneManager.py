@@ -18,8 +18,8 @@ class SceneObjects(QObject):
         self.sceneNodes[position]=node
         self.sceneNodeChanged.emit(position,node)
     def deleteNode(self,node):
-        sceneNodeDeleted = pyqtSignal(node)
-        pass
+        self.sceneNodes.remove(node)
+        self.sceneNodeDeleted.emit(node)
     def updateNode(self,node:list):
         self.sceneNodes=node
         self.sceneNodeDraw.emit(self.sceneNodes)

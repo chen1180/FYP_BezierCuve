@@ -6,6 +6,7 @@ class Trackball(QObject):
     def __init__(self,cameraPos:QVector3D,targetPos:QVector3D,WorldUp:QVector3D):
         self.cameraPos=cameraPos
         self.targetPos=targetPos
+        self.viewPos = cameraPos
         self.cameraUp=WorldUp
         self.radius=(self.cameraPos-self.targetPos).length()
         #camera state
@@ -16,6 +17,7 @@ class Trackball(QObject):
         self.sensitivity=2.0
         #initial camera state (for reset camera)
         self.init_m_rotation=self.m_rotation
+
 
     def updateCamera(self,rotation):
         RotationMatrix = QMatrix4x4()
@@ -30,6 +32,7 @@ class Trackball(QObject):
         viewDir = QVector3D(ViewMatrix[8], ViewMatrix[9], ViewMatrix[10])
         #update camera position
         self.cameraPos = viewDir * self.radius + self.targetPos
+        self.viewPos = viewDir * self.radius
         #calculate roll of camera
         # self.cameraUp = QVector3D(ViewMatrix[4], ViewMatrix[5], ViewMatrix[6])
     def resetCamera(self):
@@ -100,8 +103,8 @@ class Trackball(QObject):
             self.radius-=1
         if self.radius<=0.5:
             self.radius=0.5
-        if self.radius>=20:
-            self.radius=20
+        if self.radius>=40:
+            self.radius=40
         self.updateCamera(self.m_rotation)
 
 

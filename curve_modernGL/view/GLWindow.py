@@ -6,6 +6,7 @@ from PyQt5.QtGui import *
 from curve_modernGL.model.trackBall import Trackball
 import sys
 from curve_modernGL.model.planes import Quads
+from curve_modernGL.model.axis import Axis
 from curve_modernGL.model.nurbPatch import *
 class OpenGLWindow(QOpenGLWidget):
     OPENGL_NEED_UPDATE=pyqtSignal(bool)
@@ -27,7 +28,8 @@ class OpenGLWindow(QOpenGLWidget):
         #default plane
         self.viewPortState=self.VIEWPORT_PERSPECTIVE
         self.viewPlane=self.VIEWPORT_XY_PLANE
-        self.quads=Quads(100,1)
+        self.quads=Quads(10,1)
+        self.axis=Axis(0.5)
     def initializeGL(self) -> None:
         QOpenGLWidget.initializeGL(self)
         glEnable(GL_DEPTH_TEST)
@@ -35,20 +37,28 @@ class OpenGLWindow(QOpenGLWidget):
         glClearColor(0, 0, 0, 1.0)
         try:
             self.quads.initialize()
+            self.axis.initialize()
         except Exception as e:
             print(e)
     def paintGL(self) -> None:
         glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT)
-        Projection=self.setupProjectionMatrix()
+        Projection = self.setupProjectionMatrix()
         View=self.setupViewMatrix()
         Model=QMatrix4x4()
         MVP=Projection*View*Model
+        glViewport(self.width() - 200, self.height() - 200, 200, 200);
+        try:
+            axisProjection=QMatrix4x4()
+            axisProjection.ortho(-1, 1, -1 ,1 , 0.1, 100)
+            axisView =self.setupViewMatrix(enableCameraPan=False)
+            self.axis.setupMatrix(axisView, Model, axisProjection)
+            self.axis.render()
+        except Exception as e:
+            print(e)
+        glViewport(0, 0, self.width(), self.height());
         try:
             self.quads.setupMatrix(View, Model, Projection)
             self.quads.render()
-        except Exception as e:
-            print(e)
-        try:
             if self.scene:
                 for item in self.scene:
                     item.setupMatrix(View, Model, Projection)
@@ -57,6 +67,7 @@ class OpenGLWindow(QOpenGLWidget):
                     item.render()
         except Exception as e:
             print(e)
+
         self.update()
     def resizeGL(self, w: int, h: int) -> None:
         side = min(w, h)
@@ -70,6 +81,8 @@ class OpenGLWindow(QOpenGLWidget):
         painter.setRenderHint(QPainter.Antialiasing)
         self.drawInstructions(painter)
         painter.end()
+        self.doneCurrent()
+
     def drawInstructions(self, painter):
         if self.viewPortState==self.VIEWPORT_PERSPECTIVE:
             text = "Perspective"
@@ -89,12 +102,24 @@ class OpenGLWindow(QOpenGLWidget):
                          QColor(0, 0, 0, 127))
         painter.drawText((self.width() - rect.width())/2, border, rect.width(),
                          rect.height(), Qt.AlignCenter | Qt.TextWordWrap, text)
+        #Draw operation instruction on the scrren
         font=painter.font()
         font.setPointSize(12)
         painter.setFont(font)
         instruction="Rotation: Control+Left Mouse\nPan: Right Mouse\nZoom: Mouse scroller"
-        rect =QRect(10, 10,250,200)
+        rect =QRect(10, 10,self.width()/4,self.height()/4)
         painter.drawText(rect, Qt.AlignLeft | Qt.TextWordWrap, instruction)
+        # #Draw axis on the screen
+        # origin=QPointF(self.width()-100,self.height()/16)
+        # x_axis=QLineF(origin,origin+QPointF(50,0))
+        # y_axis=QLineF(origin,origin+QPointF(0,-50))
+        # z_axis=QLineF(origin,origin)
+        # painter.setPen(QPen(Qt.red))
+        # painter.drawLine(x_axis)
+        # painter.setPen(QPen(Qt.green))
+        # painter.drawLine(y_axis)
+        # painter.setPen(QPen(Qt.blue))
+        # painter.drawLine(z_axis)
 
     # -----------------------------Projection and View matrix -----------------------------------#
     def pixelPosToViewPos(self,p:QPointF):
@@ -116,7 +141,7 @@ class OpenGLWindow(QOpenGLWidget):
         self.viewPlane=plane
         self.camera.resetCamera()
         self.update()
-    def setupViewMatrix(self):
+    def setupViewMatrix(self,enableCameraPan=True):
         if self.viewPlane==self.VIEWPORT_XY_PLANE:
             rotation=QQuaternion()
         elif self.viewPlane==self.VIEWPORT_YZ_PLANE:
@@ -124,12 +149,18 @@ class OpenGLWindow(QOpenGLWidget):
         elif self.viewPlane==self.VIEWPORT_XZ_PLANE:
             rotation=QQuaternion().fromAxisAndAngle(QVector3D(1,0,0),90)
         View = QMatrix4x4()
-        View.lookAt(self.camera.cameraPos, self.camera.targetPos, self.camera.cameraUp)
+        if enableCameraPan:
+            View.lookAt(self.camera.cameraPos, self.camera.targetPos, self.camera.cameraUp)
+        else:
+            View.lookAt(self.camera.viewPos,QVector3D(0,0,0), self.camera.cameraUp)
         View.rotate(rotation)
         return View
     # -----------------------------Signal and Slots -----------------------------------#
     def addToScene(self, scene):
         self.scene=list(scene)
+        self.update()
+    def removeFromScene(self,item):
+        self.scene.remove(item)
         self.update()
     # -----------------------------Mouse and Keyboards -----------------------------------#
     def mousePressEvent(self, a0: QMouseEvent) -> None:
