@@ -1,39 +1,23 @@
-from geomdl import BSpline
-from geomdl import multi
-from geomdl import knotvector
+import numpy as np
+import scipy.interpolate as interpolate
+import matplotlib.pyplot as plt
 
-# Create the curve instance #1
-crv1 = BSpline.Curve()
+x = np.array([ 0. ,  1.2,  1.9,  3.2,  4. ,  6.5,7])
+y = np.array([ 0. ,  2.3,  3. ,  4.3,  2.9,  3.1,5])
 
-# Set degree
-crv1.degree = 2
+t, c, k = interpolate.splrep(x, y, s=0, k=4)
+print('''\
+t: {}
+c: {}
+k: {}
+'''.format(t, c, k))
+N = 100
+xmin, xmax = x.min(), x.max()
+xx = np.linspace(xmin, xmax, N)
+spline = interpolate.BSpline(t, c, k, extrapolate=False)
 
-# Set control points
-crv1.ctrlpts = [[1, 0, 0], [1, 1, 0], [0, 1, 0]]
-
-# Generate a uniform knot vector
-crv1.knotvector = knotvector.generate(crv1.degree, crv1.ctrlpts_size)
-
-# Create the curve instance #2
-crv2 = BSpline.Curve()
-
-# Set degree
-crv2.degree = 3
-
-# Set control points
-crv2.ctrlpts = [[1, 0, 0], [1, 1, 0], [2, 1, 0], [1, 1, 0]]
-
-# Generate a uniform knot vector
-crv2.knotvector = knotvector.generate(crv2.degree, crv2.ctrlpts_size)
-
-# Create a curve container
-mcrv = multi.CurveContainer(crv1, crv2)
-
-# Import Matplotlib visualization module
-from geomdl.visualization import VisMPL
-
-# Set the visualization component of the curve container
-mcrv.vis = VisMPL.VisCurve3D()
-
-# Plot the curves in the curve container
-mcrv.render()
+plt.plot(x, y, 'bo', label='Original points')
+plt.plot(xx, spline(xx), 'r', label='BSpline')
+plt.grid()
+plt.legend(loc='best')
+plt.show()

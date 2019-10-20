@@ -13,7 +13,9 @@ class Trackball(QObject):
         self.m_panningTrigger=False
         self.m_rotation=QQuaternion().fromDirection(self.cameraPos-self.targetPos,WorldUp)
         self.m_lastPos=QPointF()
-        self.sensitivity=2.5
+        self.sensitivity=2.0
+        #initial camera state (for reset camera)
+        self.init_m_rotation=self.m_rotation
 
     def updateCamera(self,rotation):
         RotationMatrix = QMatrix4x4()
@@ -30,13 +32,16 @@ class Trackball(QObject):
         self.cameraPos = viewDir * self.radius + self.targetPos
         #calculate roll of camera
         # self.cameraUp = QVector3D(ViewMatrix[4], ViewMatrix[5], ViewMatrix[6])
-
-
+    def resetCamera(self):
+        #reset rotation to initial state
+        self.m_rotation=  self.init_m_rotation
+        #update camera rotation
+        self.updateCamera(self.m_rotation)
     # camera rotation
-    def pushMiddleButton(self,p:QPointF):
+    def pushRotation(self, p:QPointF):
         self.m_rotationTrigger=True
         self.m_lastPos=p
-    def moveMiddleButton(self,p:QPointF):
+    def moveRotation(self, p:QPointF):
         if self.m_rotationTrigger==False:
             return
         lastPos3D=QVector3D(self.m_lastPos.x(),self.m_lastPos.y(),0)
@@ -65,14 +70,14 @@ class Trackball(QObject):
             self.m_lastPos = p
 
 
-    def releaseMiddleButton(self,p:QPointF):
+    def releaseRotation(self, p:QPointF):
         self.m_rotationTrigger=False
 
     #camera panning
-    def pushRightButton(self,p:QPointF):
+    def pushPanning(self, p:QPointF):
         self.m_panningTrigger = True
         self.m_lastPos = p
-    def moveRightButton(self,p:QPointF):
+    def movePannning(self, p:QPointF):
         if self.m_panningTrigger==False:
             return
         dx = (p - self.m_lastPos).x()
@@ -84,11 +89,11 @@ class Trackball(QObject):
         self.targetPos+= (right * dx + up * dy)
         self.m_lastPos = p
         self.updateCamera(self.m_rotation)
-    def releaseRightButton(self):
+    def releasePanning(self):
         self.m_panningTrigger=False
 
     #camere zooming
-    def moveMiddleScroller(self,angleDelta):
+    def moveZooming(self, angleDelta):
         if angleDelta>0:
             self.radius+=1
         else:

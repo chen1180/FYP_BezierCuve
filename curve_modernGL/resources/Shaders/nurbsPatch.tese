@@ -1,7 +1,7 @@
 #version 410 core
 //define the maximum vertices point that can process
-#define MAX_KNOTS 32
-layout(isolines) in;
+#define MAX_KNOTS 16
+layout(quads) in;
 //The dynamic array is not support in 4.1 glsl version, constant must be passed into array.
 uniform float knots[MAX_KNOTS];
 uniform float weights[MAX_KNOTS];
@@ -16,13 +16,12 @@ void basicFunction(float u,int k,int p,inout float N[MAX_KNOTS]){
     //p: order of the curve
     if (clamped==true){
         if (u==1.0){
-            N[gl_PatchVerticesIn-1]=1.0;
+            N[3]=1.0;
             return;
         } else if(u==0.0){
             N[0]=1.0;
             return;
         }
-
     }
     N[k] = 1.0;
     for(int d=1;d<p+1;d++){
@@ -45,43 +44,58 @@ int findKnotSpan(in float u){
     }
     return k;
 }
-vec3 computeNurbsPoint(in float u,in  int p,in  int k){
-
+vec3 computeNurbsPoint( int index,float u,  int p){
+    int k=findKnotSpan(u);
     //Initialize N array
     float N[MAX_KNOTS];
     for (int i=0;i<knots_size;i++){
         N[i]=0;
     }
-    vec3 lastP;
     //calculate value of N
     basicFunction(u, k, p, N);
-    for (int i=0;i<gl_PatchVerticesIn;i++){
-        lastP+=gl_in[i].gl_Position.xyz*N[i]*weights[i];
+    vec3 lastP=vec3(0);
+    for(int i=0;i<4;i++){
+        lastP+=gl_in[4*index+i].gl_Position.xyz*weights[i]*N[i];
     }
     float W=0;
-    for(int i=0;i<gl_PatchVerticesIn;i++)
+    for(int i=0;i<4;i++)
     {
         W+=weights[i]*N[i];
     }
     lastP/=W;
     return lastP;
-
 }
 
 void main()
 {
-     // The tessellation u coordinate
-    float u = gl_TessCoord.x;
+    // The tessellation u coordinate
+    float u =gl_TessCoord.x;
+    float v=gl_TessCoord.y;
     //order
     int p=order;
-    //number of vertices
-    int n=gl_PatchVerticesIn;
-    int k=findKnotSpan(u);
     //Discard all the points between [knots[p],knots[m-p-1]]
     if (clamped==false){
         if((u<knots[p])||(u>knots[knots_size-p-1]))
         return;
+        if((v<knots[p])||(v>knots[knots_size-p-1]))
+        return;
     }
-    vec3 point=computeNurbsPoint(u,p,k);
-    gl_Position = MVP*vec4( point,1.0);
+    int k=findKnotSpan(v);
+    //Initialize N array
+    float Nv[MAX_KNOTS];
+    for (int i=0;i<knots_size;i++){
+        Nv[i]=0;
+    }
+    basicFunction(v, k, p, Nv);
+    float Wv=0;
+    for(int i=0;i<4;i++)
+    {
+        Wv+=weights[i]*Nv[i];
+    }
+    vec3 lastP=vec3(0.0);
+    for (int j=0;j<4;++j)
+    {
+        lastP+=computeNurbsPoint(j,u,p)*Nv[j]*weights[j]/Wv;
+    }
+    gl_Position = MVP*vec4( lastP,1.0);
 }

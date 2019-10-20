@@ -15,7 +15,7 @@ out vec4 FragColor;
 void main()
 {
     //Ambient light
-    float ambientStrength=0.3;
+    float ambientStrength=0.5;
     vec3 ambient=ambientStrength*lightColor;
     //     vec3 result = ambient* objectColor;
     //Diffuse light
@@ -29,7 +29,7 @@ void main()
     float spec = pow(max(dot(viewDir, reflectDir), 0.0), 32);
     vec3 specular = specularStrength * spec * lightColor;
 
-    vec3 result = (ambient + diffuse+specular)*texture2D(texture0,textureCoord).rgb*objectColor;
-
+//    vec3 result = (ambient + diffuse+specular)*texture2D(texture0,textureCoord).rgb*objectColor;
+    vec3 result = (ambient + diffuse+specular)*objectColor;
     FragColor = vec4(result,1.0);
 }

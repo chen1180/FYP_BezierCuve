@@ -129,9 +129,9 @@ class TransformationProperty(QTabWidget):
         self.yEdit = QLineEdit()
         self.zEdit = QLineEdit()
 
-        self.xEdit.editingFinished.connect(self.sendSignal)
-        self.yEdit.editingFinished.connect(self.sendSignal)
-        self.zEdit.editingFinished.connect(self.sendSignal)
+        self.xEdit.textChanged.connect(self.sendSignal)
+        self.yEdit.textChanged.connect(self.sendSignal)
+        self.zEdit.textChanged.connect(self.sendSignal)
         formLayout.addRow("Local Transform",self.localTransformTitle)
         formLayout.addRow("X", self.xEdit)
         formLayout.addRow("Y", self.yEdit)

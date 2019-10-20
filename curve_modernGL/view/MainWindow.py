@@ -9,6 +9,7 @@ from curve_modernGL.view.PropertyDockWidget import PropertyDockWidget
 from curve_modernGL.model.triangle import Triangle
 from curve_modernGL.model.bezier import Bezier
 from curve_modernGL.model.nurb import Nurbs
+from curve_modernGL.model.nurbPatch import NurbsPatch
 from curve_modernGL.model.bezierPatch import BezierPatch
 from curve_modernGL.controller import SceneManager,GLWindowController,PropertyWidgetController,SceneWidgetController
 class MainWindow(QMainWindow):
@@ -19,6 +20,8 @@ class MainWindow(QMainWindow):
 
         self.createActions()
         self.createDrawActions()
+        self.createViewAction()
+
         self.createMenus()
         self.createToolBars()
         self.createStatusBar()
@@ -60,6 +63,19 @@ class MainWindow(QMainWindow):
         self.aboutAct = QAction("&About", self,
                 statusTip="Show the application's About box",
                 triggered=self.about)
+    def createViewAction(self):
+        self.changeProjection_action = QAction(QIcon(":images/perspective.png"), "Perspective/Ortho", self,
+                                               statusTip="Switch between Perspective/Ortho",
+                                               triggered=self.changeProjection, checkable=True)
+        self.viewport_XY_action = QAction(QIcon(":images/axis.png"), "XY Plane", self,
+                                            statusTip="Transform to XY plane",
+                                            triggered=self.changeViewPort_XY)
+        self.viewport_YZ_action = QAction(QIcon(":images/axis.png"), "YZ Plane", self,
+                                          statusTip="Transform to XZ plane",
+                                          triggered=self.changeViewPort_YZ)
+        self.viewport_XZ_action = QAction(QIcon(":images/axis.png"), "XZ Plane", self,
+                                          statusTip="Transform to XZ plane",
+                                          triggered=self.changeViewPort_XZ)
     def createDrawActions(self):
         self.addBezierCurve = QAction(QIcon(":images/bezier.png"),"Add Bezier Curve", self,
                                       statusTip="Add a cubic Bezier curve",
@@ -71,9 +87,12 @@ class MainWindow(QMainWindow):
                                        statusTip="Add a Nurb curve",
                                        triggered=self.drawNurbs)
 
-        self.addBezierPatch = QAction(QIcon(":images/bezier_patch.png"),"Add Bezier Patch", self,
-                                      statusTip="Add a cubic Bezier Patch",
+        self.addBezierPatch = QAction(QIcon(":images/bezier_patch.png"),"Add Bezier patch", self,
+                                      statusTip="Add a cubic Bezier patch",
                                       triggered=self.drawBezierPatch)
+        self.addNurbsPatch = QAction(QIcon(":images/nurbs_patch.png"), "Add a NURB patch", self,
+                                statusTip="Add a Nurb patch",
+                                triggered=self.drawNurbsPatch)
     def createMenus(self):
         self.fileMenu = self.menuBar().addMenu("&File")
         self.fileMenu.addSeparator()
@@ -88,15 +107,24 @@ class MainWindow(QMainWindow):
 
     def createToolBars(self):
         self.fileToolBar = self.addToolBar("File")
+        # Projection tool bar
+        self.viewToolBar = self.addToolBar("Projection & View")
+        self.viewToolBar.addAction(self.changeProjection_action)
+        self.viewToolBar.addAction(self.viewport_XY_action)
+        self.viewToolBar.addAction(self.viewport_YZ_action)
+        self.viewToolBar.addAction(self.viewport_XZ_action)
         #Beizer curve tool bar
         self.curveToolBar=QToolBar("Curve")
         self.curveToolBar.setOrientation(Qt.Vertical)
         self.curveToolBar.addAction(self.addBezierCurve)
         self.curveToolBar.addAction(self.addBSplineCurve)
         self.curveToolBar.addAction(self.addNurbs)
+        #Surface tool bar
         self.surfaceToolBar=QToolBar("Surface")
         self.surfaceToolBar.setOrientation(Qt.Vertical)
         self.surfaceToolBar.addAction(self.addBezierPatch)
+        self.surfaceToolBar.addAction(self.addNurbsPatch)
+
     def createStatusBar(self):
         self.statusBar().showMessage("Ready")
 
@@ -153,6 +181,29 @@ class MainWindow(QMainWindow):
         self.model.addNode(item)
         self.sceneWidget.setCurrentItem(item)
         self.glWindow.addToScene(self.model.sceneNodes)
+    def drawNurbsPatch(self):
+        item = NurbsPatch(None, "NurbsPatch",
+                           [QVector3D(-1, -0.5, -0.5), QVector3D(-1, 1, -0.5), QVector3D(0, 1, -0.5),
+                            QVector3D(1, -1, -0.5),
+                            QVector3D(-1, -0.2, -0.2), QVector3D(-1, 0.7, -0.2), QVector3D(0, 0.7, -0.2),
+                            QVector3D(1, -1.3, -0.2),
+                            QVector3D(-1, 0.1, 0.2), QVector3D(-1, 0.4, 0.2), QVector3D(0, 0.4, 0.2),
+                            QVector3D(1, -1.6, 0.2),
+                            QVector3D(-1, -0.2, 0.5), QVector3D(-1, 0.1, 0.5), QVector3D(0, 0.1, 0.5),
+                            QVector3D(1, -1.8, 0.5)])
+        self.model.addNode(item)
+        self.sceneWidget.setCurrentItem(item)
+        self.glWindow.addToScene(self.model.sceneNodes)
+
+    # -----------------------------For projection operation-----------------------------------#
+    def changeProjection(self,state:bool):
+        self.glWindow.PerspectiveToOrtho(state)
+    def changeViewPort_XY(self):
+        self.glWindow.changeViewPlane(self.glWindow.VIEWPORT_XY_PLANE)
+    def changeViewPort_YZ(self):
+        self.glWindow.changeViewPlane(self.glWindow.VIEWPORT_YZ_PLANE)
+    def changeViewPort_XZ(self):
+        self.glWindow.changeViewPlane(self.glWindow.VIEWPORT_XZ_PLANE)
     #-----------------------------For view operation-----------------------------------#
     def updateSceneNode(self,item:QTableWidgetItem):
         try:
@@ -178,7 +229,7 @@ class MainWindow(QMainWindow):
 
         self.propertyWidget.coordinateForm.displayTable(item)
         #subwidget: spline widget
-        if (type(item) == Nurbs):
+        if (type(item) == Nurbs or type(item) == NurbsPatch):
             self.propertyWidget.splineWidget.updateView(item)
         #subwidget: transform widget
         self.propertyWidget.transformWidget.setLineEdit(item.transform)
@@ -194,7 +245,7 @@ class MainWindow(QMainWindow):
     def itemClick(self,item):
         self.sceneWidget.setCurrentItem(item)
         self.propertyWidget.coordinateForm.displayTable(item)
-        if (type(item) == Nurbs):
+        if (type(item) == Nurbs or type(item) == NurbsPatch):
             self.propertyWidget.splineWidget.updateView(item)
         self.propertyWidget.transformWidget.setLineEdit(item.transform)
         self.propertyWidget.colorWidget.setColor(item)
@@ -231,7 +282,7 @@ class MainWindow(QMainWindow):
     def changeCurve_Degree(self,new_degree:int):
         try:
             currentIndex = self.sceneWidget.currentRow()
-            if (type(self.model.sceneNodes[currentIndex])==Nurbs):
+            if (type(self.model.sceneNodes[currentIndex])==Nurbs or type(self.model.sceneNodes[currentIndex])==NurbsPatch):
                 nControlPoints = len(self.model.sceneNodes[currentIndex].data(Qt.UserRole))
                 clamped = self.model.sceneNodes[currentIndex].clamped
                 # update nurb model
@@ -249,8 +300,8 @@ class MainWindow(QMainWindow):
         try:
             currentIndex = self.sceneWidget.currentRow()
             # if the curve endpoint type is changed, its weights and knots need to be changed too!!
-            if (type(self.model.sceneNodes[currentIndex]) == Nurbs):
-                nControlPoints=len(self.model.sceneNodes[currentIndex].data(Qt.UserRole))
+            if (type(self.model.sceneNodes[currentIndex])==Nurbs or type(self.model.sceneNodes[currentIndex])==NurbsPatch):
+                nControlPoints=self.model.sceneNodes[currentIndex].verticesCount
                 degree=self.model.sceneNodes[currentIndex].order
                 new_type=bool(new_type)
                 self.model.sceneNodes[currentIndex].changeEndPointType(new_type)
@@ -265,7 +316,7 @@ class MainWindow(QMainWindow):
             row=self.propertyWidget.splineWidget.knotsTable.currentRow()
             column=self.propertyWidget.splineWidget.knotsTable.currentColumn()
             currentIndex = self.sceneWidget.currentRow()
-            if (type(self.model.sceneNodes[currentIndex]) == Nurbs):
+            if (type(self.model.sceneNodes[currentIndex])==Nurbs or type(self.model.sceneNodes[currentIndex])==NurbsPatch):
                 new_knot_value=float(item.text())
                 if type(new_knot_value) is float:
                     self.model.sceneNodes[currentIndex].changeKnots(row,new_knot_value)
@@ -277,7 +328,7 @@ class MainWindow(QMainWindow):
             row=self.propertyWidget.splineWidget.weightsTable.currentRow()
             column=self.propertyWidget.splineWidget.weightsTable.currentColumn()
             currentIndex = self.sceneWidget.currentRow()
-            if (type(self.model.sceneNodes[currentIndex]) == Nurbs):
+            if (type(self.model.sceneNodes[currentIndex])==Nurbs or type(self.model.sceneNodes[currentIndex])==NurbsPatch):
                 new_knot_value=float(item.text())
                 if type(new_knot_value) is float:
                     self.model.sceneNodes[currentIndex].changeWeights(row,new_knot_value)

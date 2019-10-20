@@ -5,8 +5,9 @@ import numpy as np
 class AbstractSceneNode(QObject):
     def __init__(self):
         super(AbstractSceneNode, self).__init__()
-        #status
-        self.STATUS_Changed= True
+        #Used to compile shader once
+        self.Shader_Dirty= True
+        self.Vertices_Dirty=False
         #sceneNode common properties
         self.vertices=[]
         self.transform=QVector3D(0,0,0)
@@ -40,6 +41,13 @@ class AbstractSceneNode(QObject):
     def initialize(self):
         self.setupMainShaderProgram()
         self.setupCommonShaderProgram()
+    def updateVBO(self):
+        # if vbo(vertices location) changed, then update vbo data
+        if self.Vertices_Dirty==True:
+            self.vbo.bind()
+            self.vbo.write(0,self.vertices, self.vertices.shape[0] * self.vertices.itemsize)
+            self.vbo.release()
+            self.Vertices_Dirty =False
     def render(self):
         pass
     #Setup shader
@@ -48,12 +56,13 @@ class AbstractSceneNode(QObject):
     def setupMainShaderProgram(self):
         pass
     #Camera matrix
-    def setupMatrix(self,view,model,projection):
-        self.view = view
-        self.model = model
-        self.projection = projection
-    def setupCamera(self,cameraViewPos):
-        self.cameraViewPos=cameraViewPos
+    def setupMatrix(self,view:QMatrix4x4,model:QMatrix4x4,projection:QMatrix4x4):
+        #important note: take a copy of above matrix!
+        self.view = QMatrix4x4(view)
+        self.model = QMatrix4x4(model)
+        self.projection = QMatrix4x4(projection)
+    def setupCamera(self,cameraViewPos:QVector3D):
+        self.cameraViewPos=QVector3D(cameraViewPos)
     #common method
     def QVec3DtoNumpyArray(self, data):
         tmp=[]
@@ -66,11 +75,15 @@ class AbstractSceneNode(QObject):
         self.transform.setY(y)
         self.transform.setZ(z)
     def modifyColor(self,verticesColor:QVector3D,polygonColor:QVector3D,color:QVector3D):
-        self.verticesColor=verticesColor
-        self.polygonColor=polygonColor
-        self.color=color
+        self.verticesColor=QVector3D(verticesColor)
+        self.polygonColor=QVector3D(polygonColor)
+        self.color=QVector3D(color)
     def modifyVertices(self, data):
-        pass
+        self.setData(Qt.UserRole,
+                     list(data))  # This step is important, Qlistwidget item may return to original state without this statement
+        self.vertices = self.QVec3DtoNumpyArray(list(data))
+        self.Vertices_Dirty = True
+        self.Shader_Dirty = True
     def loadTexture(self,filePath:str):
         buffer=QImage()
         if buffer.load(filePath)==False:

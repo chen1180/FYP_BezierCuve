@@ -7,11 +7,6 @@
         <file>BezierShader/bezierShader.tesc</file>
         <file>BezierShader/bezierShader.tese</file>
         <file>BezierShader/bezierShader.geom</file>
-        <file>BezierPatchShader/bezierPatchShader.frag</file>
-        <file>BezierPatchShader/bezierPatchShader.vert</file>
-        <file>BezierPatchShader/bezierPatchShader.tesc</file>
-        <file>BezierPatchShader/bezierPatchShader.tese</file>
-        <file>BezierPatchShader/bezierPatchShader.geom</file>
         <file>CommonShader/vertices.frag</file>
         <file>CommonShader/vertices.vert</file>
         <file>CommonShader/axis.frag</file>
@@ -19,9 +14,17 @@
         <file>Shaders/bezier.frag</file>
         <file>Shaders/bezier.vert</file>
         <file>Shaders/bezier.tese</file>
+        <file>Shaders/bezierPatch.frag</file>
+        <file>Shaders/bezierPatch.vert</file>
+        <file>Shaders/bezierPatch.tesc</file>
+        <file>Shaders/bezierPatch.tese</file>
+        <file>Shaders/bezierPatch.geom</file>
         <file>Shaders/nurbs.frag</file>
         <file>Shaders/nurbs.vert</file>
         <file>Shaders/nurbs.tese</file>
+        <file>Shaders/nurbsPatch.frag</file>
+        <file>Shaders/nurbsPatch.vert</file>
+        <file>Shaders/nurbsPatch.tese</file>
         <!--command icon-->
         <file>images/new.png</file>
         <file>images/print.png</file>
@@ -33,6 +36,10 @@
         <file>images/nurbs.png</file>
         <!--surcace icon-->
         <file>images/bezier_patch.png</file>
+        <file>images/nurbs_patch.png</file>
+        <!--projection view icon-->
+        <file>images/perspective.png</file>
+        <file>images/axis.png</file>
         <!--textures-->
         <file>texture/texture1.jpg</file>
     </qresource>

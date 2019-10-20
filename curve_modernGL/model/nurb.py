@@ -16,8 +16,9 @@ class Nurbs(QListWidgetItem, AbstractSceneNode):
         self.resolution=50
         self.order=3
         self.clamped=True
-        self.knots=self.generateKnots(len(data),self.order,clamped=self.clamped)
-        self.weights=self.generateWeights(len(data))
+        self.verticesCount=len(data)
+        self.knots=self.generateKnots(self.verticesCount,self.order,clamped=self.clamped)
+        self.weights=self.generateWeights(self.verticesCount)
     def generateKnots(self,n,k,clamped):
         #For open B-spline curves, the domain is [uk, um-k]. k is the degree,m is n+k+1
         nKnots = n + k + 1
@@ -34,9 +35,6 @@ class Nurbs(QListWidgetItem, AbstractSceneNode):
         nWeights=n
         weights=[1.0]*nWeights;
         return weights
-    def modifyVertices(self, data):
-        self.setData(Qt.UserRole,data) #This step is important, Qlistwidget item may return to original state without this statement
-        self.vertices=self.QVec3DtoNumpyArray(data)
     def setupMainShaderProgram(self):
         # patch vertices
         self.program=QOpenGLShaderProgram()
@@ -91,6 +89,7 @@ class Nurbs(QListWidgetItem, AbstractSceneNode):
         self.MVP = self.projection * self.view *  self.model
         # Actually rendering of data
         self.program.bind()
+        self.updateVBO()
         self.program.setUniformValue("MVP", self.MVP)
         # Rencently add code for lighting
         # ------------------------------------------------------------------------------
