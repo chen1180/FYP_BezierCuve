@@ -6,7 +6,6 @@ from PyQt5.QtGui import *
 from curve_modernGL.model.trackBall import Trackball
 import sys
 from curve_modernGL.model.planes import Quads
-from curve_modernGL.model.bezier import *
 from curve_modernGL.model.nurbPatch import *
 class OpenGLWindow(QOpenGLWidget):
     OPENGL_NEED_UPDATE=pyqtSignal(bool)
@@ -28,7 +27,7 @@ class OpenGLWindow(QOpenGLWidget):
         #default plane
         self.viewPortState=self.VIEWPORT_PERSPECTIVE
         self.viewPlane=self.VIEWPORT_XY_PLANE
-        self.quads=Quads(10,1)
+        self.quads=Quads(100,1)
     def initializeGL(self) -> None:
         QOpenGLWidget.initializeGL(self)
         glEnable(GL_DEPTH_TEST)

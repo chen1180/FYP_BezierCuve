@@ -23,6 +23,8 @@ class Quads(AbstractSceneNode):
     def GenerateGridVertices(self,size,step):
         verticies=[]
         for i in range(0,size,step):
+            if i==0:
+                continue #avoid grid overlay on the x,y,z axis which locate at(0,0,+-size),(0,+-size,0),(+-size,0,0)
             verticies.append(QVector3D(-size,0,i)) #lines parallel to X-axis
             verticies.append(QVector3D(size, 0, i))
             verticies.append(QVector3D(-size, 0, -i)) #lines parallel to X-axis
