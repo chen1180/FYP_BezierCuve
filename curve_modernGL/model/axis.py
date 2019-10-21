@@ -12,9 +12,9 @@ class Axis(AbstractSceneNode):
         super(Axis, self).__init__()
         self.size=size
         self.color=QVector3D(0.5,0.5,0.5)
-        self.XColor=QVector3D(0.5,0,0)
-        self.YColor = QVector3D(0, 0.5, 0)
-        self.ZColor=QVector3D(0,0,0.5)
+        self.XColor=QVector3D(1,0,0)
+        self.YColor = QVector3D(0, 1, 0)
+        self.ZColor=QVector3D(0,0,1)
         self.coordinateVertices = self.GenerateAxisVertices(self.size)
         self.coordinateVertices = self.QVec3DtoNumpyArray(self.coordinateVertices)
     def GenerateAxisVertices(self,size):

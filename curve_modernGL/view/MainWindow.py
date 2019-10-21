@@ -6,7 +6,6 @@ from PyQt5.QtWidgets import *
 from curve_modernGL.view.GLWindow import *
 from curve_modernGL.view.SceneDockWidget import SceneDockWidget
 from curve_modernGL.view.PropertyDockWidget import PropertyDockWidget
-from curve_modernGL.model.triangle import Triangle
 from curve_modernGL.model.bezier import Bezier
 from curve_modernGL.model.nurb import Nurbs
 from curve_modernGL.model.nurbPatch import NurbsPatch
@@ -77,8 +76,12 @@ class MainWindow(QMainWindow):
         self.viewport_XZ_action = QAction(QIcon(":images/axis.png"), "XZ Plane", self,
                                           statusTip="Transform to XZ plane",
                                           triggered=self.changeViewPort_XZ)
+        #WireFrame mode
+        self.changeWireFrameMode_action = QAction(QIcon(":images/wireFrame.png"), "WireFrame Mode", self,
+                                               statusTip="Switch on WireFrame Mode",
+                                               triggered=self.changeWireFrameMode, checkable=True)
     def createDrawActions(self):
-        self.deleteItem_action = QAction(QIcon(":images/bezier.png"), "Delete a selection", self,
+        self.deleteItem_action = QAction(QIcon(":images/delete.png"), "Delete a selection", self,
                                       statusTip="Delete an item",
                                       triggered=self.deleteItem)
         self.addBezierCurve = QAction(QIcon(":images/bezier.png"),"Add Bezier Curve", self,
@@ -120,6 +123,8 @@ class MainWindow(QMainWindow):
         self.viewToolBar.addAction(self.viewport_XY_action)
         self.viewToolBar.addAction(self.viewport_YZ_action)
         self.viewToolBar.addAction(self.viewport_XZ_action)
+        self.viewToolBar.addSeparator()
+        self.viewToolBar.addAction(self.changeWireFrameMode_action)
         #Beizer curve tool bar
         self.curveToolBar=QToolBar("Curve")
         self.curveToolBar.setOrientation(Qt.Vertical)
@@ -215,6 +220,9 @@ class MainWindow(QMainWindow):
         self.glWindow.changeViewPlane(self.glWindow.VIEWPORT_YZ_PLANE)
     def changeViewPort_XZ(self):
         self.glWindow.changeViewPlane(self.glWindow.VIEWPORT_XZ_PLANE)
+    def changeWireFrameMode(self,state:bool):
+        for node in self.model.sceneNodes:
+            node.m_showWireframe=state
     #-----------------------------For view operation-----------------------------------#
     def updateSceneNode(self,item:QTableWidgetItem):
         try:
@@ -229,6 +237,16 @@ class MainWindow(QMainWindow):
             currentIndex=self.sceneWidget.currentRow()
             self.sceneWidget.setCurrentRow(currentIndex)
             self.model.sceneNodes[currentIndex].modifyVertices(new_node)
+            #if item type is Nurbs or Nurbs patch, update knots and weights as well
+            if (type(self.model.sceneNodes[currentIndex])==Nurbs or type(self.model.sceneNodes[currentIndex])==NurbsPatch):
+                #Number of control points
+                n=len(self.model.sceneNodes[currentIndex].data(Qt.UserRole))
+                k=self.model.sceneNodes[currentIndex].order
+                clamped=self.model.sceneNodes[currentIndex].clamped
+                self.model.sceneNodes[currentIndex].knots=self.model.sceneNodes[currentIndex].generateKnots(n,k,clamped)
+                self.model.sceneNodes[currentIndex].weights=self.model.sceneNodes[currentIndex].generateWeights(n)
+                #update splineWidget
+                self.propertyWidget.splineWidget.updateView( self.model.sceneNodes[currentIndex])
             self.sceneWidget.setCurrentItem(self.model.sceneNodes[currentIndex])
         except Exception as e:
             print(e)

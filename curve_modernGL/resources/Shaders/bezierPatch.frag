@@ -3,7 +3,7 @@
 uniform vec3 objectColor;
 uniform vec3 lightColor;
 uniform vec3 viewPos;
-
+uniform bool wireFrameMode;
 uniform sampler2D texture0;
 
 in vec3 normal;
@@ -15,7 +15,7 @@ out vec4 FragColor;
 void main()
 {
     //Ambient light
-    float ambientStrength=0.5;
+    float ambientStrength=0.1;
     vec3 ambient=ambientStrength*lightColor;
     //     vec3 result = ambient* objectColor;
     //Diffuse light
@@ -28,8 +28,11 @@ void main()
     vec3 reflectDir = reflect(-lightDir, normal);
     float spec = pow(max(dot(viewDir, reflectDir), 0.0), 32);
     vec3 specular = specularStrength * spec * lightColor;
-
+    vec3 result=vec3(0);
 //    vec3 result = (ambient + diffuse+specular)*texture2D(texture0,textureCoord).rgb*objectColor;
-    vec3 result = (ambient + diffuse+specular)*objectColor;
+    if (wireFrameMode==true)
+        result = objectColor;
+    else
+        result =objectColor;
     FragColor = vec4(result,1.0);
 }

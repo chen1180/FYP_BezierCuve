@@ -22,4 +22,5 @@ class SceneObjects(QObject):
         self.sceneNodeDeleted.emit(node)
     def updateNode(self,node:list):
         self.sceneNodes=node
+        print("update node")
         self.sceneNodeDraw.emit(self.sceneNodes)

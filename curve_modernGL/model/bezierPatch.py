@@ -13,11 +13,11 @@ class BezierPatch(QListWidgetItem, AbstractSceneNode):
         self.setText(str(name))
         self.setData(Qt.UserRole,data)
         self.vertices=self.QVec3DtoNumpyArray(self.data(Qt.UserRole))
+        self.resolution=10
     def setupMainShaderProgram(self):
         # patch vertices
         self.program=QOpenGLShaderProgram()
         self.program.addShaderFromSourceFile(QOpenGLShader.Vertex,":Shaders/bezierPatch.vert")
-        self.program.addShaderFromSourceFile(QOpenGLShader.TessellationControl, ":Shaders/bezierPatch.tesc")
         self.program.addShaderFromSourceFile(QOpenGLShader.TessellationEvaluation, ":Shaders/bezierPatch.tese")
         self.program.addShaderFromSourceFile(QOpenGLShader.Fragment, ":Shaders/bezierPatch.frag")
         self.program.link()
@@ -25,6 +25,8 @@ class BezierPatch(QListWidgetItem, AbstractSceneNode):
             qDebug(self.program.log())
         self.program.bind()
         self.program.setPatchVertexCount(16)
+        self.program.setDefaultOuterTessellationLevels([self.resolution] * 4)
+        self.program.setDefaultInnerTessellationLevels([self.resolution] * 2)
 
         self.vao = QOpenGLVertexArrayObject()
         self.vao.create()
@@ -69,7 +71,7 @@ class BezierPatch(QListWidgetItem, AbstractSceneNode):
         self.model = Model*self.model
         self.MVP = self.projection * self.view * Model
         self.program.bind()
-        self.updateVBO()
+        self.vbo.bind()
         # --------------------------------Transformation---------------------------------------
         self.program.setUniformValue("Model", self.model)
         self.program.setUniformValue("View", self.view)
@@ -79,7 +81,7 @@ class BezierPatch(QListWidgetItem, AbstractSceneNode):
         self.program.setUniformValue("lightColor", QVector3D(1,1,1))
         self.program.setUniformValue("lightPos", QVector3D(0,-2,-1))
         self.program.setUniformValue("viewPos", self.cameraViewPos)
-
+        self.program.setUniformValue("wireFrameMode", self.m_showWireframe)
         #---------------------------------Texture---------------------------------------------
         self.textureID.bind()
         self.program.setUniformValue("texture0", 0)
@@ -88,7 +90,12 @@ class BezierPatch(QListWidgetItem, AbstractSceneNode):
 
         # Actually draw the triangles
         self.vao.bind()
-        glDrawArrays(GL_PATCHES, 0, self.vertices.shape[0]//3)# (draw type,start_vertices,total_vertices)
+        if self.m_showWireframe:
+            glPolygonMode(GL_FRONT_AND_BACK, GL_LINE)
+            glDrawArrays(GL_PATCHES, 0, self.vertices.shape[0] // 3)
+            glPolygonMode(GL_FRONT_AND_BACK, GL_FILL)
+        else:
+            glDrawArrays(GL_PATCHES, 0, self.vertices.shape[0] // 3)
         self.textureID.release()
         self.program.release()
         self.vao.release()
@@ -111,6 +118,7 @@ class BezierPatch(QListWidgetItem, AbstractSceneNode):
         self.commonProgram.release()
         self.program.release()
         self.verticesVao.release()
+        self.vao.release()
         self.vbo.release()
 #For debug purpose
 if __name__ == '__main__':

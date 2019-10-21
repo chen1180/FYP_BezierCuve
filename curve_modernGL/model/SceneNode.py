@@ -34,8 +34,8 @@ class AbstractSceneNode(QObject):
         self.projectionMatrix=QMatrix4x4()
         self.lookat=QVector3D()
         #Display Properties
-        self.m_showPoint=False
-        self.m_showPolygon=False
+        self.m_showPoint=True
+        self.m_showPolygon=True
         self.m_showWireframe=False
 
     def initialize(self):
@@ -49,6 +49,16 @@ class AbstractSceneNode(QObject):
             self.vbo.release()
             self.Vertices_Dirty =False
     def render(self):
+        if self.m_showPoint:
+            self.renderVertices()
+        if self.m_showPolygon:
+            self.renderPolygon()
+        self.renderObject()
+    def renderVertices(self):
+        pass
+    def renderPolygon(self):
+        pass
+    def renderObject(self):
         pass
     #Setup shader
     def setupCommonShaderProgram(self):

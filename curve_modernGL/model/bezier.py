@@ -48,7 +48,6 @@ class Bezier(QListWidgetItem, AbstractSceneNode):
         self.vbo.release()
         self.vao.release()
         self.program.release()
-    def setupCommonShaderProgram(self):
         # normal program
         self.commonProgram = QOpenGLShaderProgram()
         self.commonProgram.addShaderFromSourceFile(QOpenGLShader.Vertex, ":CommonShader/vertices.vert")
@@ -73,6 +72,7 @@ class Bezier(QListWidgetItem, AbstractSceneNode):
         self.MVP = self.projection * self.view *  self.model
         # Actually rendering of data
         self.program.bind()
+        self.vbo.bind()
         self.updateVBO()
         self.program.setUniformValue("MVP", self.MVP)
         # Rencently add code for lighting

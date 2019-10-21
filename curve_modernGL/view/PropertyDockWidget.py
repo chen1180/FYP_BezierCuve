@@ -36,8 +36,16 @@ class VerticiesProperty(QTabWidget):
         self.table.setHorizontalHeaderItem(0, QTableWidgetItem("x"))
         self.table.setHorizontalHeaderItem(1, QTableWidgetItem("y"))
         self.table.setHorizontalHeaderItem(2, QTableWidgetItem("z"))
-        gridLayout.addWidget(vertLabel, 1, 0)
-        gridLayout.addWidget(self.table, 2, 0)
+        #add row button
+        self.addRowButton=QPushButton("Add row")
+        self.addRowButton.clicked.connect(self.addPoint)
+        #delete row button
+        self.deleteRowButton = QPushButton("Delete row")
+        self.deleteRowButton.clicked.connect(self.deletePoint)
+        gridLayout.addWidget(vertLabel, 1, 0,1,2)   #Usage: (widget,row,column,row width, column width)
+        gridLayout.addWidget(self.table, 2, 0,1,2)
+        gridLayout.addWidget(self.addRowButton,3,0,1,1)
+        gridLayout.addWidget(self.deleteRowButton, 3, 1,1,1)
         self.setLayout(gridLayout)
     def displayTable(self,item):
         try:
@@ -50,8 +58,28 @@ class VerticiesProperty(QTabWidget):
                 self.table.setItem(i, 2, QTableWidgetItem(str(round(data.z(),3))))
         except Exception as e:
             print(e, "Table data doesn't exist")
-    def clearTable(self):
-        self.table.clearContents()
+    def addPoint(self):
+        currentIndex=self.table.currentRow()
+        #if table is empty, then insert below the last row
+        if currentIndex==-1:
+           rowCount=self.table.rowCount()
+           self.table.insertRow(rowCount)
+           # send signal to inform model to change
+           self.table.itemChanged.emit(self.table.item(rowCount, 0))
+        else:# else insert below selected row
+            self.table.insertRow(currentIndex + 1)
+            self.table.setCurrentCell(currentIndex+1,0)
+            # send signal to inform model to change
+            self.table.itemChanged.emit(self.table.item(currentIndex+1,0))
+    def deletePoint(self):
+        currentIndex = self.table.currentRow()
+        if currentIndex==-1:
+            pass
+        else:
+            self.table.removeRow(currentIndex)
+            # send signal to inform model to change
+            self.table.itemChanged.emit(self.table.item(currentIndex,0))
+
 class SplineProperty(QTabWidget):
     '''
     This widget display several properties for construction of splines

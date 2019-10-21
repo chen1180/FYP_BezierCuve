@@ -1,12 +1,5 @@
 <RCC>
     <qresource prefix="/">
-        <file>TriangleShader/fragmentShader.frag</file>
-        <file>TriangleShader/vertexShader.vert</file>
-        <file>BezierShader/bezierShader.frag</file>
-        <file>BezierShader/bezierShader.vert</file>
-        <file>BezierShader/bezierShader.tesc</file>
-        <file>BezierShader/bezierShader.tese</file>
-        <file>BezierShader/bezierShader.geom</file>
         <file>CommonShader/vertices.frag</file>
         <file>CommonShader/vertices.vert</file>
         <file>CommonShader/axis.frag</file>
@@ -30,6 +23,7 @@
         <file>images/print.png</file>
         <file>images/save.png</file>
         <file>images/undo.png</file>
+        <file>images/delete.png</file>
         <!--curve icon-->
         <file>images/bezier.png</file>
         <file>images/spline.png</file>
@@ -40,6 +34,7 @@
         <!--projection view icon-->
         <file>images/perspective.png</file>
         <file>images/axis.png</file>
+        <file>images/wireFrame.png</file>
         <!--textures-->
         <file>texture/texture1.jpg</file>
     </qresource>

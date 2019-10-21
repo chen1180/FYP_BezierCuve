@@ -13,7 +13,7 @@ class NurbsPatch(QListWidgetItem, AbstractSceneNode):
         self.setData(Qt.UserRole,data)
         self.vertices=self.QVec3DtoNumpyArray(self.data(Qt.UserRole))
         #4x4 NURBS Surface property
-        self.resolution=20
+        self.resolution=10
         self.order=3
         self.clamped=True
         self.verticesCount=4
@@ -93,9 +93,13 @@ class NurbsPatch(QListWidgetItem, AbstractSceneNode):
         self.updateVBO()
         self.program.setUniformValue("MVP", self.MVP)
         # Rencently add code for lighting
-        # ------------------------------------------------------------------------------
+        # ---------------------------------Light---------------------------------------
         self.program.setUniformValue("objectColor", self.color)
         self.program.setUniformValue("lightColor", QVector3D(1, 1, 1))
+        self.program.setUniformValue("lightPos", QVector3D(0, -2, -1))
+        self.program.setUniformValue("viewPos", self.cameraViewPos)
+        self.program.setUniformValue("wireFrameMode", self.m_showWireframe)
+        # ---------------------------------Spline-----------------------------------------
         for i in range(len(self.knots)):
             self.program.setUniformValue("knots[{}]".format(i), self.knots[i])
         for i in range(len(self.weights)):
@@ -105,15 +109,14 @@ class NurbsPatch(QListWidgetItem, AbstractSceneNode):
         self.program.setUniformValue("order", self.order)
         if self.program.log():
             qDebug(self.program.log())
-        # ------------------------------------------------------------------------------
-        try:
-            #Draw primitives
-            self.vao.bind()
+
+        self.vao.bind()
+        if self.m_showWireframe:
             glPolygonMode(GL_FRONT_AND_BACK, GL_LINE)
-            glDrawArrays(GL_PATCHES, 0, self.vertices.shape[0] // 3)  # (draw type,start_vertices,total_vertices)
+            glDrawArrays(GL_PATCHES, 0, self.vertices.shape[0] // 3)
             glPolygonMode(GL_FRONT_AND_BACK, GL_FILL)
-        except Exception as e:
-            print(e)
+        else:
+            glDrawArrays(GL_PATCHES, 0, self.vertices.shape[0] // 3)
         #Draw vertices
         # Actually rendering of data
         self.commonProgram.bind()

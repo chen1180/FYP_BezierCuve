@@ -46,7 +46,7 @@ class OpenGLWindow(QOpenGLWidget):
         View=self.setupViewMatrix()
         Model=QMatrix4x4()
         MVP=Projection*View*Model
-        glViewport(self.width() - 200, self.height() - 200, 200, 200);
+        glViewport(self.width() - 100, self.height() - 100, 100, 100);
         try:
             axisProjection=QMatrix4x4()
             axisProjection.ortho(-1, 1, -1 ,1 , 0.1, 100)
@@ -109,9 +109,10 @@ class OpenGLWindow(QOpenGLWidget):
         instruction="Rotation: Control+Left Mouse\nPan: Right Mouse\nZoom: Mouse scroller"
         rect =QRect(10, 10,self.width()/4,self.height()/4)
         painter.drawText(rect, Qt.AlignLeft | Qt.TextWordWrap, instruction)
-        # #Draw axis on the screen
+        #Draw axis on the screen
         # origin=QPointF(self.width()-100,self.height()/16)
         # x_axis=QLineF(origin,origin+QPointF(50,0))
+        # x_axis.setAngle(60)
         # y_axis=QLineF(origin,origin+QPointF(0,-50))
         # z_axis=QLineF(origin,origin)
         # painter.setPen(QPen(Qt.red))
