@@ -3,11 +3,11 @@ from OpenGL.GL import *
 from PyQt5.QtCore import *
 from PyQt5.QtWidgets import *
 from PyQt5.QtGui import *
-from curve_modernGL.model.trackBall import Trackball
+from model.trackBall import Trackball
 import sys
-from curve_modernGL.model.planes import Quads
-from curve_modernGL.model.axis import Axis
-from curve_modernGL.model.nurbPatch import *
+from model.planes import Quads
+from model.axis import Axis
+from model.nurbPatch import *
 class OpenGLWindow(QOpenGLWidget):
     OPENGL_NEED_UPDATE=pyqtSignal(bool)
     VIEWPORT_PERSPECTIVE=0

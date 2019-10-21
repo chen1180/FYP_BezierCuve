@@ -1,8 +1,8 @@
 from PyQt5.QtWidgets import *
 from PyQt5.QtGui import QVector3D,QPalette,QColor
 from PyQt5.QtCore import Qt,QEvent,pyqtSignal
-from curve_modernGL.model.SceneNode import *
-from curve_modernGL.model.nurb import *
+from model.SceneNode import *
+from model.nurb import *
 class PropertyDockWidget(QTabWidget):
     def __init__(self,parent=None,item:QListWidgetItem=None):
         super(PropertyDockWidget, self).__init__(parent)

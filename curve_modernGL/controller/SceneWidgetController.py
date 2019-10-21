@@ -1,9 +1,9 @@
 from PyQt5.QtCore import *
 from PyQt5.QtWidgets import *
 from PyQt5.QtGui import *
-from curve_modernGL.controller.SceneManager import *
-from curve_modernGL.view.SceneDockWidget import *
-from curve_modernGL.model.SceneNode import *
+from controller.SceneManager import *
+from view.SceneDockWidget import *
+from model.SceneNode import *
 """
     This controller updates the view on sceneDockWidget when scene nodes change
 """

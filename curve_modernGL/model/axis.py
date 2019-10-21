@@ -3,10 +3,10 @@ from PyQt5.QtCore import Qt,qDebug
 from OpenGL.GL import *
 from PyQt5.QtGui import QVector3D,QOpenGLBuffer,QOpenGLVertexArrayObject,QOpenGLShaderProgram,QOpenGLShader,QMatrix4x4
 import sys
-from curve_modernGL.view.SceneDockWidget import SceneDockWidget
-from curve_modernGL.model.SceneNode import AbstractSceneNode
+from view.SceneDockWidget import SceneDockWidget
+from model.SceneNode import AbstractSceneNode
 import numpy as np
-import curve_modernGL.resources.resources
+import resources.resources
 class Axis(AbstractSceneNode):
     def __init__(self,size):
         super(Axis, self).__init__()

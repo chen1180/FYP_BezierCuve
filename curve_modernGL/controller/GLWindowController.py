@@ -1,8 +1,8 @@
 from PyQt5.QtCore import *
 from PyQt5.QtWidgets import *
 from PyQt5.QtGui import *
-from curve_modernGL.controller.SceneManager import *
-from curve_modernGL.view.GLWindow import *
+from controller.SceneManager import *
+from view.GLWindow import *
 """
     This controller updates the view on PropertyDockWidget when scene nodes change
 """

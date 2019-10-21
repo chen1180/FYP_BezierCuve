@@ -3,9 +3,9 @@ from PyQt5.QtCore import Qt
 from OpenGL.GL import *
 from PyQt5.QtGui import QVector3D,QOpenGLBuffer,QOpenGLVertexArrayObject,QOpenGLShaderProgram,QOpenGLShader,QMatrix4x4
 import sys
-from curve_modernGL.view.SceneDockWidget import SceneDockWidget
-from curve_modernGL.model.SceneNode import AbstractSceneNode
-import curve_modernGL.resources.resources
+from view.SceneDockWidget import SceneDockWidget
+from model.SceneNode import AbstractSceneNode
+import resources.resources
 class Bezier(QListWidgetItem, AbstractSceneNode):
     def __init__(self,parent=None,name:str=None,data:QVector3D=None):
         super(Bezier, self).__init__()

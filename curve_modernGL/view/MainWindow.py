@@ -3,14 +3,14 @@ from PyQt5.QtGui import (QFont, QIcon, QKeySequence, QTextCharFormat,QKeyEvent,
         QTextCursor, QTextTableFormat,QVector3D,QColor)
 from PyQt5.QtPrintSupport import QPrintDialog, QPrinter
 from PyQt5.QtWidgets import *
-from curve_modernGL.view.GLWindow import *
-from curve_modernGL.view.SceneDockWidget import SceneDockWidget
-from curve_modernGL.view.PropertyDockWidget import PropertyDockWidget
-from curve_modernGL.model.bezier import Bezier
-from curve_modernGL.model.nurb import Nurbs
-from curve_modernGL.model.nurbPatch import NurbsPatch
-from curve_modernGL.model.bezierPatch import BezierPatch
-from curve_modernGL.controller import SceneManager,GLWindowController,PropertyWidgetController,SceneWidgetController
+from view.GLWindow import *
+from view.SceneDockWidget import SceneDockWidget
+from view.PropertyDockWidget import PropertyDockWidget
+from model.bezier import Bezier
+from model.nurb import Nurbs
+from model.nurbPatch import NurbsPatch
+from model.bezierPatch import BezierPatch
+from controller import SceneManager,GLWindowController,PropertyWidgetController,SceneWidgetController
 class MainWindow(QMainWindow):
     def __init__(self):
         super(MainWindow, self).__init__()
