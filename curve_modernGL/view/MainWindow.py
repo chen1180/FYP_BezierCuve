@@ -238,7 +238,7 @@ class MainWindow(QMainWindow):
             self.sceneWidget.setCurrentRow(currentIndex)
             self.model.sceneNodes[currentIndex].modifyVertices(new_node)
             #if item type is Nurbs or Nurbs patch, update knots and weights as well
-            if (type(self.model.sceneNodes[currentIndex])==Nurbs or type(self.model.sceneNodes[currentIndex])==NurbsPatch):
+            if (type(self.model.sceneNodes[currentIndex])==Nurbs):
                 #Number of control points
                 n=len(self.model.sceneNodes[currentIndex].data(Qt.UserRole))
                 k=self.model.sceneNodes[currentIndex].order
@@ -250,6 +250,8 @@ class MainWindow(QMainWindow):
             self.sceneWidget.setCurrentItem(self.model.sceneNodes[currentIndex])
         except Exception as e:
             print(e)
+    def addControlPoint(self,item):
+        self.updateSceneNode(item)
     def addItemToWidget(self,item):
         #scene widget update view
         self.sceneWidget.addItem(item)
@@ -269,7 +271,6 @@ class MainWindow(QMainWindow):
         self.sceneWidget.takeItem(self.sceneWidget.currentRow())
         self.glWindow.removeFromScene(item)
     def onItemDoubleClick(self, item: QTableWidgetItem):
-        # TODO: enable table widget to modify item such as item vertices
         print("Table item modified", item.row(), item.column(), self.propertyWidget.coordinateForm.table.item(item.row(), item.column()).text())
 
     def itemClick(self,item):

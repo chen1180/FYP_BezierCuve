@@ -17,6 +17,8 @@ class PropertyDockWidget(QTabWidget):
         self.insertTab(3,self.colorWidget,"Color")
 class VerticiesProperty(QTabWidget):
     dataChanged=pyqtSignal(QVector3D)
+    pointAdded=pyqtSignal(QObject)
+    pointDeleted=pyqtSignal(QObject)
     def __init__(self,parent=None):
         super(VerticiesProperty, self).__init__(parent)
         self.setWindowTitle("Property")

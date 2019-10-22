@@ -16,6 +16,8 @@ class AbstractSceneNode(QObject):
         self.program=QOpenGLShaderProgram()
         self.commonProgram=QOpenGLShaderProgram()
         self.lightProgram=QOpenGLShaderProgram()
+        self.vao =0
+        self.vbo = 0
         #curve
         self.resolution = 50
         self.order = 3
@@ -32,38 +34,23 @@ class AbstractSceneNode(QObject):
         self.viewMatrix=QMatrix4x4()
         self.modelMatrix=QMatrix4x4()
         self.projectionMatrix=QMatrix4x4()
-        self.lookat=QVector3D()
         #Display Properties
         self.m_showPoint=True
         self.m_showPolygon=True
         self.m_showWireframe=False
 
     def initialize(self):
-        self.setupMainShaderProgram()
-        self.setupCommonShaderProgram()
+        if self.m_shaderCompiled==False:
+            self.setupMainShaderProgram()
+            self.setupCommonShaderProgram()
+            self.m_shaderCompiled =True
     def updateVBO(self):
         # if vbo(vertices location) changed, then update vbo data
-        if self.Vertices_Dirty==True:
-            self.vbo.bind()
-            self.vbo.write(0,self.vertices, self.vertices.shape[0] * self.vertices.itemsize)
-            self.vbo.release()
-            self.Vertices_Dirty =False
-    def render(self):
-        if self.m_showPoint:
-            self.renderVertices()
-        if self.m_showPolygon:
-            self.renderPolygon()
-        self.renderObject()
-    def renderVertices(self):
-        pass
-    def renderPolygon(self):
-        pass
-    def renderObject(self):
-        pass
-    #Setup shader
-    def setupCommonShaderProgram(self):
-        pass
-    def setupMainShaderProgram(self):
+        # if self.Vertices_Dirty==True:
+        #     self.vbo.bind()
+        #     self.vbo.write(0,self.vertices, self.vertices.shape[0] * self.vertices.itemsize)
+        #     self.vbo.release()
+        #     self.Vertices_Dirty =False
         pass
     #Camera matrix
     def setupMatrix(self,view:QMatrix4x4,model:QMatrix4x4,projection:QMatrix4x4):
@@ -89,8 +76,8 @@ class AbstractSceneNode(QObject):
         self.polygonColor=QVector3D(polygonColor)
         self.color=QVector3D(color)
     def modifyVertices(self, data):
-        self.setData(Qt.UserRole,
-                     list(data))  # This step is important, Qlistwidget item may return to original state without this statement
+        # This step is important, Qlistwidget item may return to original state without this statement
+        self.setData(Qt.UserRole,list(data))
         self.vertices = self.QVec3DtoNumpyArray(list(data))
         self.Vertices_Dirty = True
         self.Shader_Dirty = True
@@ -114,3 +101,11 @@ class AbstractSceneNode(QObject):
     def changeWeights(self,pos:int,value:float):
         self.weights[pos]=value
 
+    def setupCommonShaderProgram(self):
+        pass
+
+    def setupMainShaderProgram(self):
+        pass
+
+    def render(self):
+        pass

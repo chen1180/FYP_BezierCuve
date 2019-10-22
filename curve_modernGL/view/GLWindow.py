@@ -33,7 +33,6 @@ class OpenGLWindow(QOpenGLWidget):
     def initializeGL(self) -> None:
         QOpenGLWidget.initializeGL(self)
         glEnable(GL_DEPTH_TEST)
-        glEnable(GL_MULTISAMPLE)
         glClearColor(0, 0, 0, 1.0)
         try:
             self.quads.initialize()
@@ -41,21 +40,22 @@ class OpenGLWindow(QOpenGLWidget):
         except Exception as e:
             print(e)
     def paintGL(self) -> None:
+        self.makeCurrent()
         glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT)
         Projection = self.setupProjectionMatrix()
         View=self.setupViewMatrix()
         Model=QMatrix4x4()
         MVP=Projection*View*Model
-        glViewport(self.width() - 100, self.height() - 100, 100, 100);
-        try:
-            axisProjection=QMatrix4x4()
-            axisProjection.ortho(-1, 1, -1 ,1 , 0.1, 100)
-            axisView =self.setupViewMatrix(enableCameraPan=False)
-            self.axis.setupMatrix(axisView, Model, axisProjection)
-            self.axis.render()
-        except Exception as e:
-            print(e)
-        glViewport(0, 0, self.width(), self.height());
+        # glViewport(self.width() - 100, self.height() - 100, 100, 100);
+        # try:
+        #     axisProjection=QMatrix4x4()
+        #     axisProjection.ortho(-1, 1, -1 ,1 , 0.1, 100)
+        #     axisView =self.setupViewMatrix(enableCameraPan=False)
+        #     self.axis.setupMatrix(axisView, Model, axisProjection)
+        #     self.axis.render()
+        # except Exception as e:
+        #     print(e)
+        # glViewport(0, 0, self.width(), self.height());
         try:
             self.quads.setupMatrix(View, Model, Projection)
             self.quads.render()
@@ -67,7 +67,6 @@ class OpenGLWindow(QOpenGLWidget):
                     item.render()
         except Exception as e:
             print(e)
-
         self.update()
     def resizeGL(self, w: int, h: int) -> None:
         side = min(w, h)
@@ -76,7 +75,6 @@ class OpenGLWindow(QOpenGLWidget):
     def paintEvent(self, e: QPaintEvent) -> None:
         super(OpenGLWindow, self).paintEvent(e)
         self.makeCurrent()
-        self.paintGL()
         painter = QPainter(self)
         painter.setRenderHint(QPainter.Antialiasing)
         self.drawInstructions(painter)

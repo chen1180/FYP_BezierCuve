@@ -15,7 +15,6 @@ class Bezier(QListWidgetItem, AbstractSceneNode):
         #vertices data
         self.originalData=data
         self.order=len(self.data(Qt.UserRole))-1
-        #camera setting
     def modifyVertices(self, data):
         self.setData(Qt.UserRole,data) #This step is important, Qlistwidget item may return to original state without this statement
         self.vertices=self.QVec3DtoNumpyArray(data)
@@ -83,6 +82,9 @@ class Bezier(QListWidgetItem, AbstractSceneNode):
         #Draw primitives
         self.vao.bind()
         glDrawArrays(GL_PATCHES, 0, self.vertices.shape[0]//3)
+        self.vao.release()
+        self.program.release()
+
         #Draw vertices
         # Actually rendering of data
         self.commonProgram.bind()
@@ -98,9 +100,8 @@ class Bezier(QListWidgetItem, AbstractSceneNode):
 
         #Clear up cache
         self.commonProgram.release()
-        self.program.release()
         self.verticesVao.release()
-        self.vbo.release()
+
 #For debug purpose
 if __name__ == '__main__':
     sys._excepthook = sys.excepthook
