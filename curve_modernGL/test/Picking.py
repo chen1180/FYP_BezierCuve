@@ -168,22 +168,6 @@ class OpenGLWindow(QOpenGLWidget):
         super(OpenGLWindow, self).mousePressEvent(a0)
         if a0.isAccepted():
             return
-        if a0.buttons() & Qt.LeftButton:  # Right click
-            if self.scene:
-                for item in self.scene:
-                    aabb_min=QVector3D(-1.0, -1.0, -1.0)
-                    aabb_max=QVector3D(1,1,1)
-                    ModelMatrix=QMatrix4x4()
-                    ray_start=QVector4D(QVector3D(self.pixelPosToViewPos(a0.windowPos()).x(),self.pixelPosToViewPos(a0.windowPos()).y(),-1),1.0)
-                    ray_end=QVector4D(QVector3D(self.pixelPosToViewPos(a0.windowPos()).x(),self.pixelPosToViewPos(a0.windowPos()).y(),0.0),1.0)
-                    M=(self.setupProjectionMatrix()*self.setupViewMatrix()).inverted()[0]
-                    ray_start_world=M*ray_start
-                    ray_end_world=M*ray_end
-                    rayDir_world=(ray_end_world-ray_start_world).toVector3D().normalized()
-                    out_origin=ray_start_world.toVector3D()
-                    out_direction=rayDir_world
-                    print(item.TestRayOBBIntersection(out_origin,out_direction,aabb_min,aabb_max,ModelMatrix.data()))
-            a0.accept()
         if (a0.modifiers()& Qt.ControlModifier)and(a0.buttons()&Qt.LeftButton): #Control+Left click
             self.camera.pushRotation(self.pixelPosToViewPos(a0.windowPos()))
             a0.accept()
@@ -193,6 +177,9 @@ class OpenGLWindow(QOpenGLWidget):
         self.update()
     def mouseMoveEvent(self, a0: QMouseEvent) -> None:
         super(OpenGLWindow, self).mouseMoveEvent(a0)
+        if a0.buttons()&Qt.LeftButton:#Right click
+            print(self.pixelPosToViewPos(a0.windowPos()))
+            a0.accept()
         if a0.isAccepted():
             return
         if (a0.modifiers()& Qt.ControlModifier)and(a0.buttons()&Qt.LeftButton): #Control+Left click

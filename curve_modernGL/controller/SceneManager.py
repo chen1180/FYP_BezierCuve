@@ -24,3 +24,8 @@ class SceneObjects(QObject):
         self.sceneNodes=node
         print("update node")
         self.sceneNodeDraw.emit(self.sceneNodes)
+    def render(self):
+        """Render the scene"""
+        for node in self.sceneNodes:
+            if node:
+                node.render()

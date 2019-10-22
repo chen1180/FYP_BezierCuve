@@ -10,7 +10,7 @@ from model.bezier import Bezier
 from model.nurb import Nurbs
 from model.nurbPatch import NurbsPatch
 from model.bezierPatch import BezierPatch
-from controller import SceneManager,GLWindowController,PropertyWidgetController,SceneWidgetController
+from controller import SceneManager,PropertyWidgetController,SceneWidgetController
 class MainWindow(QMainWindow):
     def __init__(self):
         super(MainWindow, self).__init__()

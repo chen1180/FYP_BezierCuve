@@ -85,7 +85,6 @@ class Bezier(QListWidgetItem, AbstractSceneNode):
         # ------------------------------------------------------------------------------
         #Draw primitives
         self.vao.bind()
-        print("line", self.vertices.shape[0] // 3)
         glDrawArrays(GL_PATCHES, 0, self.vertices.shape[0]//3)
         self.vao.release()
         self.program.release()
