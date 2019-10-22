@@ -90,6 +90,9 @@ class Nurbs(QListWidgetItem, AbstractSceneNode):
         # Actually rendering of data
         self.program.bind()
         self.updateVBO()
+        self.program.setDefaultOuterTessellationLevels([1, self.resolution])
+        # Qpengl Tesselation Control Shader attribute
+        self.program.setPatchVertexCount(self.vertices.shape[0] // 3)  # Maximum patch vertices
         self.program.setUniformValue("MVP", self.MVP)
         # Rencently add code for lighting
         # ------------------------------------------------------------------------------

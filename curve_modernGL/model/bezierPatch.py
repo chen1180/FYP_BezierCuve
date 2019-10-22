@@ -71,6 +71,9 @@ class BezierPatch(QListWidgetItem, AbstractSceneNode):
         self.model = Model*self.model
         self.MVP = self.projection * self.view * Model
         self.program.bind()
+        self.program.setPatchVertexCount(16)
+        self.program.setDefaultOuterTessellationLevels([self.resolution] * 4)
+        self.program.setDefaultInnerTessellationLevels([self.resolution] * 2)
         self.vbo.bind()
         # --------------------------------Transformation---------------------------------------
         self.program.setUniformValue("Model", self.model)

@@ -70,7 +70,11 @@ class Bezier(QListWidgetItem, AbstractSceneNode):
         self.model *=Model
         self.MVP = self.projection * self.view *  self.model
         # Actually rendering of data
+
         self.program.bind()
+        self.program.setDefaultOuterTessellationLevels([1, self.resolution])
+        # Qpengl Tesselation Control Shader attribute
+        self.program.setPatchVertexCount(self.vertices.shape[0] // 3)  # Maximum patch vertices
         self.vbo.bind()
         self.updateVBO()
         self.program.setUniformValue("MVP", self.MVP)
@@ -81,6 +85,7 @@ class Bezier(QListWidgetItem, AbstractSceneNode):
         # ------------------------------------------------------------------------------
         #Draw primitives
         self.vao.bind()
+        print("line", self.vertices.shape[0] // 3)
         glDrawArrays(GL_PATCHES, 0, self.vertices.shape[0]//3)
         self.vao.release()
         self.program.release()

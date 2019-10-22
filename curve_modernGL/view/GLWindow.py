@@ -6,6 +6,7 @@ from PyQt5.QtGui import *
 from model.trackBall import Trackball
 import sys
 from model.planes import Quads
+from model.bezier import *
 from model.axis import Axis
 from model.nurbPatch import *
 class OpenGLWindow(QOpenGLWidget):
@@ -21,6 +22,7 @@ class OpenGLWindow(QOpenGLWidget):
         format.setDepthBufferSize(24)
         format.setStencilBufferSize(8)
         format.setVersion(4, 1)
+        format.setSwapBehavior(QSurfaceFormat.DoubleBuffer)
         format.setProfile(QSurfaceFormat.CoreProfile)
         self.setFormat(format)
         self.scene=[]

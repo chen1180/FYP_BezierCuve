@@ -1,7 +1,7 @@
 from PyQt5.QtWidgets import QListWidgetItem,QApplication
 from PyQt5.QtCore import Qt,qDebug
 from OpenGL.GL import *
-from PyQt5.QtGui import QVector3D,QOpenGLBuffer,QOpenGLVertexArrayObject,QOpenGLShaderProgram,QOpenGLShader,QMatrix4x4,QOpenGLContext
+from PyQt5.QtGui import QVector3D,QOpenGLBuffer,QOpenGLVertexArrayObject,QOpenGLShaderProgram,QOpenGLShader,QMatrix4x4
 import sys
 from view.SceneDockWidget import SceneDockWidget
 from model.SceneNode import AbstractSceneNode
@@ -37,7 +37,7 @@ class NurbsPatch(QListWidgetItem, AbstractSceneNode):
         return weights
     def setupMainShaderProgram(self):
         # patch vertices
-        self.program=QOpenGLShaderProgram(QOpenGLContext.currentContext())
+        self.program=QOpenGLShaderProgram()
         self.program.addShaderFromSourceFile(QOpenGLShader.Vertex,":Shaders/nurbsPatch.vert")
         self.program.addShaderFromSourceFile(QOpenGLShader.TessellationEvaluation, ":Shaders/nurbsPatch.tese")
         self.program.addShaderFromSourceFile(QOpenGLShader.Fragment, ":Shaders/nurbsPatch.frag")
@@ -65,15 +65,6 @@ class NurbsPatch(QListWidgetItem, AbstractSceneNode):
         self.vbo.release()
         self.vao.release()
         self.program.release()
-        # self.vao=glGenVertexArrays(1)
-        # glBindVertexArray(self.vao)
-        # self.vbo = glGenBuffers(1)
-        # glBindBuffer(GL_ARRAY_BUFFER, self.vbo)
-        # glBufferData(GL_ARRAY_BUFFER, self.vertices.nbytes, self.vertices, GL_STATIC_DRAW)
-        # glEnableVertexAttribArray(0)  # from 'location = 0' in shader
-        # glVertexAttribPointer(0, 3, GL_FLOAT, False, 0, None)
-        # glBindBuffer(GL_ARRAY_BUFFER, 0)
-
     def setupCommonShaderProgram(self):
         # normal program
         self.commonProgram = QOpenGLShaderProgram()
@@ -98,7 +89,18 @@ class NurbsPatch(QListWidgetItem, AbstractSceneNode):
         self.model *=Model
         self.MVP = self.projection * self.view *  self.model
         # Actually rendering of data
+        self.program.bind()
+        self.updateVBO()
         self.program.setUniformValue("MVP", self.MVP)
+        self.program.setDefaultOuterTessellationLevels([self.resolution] * 4)
+        self.program.setDefaultInnerTessellationLevels([self.resolution] * 2)
+        self.program.setPatchVertexCount(16)
+        '''
+        self.program.setDefaultOuterTessellationLevels([self.resolution] * 4)
+        self.program.setDefaultInnerTessellationLevels([self.resolution] * 2)
+        self.program.setPatchVertexCount(16)
+        Warning: The above function call in render time is important. Flickering of object may happen without the codes!
+        '''
         # Rencently add code for lighting
         # ---------------------------------Light---------------------------------------
         self.program.setUniformValue("objectColor", self.color)
@@ -116,16 +118,30 @@ class NurbsPatch(QListWidgetItem, AbstractSceneNode):
         self.program.setUniformValue("order", self.order)
         if self.program.log():
             qDebug(self.program.log())
-        glBindVertexArray(self.vao)
+        self.vao.bind()
         if self.m_showWireframe:
             glPolygonMode(GL_FRONT_AND_BACK, GL_LINE)
             glDrawArrays(GL_PATCHES, 0, self.vertices.shape[0] // 3)
             glPolygonMode(GL_FRONT_AND_BACK, GL_FILL)
         else:
             glDrawArrays(GL_PATCHES, 0, self.vertices.shape[0] // 3)
+        #Draw vertices
+        # Actually rendering of data
+        self.commonProgram.bind()
+        self.commonProgram.setUniformValue("MVP", self.MVP)
+        self.commonProgram.setUniformValue("color",self.polygonColor)
+        self.verticesVao.bind()
 
-        glBindVertexArray(0)  # 参数为0时将渲染状态设置为默认
+        glDrawArrays(GL_LINE_STRIP,0,self.vertices.shape[0]//3)
 
+        glPointSize(5)
+        self.commonProgram.setUniformValue("color",self.verticesColor)
+        glDrawArrays(GL_POINTS, 0, self.vertices.shape[0] // 3)
+        #Clear up cache
+        self.commonProgram.release()
+        self.program.release()
+        self.verticesVao.release()
+        self.vbo.release()
 #For debug purpose
 if __name__ == '__main__':
     sys._excepthook = sys.excepthook

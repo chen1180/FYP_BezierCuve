@@ -16,8 +16,8 @@ class AbstractSceneNode(QObject):
         self.program=QOpenGLShaderProgram()
         self.commonProgram=QOpenGLShaderProgram()
         self.lightProgram=QOpenGLShaderProgram()
-        self.vao =0
-        self.vbo = 0
+        self.vao = QOpenGLVertexArrayObject()
+        self.vbo = QOpenGLBuffer(QOpenGLBuffer.VertexBuffer)
         #curve
         self.resolution = 50
         self.order = 3
@@ -46,12 +46,11 @@ class AbstractSceneNode(QObject):
             self.m_shaderCompiled =True
     def updateVBO(self):
         # if vbo(vertices location) changed, then update vbo data
-        # if self.Vertices_Dirty==True:
-        #     self.vbo.bind()
-        #     self.vbo.write(0,self.vertices, self.vertices.shape[0] * self.vertices.itemsize)
-        #     self.vbo.release()
-        #     self.Vertices_Dirty =False
-        pass
+        if self.Vertices_Dirty==True:
+            self.vbo.bind()
+            self.vbo.write(0,self.vertices, self.vertices.shape[0] * self.vertices.itemsize)
+            self.vbo.release()
+            self.Vertices_Dirty =False
     #Camera matrix
     def setupMatrix(self,view:QMatrix4x4,model:QMatrix4x4,projection:QMatrix4x4):
         #important note: take a copy of above matrix!
