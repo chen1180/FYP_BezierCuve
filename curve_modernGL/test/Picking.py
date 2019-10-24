@@ -5,10 +5,7 @@ from PyQt5.QtWidgets import *
 from PyQt5.QtGui import *
 from model.trackBall import Trackball
 import sys
-from model.planes import Quads
-from model.bezier import *
-from model.axis import Axis
-from model.nurbPatch import *
+import numpy as np
 class OpenGLWindow(QOpenGLWidget):
     OPENGL_NEED_UPDATE=pyqtSignal(bool)
     VIEWPORT_PERSPECTIVE=0
@@ -30,17 +27,30 @@ class OpenGLWindow(QOpenGLWidget):
         #default plane
         self.viewPortState=self.VIEWPORT_PERSPECTIVE
         self.viewPlane=self.VIEWPORT_XY_PLANE
-        self.quads=Quads(10,1)
-        self.axis=Axis(0.5)
+
     def initializeGL(self) -> None:
         QOpenGLWidget.initializeGL(self)
         glEnable(GL_DEPTH_TEST)
         glClearColor(0, 0, 0, 1.0)
-        try:
-            self.quads.initialize()
-            self.axis.initialize()
-        except Exception as e:
-            print(e)
+        self.vertices=np.array([-1,-1,0,0,1,0,1,0,0],dtype="float32")
+        print(self.vertices)
+        self.program = QOpenGLShaderProgram()
+        self.program.addShaderFromSourceFile(QOpenGLShader.Vertex, ":CommonShader/triangles.vert")
+        self.program.addShaderFromSourceFile(QOpenGLShader.Fragment, ":CommonShader/triangles.frag")
+        self.program.link()
+        self.vao = QOpenGLVertexArrayObject()
+        self.vao.create()
+        self.vao.bind()
+        self.vbo = QOpenGLBuffer(QOpenGLBuffer.VertexBuffer)
+        self.vbo.create()
+        self.vbo.bind()
+        self.vbo.setUsagePattern(QOpenGLBuffer.StaticDraw)
+        self.vbo.allocate(self.vertices, self.vertices.shape[0] * self.vertices.itemsize)
+
+        self.vbo.release()
+        self.vao.release()
+        self.program.release()
+
     def paintGL(self) -> None:
         self.makeCurrent()
         glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT)
@@ -48,27 +58,16 @@ class OpenGLWindow(QOpenGLWidget):
         View=self.setupViewMatrix()
         Model=QMatrix4x4()
         MVP=Projection*View*Model
-        # glViewport(self.width() - 100, self.height() - 100, 100, 100);
-        # try:
-        #     axisProjection=QMatrix4x4()
-        #     axisProjection.ortho(-1, 1, -1 ,1 , 0.1, 100)
-        #     axisView =self.setupViewMatrix(enableCameraPan=False)
-        #     self.axis.setupMatrix(axisView, Model, axisProjection)
-        #     self.axis.render()
-        # except Exception as e:
-        #     print(e)
-        # glViewport(0, 0, self.width(), self.height());
-        try:
-            self.quads.setupMatrix(View, Model, Projection)
-            self.quads.render()
-            if self.scene:
-                for item in self.scene:
-                    item.setupMatrix(View, Model, Projection)
-                    item.setupCamera(self.camera.cameraPos)
-                    item.initialize()
-                    item.render()
-        except Exception as e:
-            print(e)
+        self.program.bind()
+        self.vbo.bind()
+        self.program.enableAttributeArray(0)
+        self.program.setAttributeBuffer(0, GL_FLOAT, 0, 3)
+        self.vao.bind()
+        # Actually draw the triangles
+        glDrawArrays(GL_TRIANGLES, 0, self.vertices.shape[0]//3)
+        self.vbo.release()
+        self.vao.release()
+        self.program.release()
         self.update()
     def resizeGL(self, w: int, h: int) -> None:
         side = min(w, h)

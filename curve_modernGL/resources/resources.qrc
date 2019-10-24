@@ -4,6 +4,8 @@
         <file>CommonShader/vertices.vert</file>
         <file>CommonShader/axis.frag</file>
         <file>CommonShader/axis.vert</file>
+        <file>CommonShader/triangles.frag</file>
+        <file>CommonShader/triangles.vert</file>
         <file>Shaders/bezier.frag</file>
         <file>Shaders/bezier.vert</file>
         <file>Shaders/bezier.tese</file>
