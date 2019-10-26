@@ -4,8 +4,10 @@
         <file>CommonShader/vertices.vert</file>
         <file>CommonShader/axis.frag</file>
         <file>CommonShader/axis.vert</file>
-        <file>CommonShader/triangles.frag</file>
-        <file>CommonShader/triangles.vert</file>
+        <file>CommonShader/picking.frag</file>
+        <file>CommonShader/picking.vert</file>
+        <file>CommonShader/cube.frag</file>
+        <file>CommonShader/cube.vert</file>
         <file>Shaders/bezier.frag</file>
         <file>Shaders/bezier.vert</file>
         <file>Shaders/bezier.tese</file>
@@ -39,5 +41,6 @@
         <file>images/wireFrame.png</file>
         <!--textures-->
         <file>texture/texture1.jpg</file>
+        <file>texture/texture.png</file>
     </qresource>
 </RCC>

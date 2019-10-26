@@ -2,6 +2,7 @@ from PyQt5.QtCore import *
 from PyQt5.QtWidgets import *
 from PyQt5.QtGui import *
 import numpy as np
+from model.pickingTexture import *
 class AbstractSceneNode(QObject):
     def __init__(self):
         super(AbstractSceneNode, self).__init__()
@@ -26,7 +27,7 @@ class AbstractSceneNode(QObject):
         #color
         self.verticesColor=QVector3D(1,1,1)
         self.polygonColor=QVector3D(0,1,0)
-        self.color=QVector3D(1,1,1)
+        self.color=QVector3D(0,1,1)
         #texture
         self.textureID=None
         #Camera transformation
@@ -37,7 +38,6 @@ class AbstractSceneNode(QObject):
         self.m_showPoint=True
         self.m_showPolygon=True
         self.m_showWireframe=False
-        self.boundingBox=[QVector3D(0,0,0),QVector3D(2,2,2)]
 
     def initialize(self):
         if self.m_shaderCompiled==False:
@@ -107,26 +107,3 @@ class AbstractSceneNode(QObject):
 
     def render(self):
         pass
-    def TestRayOBBIntersection(self,ray_origin,ray_direction,aabb_min,aabb_max,ModelMatrix):
-        tMin=0.0
-        tMax=100000.0
-        print(ModelMatrix[12],ModelMatrix[13],ModelMatrix[14])
-        OBBposition_worldSpace=QVector3D(ModelMatrix[12],ModelMatrix[13],ModelMatrix[14])
-        delta=OBBposition_worldSpace-ray_origin
-        xaxis=QVector3D(ModelMatrix[0],ModelMatrix[1],ModelMatrix[2])
-
-        e=QVector3D.dotProduct(xaxis,delta)
-        f=QVector3D.dotProduct(ray_direction,xaxis)
-        if f==0:
-            return
-        t1=(e+aabb_min.x())/f
-        t2=(e+aabb_max.x())/f
-        if t1>t2:
-            t1,t2=t2,t1
-        if t2<tMax:
-            tMax=t2
-        if t1>tMin:
-            tMin=t1
-        if tMax<tMin:
-            return False
-

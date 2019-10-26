@@ -1,4 +1,3 @@
-from builtins import super
 from OpenGL.GL import *
 from PyQt5.QtCore import *
 from PyQt5.QtWidgets import *
@@ -6,6 +5,7 @@ from PyQt5.QtGui import *
 from model.trackBall import Trackball
 import sys
 import numpy as np
+import resources.resources
 class OpenGLWindow(QOpenGLWidget):
     OPENGL_NEED_UPDATE=pyqtSignal(bool)
     VIEWPORT_PERSPECTIVE=0
@@ -22,104 +22,160 @@ class OpenGLWindow(QOpenGLWidget):
         format.setSwapBehavior(QSurfaceFormat.DoubleBuffer)
         format.setProfile(QSurfaceFormat.CoreProfile)
         self.setFormat(format)
-        self.scene=[]
         self.camera=Trackball(QVector3D(0,0,-5),QVector3D(0,0,0),QVector3D(0,1,0))
         #default plane
         self.viewPortState=self.VIEWPORT_PERSPECTIVE
         self.viewPlane=self.VIEWPORT_XY_PLANE
-
+    def loadTexture(self,filePath:str):
+        buffer=QImage()
+        if buffer.load(filePath)==False:
+            qWarning("Can't open the image..")
+            dummy=QImage(128,128,QImage.Format_RGB32)
+            dummy.fill(Qt.green)
+            buffer=dummy
+        return buffer
     def initializeGL(self) -> None:
         QOpenGLWidget.initializeGL(self)
         glEnable(GL_DEPTH_TEST)
         glClearColor(0, 0, 0, 1.0)
-        self.vertices=np.array([-1,-1,0,0,1,0,1,0,0],dtype="float32")
-        print(self.vertices)
+        self.vertices=np.array([-0.5, -0.5, -0.5,  0.0, 0.0,
+         0.5, -0.5, -0.5,  1.0, 0.0,
+         0.5,  0.5, -0.5,  1.0, 1.0,
+         0.5,  0.5, -0.5,  1.0, 1.0,
+        -0.5,  0.5, -0.5,  0.0, 1.0,
+        -0.5, -0.5, -0.5,  0.0, 0.0,
+
+        -0.5, -0.5,  0.5,  0.0, 0.0,
+         0.5, -0.5,  0.5,  1.0, 0.0,
+         0.5,  0.5,  0.5,  1.0, 1.0,
+         0.5,  0.5,  0.5,  1.0, 1.0,
+        -0.5,  0.5,  0.5,  0.0, 1.0,
+        -0.5, -0.5,  0.5,  0.0, 0.0,
+
+        -0.5,  0.5,  0.5,  1.0, 0.0,
+        -0.5,  0.5, -0.5,  1.0, 1.0,
+        -0.5, -0.5, -0.5,  0.0, 1.0,
+        -0.5, -0.5, -0.5,  0.0, 1.0,
+        -0.5, -0.5,  0.5,  0.0, 0.0,
+        -0.5,  0.5,  0.5,  1.0, 0.0,
+
+         0.5,  0.5,  0.5,  1.0, 0.0,
+         0.5,  0.5, -0.5,  1.0, 1.0,
+         0.5, -0.5, -0.5,  0.0, 1.0,
+         0.5, -0.5, -0.5,  0.0, 1.0,
+         0.5, -0.5,  0.5,  0.0, 0.0,
+         0.5,  0.5,  0.5,  1.0, 0.0,
+
+        -0.5, -0.5, -0.5,  0.0, 1.0,
+         0.5, -0.5, -0.5,  1.0, 1.0,
+         0.5, -0.5,  0.5,  1.0, 0.0,
+         0.5, -0.5,  0.5,  1.0, 0.0,
+        -0.5, -0.5,  0.5,  0.0, 0.0,
+        -0.5, -0.5, -0.5,  0.0, 1.0,
+
+        -0.5,  0.5, -0.5,  0.0, 1.0,
+         0.5,  0.5, -0.5,  1.0, 1.0,
+         0.5,  0.5,  0.5,  1.0, 0.0,
+         0.5,  0.5,  0.5,  1.0, 0.0,
+        -0.5,  0.5,  0.5,  0.0, 0.0,
+        -0.5,  0.5, -0.5,  0.0, 1.0],dtype="float32")
         self.program = QOpenGLShaderProgram()
-        self.program.addShaderFromSourceFile(QOpenGLShader.Vertex, ":CommonShader/triangles.vert")
-        self.program.addShaderFromSourceFile(QOpenGLShader.Fragment, ":CommonShader/triangles.frag")
+        self.program.addShaderFromSourceFile(QOpenGLShader.Vertex, ":CommonShader/cube.vert")
+        self.program.addShaderFromSourceFile(QOpenGLShader.Fragment, ":CommonShader/cube.frag")
         self.program.link()
         self.vao = QOpenGLVertexArrayObject()
         self.vao.create()
         self.vao.bind()
+
         self.vbo = QOpenGLBuffer(QOpenGLBuffer.VertexBuffer)
         self.vbo.create()
         self.vbo.bind()
         self.vbo.setUsagePattern(QOpenGLBuffer.StaticDraw)
         self.vbo.allocate(self.vertices, self.vertices.shape[0] * self.vertices.itemsize)
 
+        self.program.enableAttributeArray(0)
+        self.program.setAttributeBuffer(0, GL_FLOAT, 0, 3, 5 * self.vertices.itemsize)
+        self.program.enableAttributeArray(1)
+        self.program.setAttributeBuffer(1, GL_FLOAT, 3 * self.vertices.itemsize, 2, 5 * self.vertices.itemsize)
+
+        buffer = self.loadTexture(":texture/texture.png")
+        self.textureID = QOpenGLTexture(buffer.mirrored(), QOpenGLTexture.GenerateMipMaps)
+        self.textureID.setMinificationFilter(QOpenGLTexture.LinearMipMapLinear)
+        self.textureID.setMagnificationFilter(QOpenGLTexture.Linear)
+
         self.vbo.release()
         self.vao.release()
         self.program.release()
+        #frame buffer
 
+        self.m_fbo = glGenFramebuffers(1)
+        glBindFramebuffer(GL_FRAMEBUFFER, self.m_fbo)
+        # Create the texture object for the primitive information buffer
+        self.m_pickingTexture = glGenTextures(1)
+        glBindTexture(GL_TEXTURE_2D, self.m_pickingTexture)
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB32F, self.width(), self.height(), 0, GL_RGB, GL_FLOAT, None)
+        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, self.m_pickingTexture, 0)
+        # Create the texture object for the depth buffer
+        self.m_depthTexture = glGenTextures(1)
+        glBindTexture(GL_TEXTURE_2D, self.m_depthTexture)
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, self.width(), self.height(), 0, GL_DEPTH_COMPONENT, GL_FLOAT,None)
+        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, self.m_depthTexture, 0)
+
+        self.rbo = glGenRenderbuffers(1)
+        glBindRenderbuffer(GL_RENDERBUFFER, self.rbo)
+        glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, self.width(), self.height())
+        glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, self.rbo)
+        glBindRenderbuffer(GL_RENDERBUFFER, 0)
+        if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE):
+            qDebug("ERROR::FRAMEBUFFER:: Framebuffer is not complete!")
+        glBindFramebuffer(GL_FRAMEBUFFER, 0)
+        #generate random transformation
+        size=np.random.randint(-5,5,size=(5,3))
+        self.transform=[QVector3D(i[0],i[1],i[2]) for i in size]
     def paintGL(self) -> None:
-        self.makeCurrent()
-        glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT)
+        originalFBO = glGetIntegerv(GL_FRAMEBUFFER_BINDING)
+        glBindFramebuffer(GL_FRAMEBUFFER, self.m_fbo)
+        glClearColor(0.5, 0.5, 0.5, 1.0)
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
+        glEnable(GL_DEPTH_TEST)
         Projection = self.setupProjectionMatrix()
-        View=self.setupViewMatrix()
-        Model=QMatrix4x4()
-        MVP=Projection*View*Model
+        View = self.setupViewMatrix()
         self.program.bind()
         self.vbo.bind()
         self.program.enableAttributeArray(0)
-        self.program.setAttributeBuffer(0, GL_FLOAT, 0, 3)
-        self.vao.bind()
-        # Actually draw the triangles
-        glDrawArrays(GL_TRIANGLES, 0, self.vertices.shape[0]//3)
-        self.vbo.release()
-        self.vao.release()
+        self.program.setAttributeBuffer(0, GL_FLOAT, 0, 3, 5*self.vertices.itemsize)
+        self.program.enableAttributeArray(1)
+        self.program.setAttributeBuffer(1, GL_FLOAT, 2*self.vertices.itemsize, 2, 5*self.vertices.itemsize)
+        for transform in self.transform:
+            Model = QMatrix4x4()
+            Model.translate(transform)
+            MVP = Projection * View * Model
+            self.program.setUniformValue("MVP", MVP)
+            self.vao.bind()
+            # Actually draw the triangles
+            glDrawArrays(GL_TRIANGLES, 0, self.vertices.shape[0] // 5)
         self.program.release()
+        glBindFramebuffer(GL_FRAMEBUFFER, originalFBO)
+        glClearColor(0, 0, 0, 1.0)
+        glClear(GL_COLOR_BUFFER_BIT)
+        self.program.bind()
+        self.vbo.bind()
+        self.vao.bind()
+        for transform in self.transform:
+            Model = QMatrix4x4()
+            Model.translate(transform)
+            MVP = Projection * View * Model
+            self.program.setUniformValue("MVP", MVP)
+            self.textureID.bind()
+            # glBindTexture(GL_TEXTURE_2D, self.m_pickingTexture)
+            self.program.setUniformValue("texture1", 0)
+            glDrawArrays(GL_TRIANGLES, 0, self.vertices.shape[0] // 5)
+        self.vao.release()
         self.update()
     def resizeGL(self, w: int, h: int) -> None:
         side = min(w, h)
         glViewport((w - h) // 2, (w - h) // 2, side,side)
-    # -----------------------------OPENGL window 2D overpaint -----------------------------------#
-    def paintEvent(self, e: QPaintEvent) -> None:
-        super(OpenGLWindow, self).paintEvent(e)
-        self.makeCurrent()
-        painter = QPainter(self)
-        painter.setRenderHint(QPainter.Antialiasing)
-        self.drawInstructions(painter)
-        painter.end()
-        self.doneCurrent()
 
-    def drawInstructions(self, painter):
-        if self.viewPortState==self.VIEWPORT_PERSPECTIVE:
-            text = "Perspective"
-        else:
-            text = "Ortho"
-        metrics = QFontMetrics(self.font())
-        border = max(4, metrics.leading())
-
-        rect = metrics.boundingRect(0, 0, self.width() - 2*border,
-                                    int(self.height()*0.125), Qt.AlignCenter | Qt.TextWordWrap,
-                                    text)
-        painter.setRenderHint(QPainter.TextAntialiasing)
-        painter.fillRect(QRect(0, 0, self.width(), rect.height() + 2*border),
-                         QColor(0, 0, 0, 127))
-        painter.setPen(Qt.white)
-        painter.fillRect(QRect(0, 0, self.width(), rect.height() + 2*border),
-                         QColor(0, 0, 0, 127))
-        painter.drawText((self.width() - rect.width())/2, border, rect.width(),
-                         rect.height(), Qt.AlignCenter | Qt.TextWordWrap, text)
-        #Draw operation instruction on the scrren
-        font=painter.font()
-        font.setPointSize(12)
-        painter.setFont(font)
-        instruction="Rotation: Control+Left Mouse\nPan: Right Mouse\nZoom: Mouse scroller"
-        rect =QRect(10, 10,self.width()/4,self.height()/4)
-        painter.drawText(rect, Qt.AlignLeft | Qt.TextWordWrap, instruction)
-        #Draw axis on the screen
-        # origin=QPointF(self.width()-100,self.height()/16)
-        # x_axis=QLineF(origin,origin+QPointF(50,0))
-        # x_axis.setAngle(60)
-        # y_axis=QLineF(origin,origin+QPointF(0,-50))
-        # z_axis=QLineF(origin,origin)
-        # painter.setPen(QPen(Qt.red))
-        # painter.drawLine(x_axis)
-        # painter.setPen(QPen(Qt.green))
-        # painter.drawLine(y_axis)
-        # painter.setPen(QPen(Qt.blue))
-        # painter.drawLine(z_axis)
 
     # -----------------------------Projection and View matrix -----------------------------------#
     def pixelPosToViewPos(self,p:QPointF):
@@ -137,10 +193,6 @@ class OpenGLWindow(QOpenGLWidget):
         elif self.viewPortState == self.VIEWPORT_PERSPECTIVE:
             Projection.perspective(45.0, self.width() / self.height(), 0.1, 100)
         return Projection
-    def changeViewPlane(self,plane:int):
-        self.viewPlane=plane
-        self.camera.resetCamera()
-        self.update()
     def setupViewMatrix(self,enableCameraPan=True):
         if self.viewPlane==self.VIEWPORT_XY_PLANE:
             rotation=QQuaternion()
@@ -176,9 +228,6 @@ class OpenGLWindow(QOpenGLWidget):
         self.update()
     def mouseMoveEvent(self, a0: QMouseEvent) -> None:
         super(OpenGLWindow, self).mouseMoveEvent(a0)
-        if a0.buttons()&Qt.LeftButton:#Right click
-            print(self.pixelPosToViewPos(a0.windowPos()))
-            a0.accept()
         if a0.isAccepted():
             return
         if (a0.modifiers()& Qt.ControlModifier)and(a0.buttons()&Qt.LeftButton): #Control+Left click
@@ -198,7 +247,6 @@ class OpenGLWindow(QOpenGLWidget):
         if a0.buttons()&Qt.RightButton:#Right click
             self.camera.releasePanning()
             a0.accept()
-
         self.update()
     def wheelEvent(self, a0: QWheelEvent) -> None:
         super(OpenGLWindow, self).wheelEvent(a0)
@@ -221,7 +269,7 @@ if __name__ == '__main__':
     format=QSurfaceFormat()
     format.setDepthBufferSize(24)
     format.setStencilBufferSize(8)
-    format.setVersion(4,4)
+    format.setVersion(4,1)
     format.setProfile(QSurfaceFormat.CoreProfile)
     QSurfaceFormat.setDefaultFormat(format) #it must be called before OpenGL window, set OPENGL format globally
     window = OpenGLWindow() #Opengl window creation
