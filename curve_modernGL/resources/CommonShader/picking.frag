@@ -1,7 +1,7 @@
-#version 410
+#version 410 core
 
-uniform uint gDrawIndex;
-uniform uint gObjectIndex;
+uniform int gDrawIndex;
+uniform int gObjectIndex;
 
 out vec3 FragColor;
 

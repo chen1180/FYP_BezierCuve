@@ -8,6 +8,8 @@
         <file>CommonShader/picking.vert</file>
         <file>CommonShader/cube.frag</file>
         <file>CommonShader/cube.vert</file>
+        <file>CommonShader/quad.frag</file>
+        <file>CommonShader/quad.vert</file>
         <file>Shaders/bezier.frag</file>
         <file>Shaders/bezier.vert</file>
         <file>Shaders/bezier.tese</file>
