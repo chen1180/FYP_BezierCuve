@@ -153,6 +153,7 @@ class OpenGLWindow(QOpenGLWidget):
         # Create the texture object for the primitive information buffer
         self.m_pickingTexture = glGenTextures(1)
         glBindTexture(GL_TEXTURE_2D, self.m_pickingTexture)
+        #Poor filtering. Needed
         glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT)
         glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT)
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR)
@@ -164,11 +165,12 @@ class OpenGLWindow(QOpenGLWidget):
         # Create the texture object for the depth buffer
         self.m_depthTexture = glGenTextures(1)
         glBindTexture(GL_TEXTURE_2D, self.m_depthTexture)
+        #Poor filtering. Needed
         glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S,GL_REPEAT)
         glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T,GL_REPEAT)
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR)
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR)
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, self.width(), self.height(), 0, GL_DEPTH_COMPONENT, GL_FLOAT,None)
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT24, self.width(), self.height(), 0, GL_DEPTH_COMPONENT, GL_FLOAT,None)
         glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, self.m_depthTexture, 0)
         glBindTexture(GL_TEXTURE_2D, 0)
 
@@ -186,18 +188,20 @@ class OpenGLWindow(QOpenGLWidget):
         #generate random transformation
         size=np.random.randint(-5,5,size=(5,3))
         self.transform=[QVector3D(i[0],i[1],i[2]) for i in size]
+        self.time=0
     def paintGL(self) -> None:
+
         #Transformation
         Projection = self.setupProjectionMatrix()
         View = self.setupViewMatrix()
         Model = QMatrix4x4()
         MVP = Projection * View * Model
+
         #off screen FBO rendering
         originalFBO = glGetIntegerv(GL_FRAMEBUFFER_BINDING)
         glBindFramebuffer(GL_FRAMEBUFFER, self.m_fbo)
-        glClearColor(0.1, 0.1, 0.1, 1.0)
+        glClearColor(0, 0, 0, 1.0)
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
-        glViewport(0, 0, self.width(), self.height())
         glEnable(GL_DEPTH_TEST)
         self.pickingProgram.bind()
         self.vao.bind()
@@ -208,8 +212,8 @@ class OpenGLWindow(QOpenGLWidget):
             Model.translate(transform)
             MVP = Projection * View * Model
             self.pickingProgram.setUniformValue("MVP", MVP)
-            self.pickingProgram.setUniformValue("gDrawIndex",i*10)
-            self.pickingProgram.setUniformValue("gObjectIndex", i*10)
+            self.pickingProgram.setUniformValue("gDrawIndex",(i+1)*20)
+            self.pickingProgram.setUniformValue("gObjectIndex", (i+1)*20)
             glDrawArrays(GL_TRIANGLES, 0, self.vertices.shape[0] // 5)
         glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0)
         self.pickingProgram.release()
@@ -218,18 +222,21 @@ class OpenGLWindow(QOpenGLWidget):
 
         #On screen rendering
         glBindFramebuffer(GL_FRAMEBUFFER, originalFBO)
-        glClearColor(0, 0, 0, 1.0)
+        glClearColor(1, 1, 1, 1.0)
         glClear(GL_COLOR_BUFFER_BIT)
         glViewport(0, 0, self.width(), self.height())
-        self.quadProgram.bind()
-        self.quadVao.bind()
-        self.quadVbo.bind()
-        glBindTexture(GL_TEXTURE_2D,self.m_pickingTexture)
-        self.quadProgram.setUniformValue("renderedTexture", 0)
-        glDrawArrays(GL_TRIANGLE_FAN,0,self.quadVertices.shape[0]//5)
-        self.quadVao.release()
-        self.quadVbo.release()
-        self.quadProgram.release()
+        '''
+        Render fbo as a quad on screen
+        '''
+        # self.quadProgram.bind()
+        # self.quadVao.bind()
+        # self.quadVbo.bind()
+        # glBindTexture(GL_TEXTURE_2D,self.m_pickingTexture)
+        # self.quadProgram.setUniformValue("renderedTexture", 0)
+        # glDrawArrays(GL_TRIANGLE_FAN,0,self.quadVertices.shape[0]//5)
+        # self.quadVao.release()
+        # self.quadVbo.release()
+        # self.quadProgram.release()
         self.program.bind()
         self.vbo.bind()
         self.vao.bind()
@@ -285,9 +292,8 @@ class OpenGLWindow(QOpenGLWidget):
         if a0.isAccepted():
             return
         if a0.buttons()&Qt.LeftButton:#Right click
-            pos=self.pixelPosToViewPos(a0.windowPos())
-
-            self.ReadPixel(pos.x(),pos.y())
+            pos=a0.windowPos()
+            self.ReadPixel(pos.x(),self.height()-pos.y())
             a0.accept()
 
         if (a0.modifiers()& Qt.ControlModifier)and(a0.buttons()&Qt.LeftButton): #Control+Left click
