@@ -1,6 +1,6 @@
 from PyQt5.QtGui import QPalette,QColor
-from model.SceneNode import *
-from model.nurb import *
+from model.geometry.SceneNode import *
+from model.geometry.nurb import *
 class PropertyDockWidget(QTabWidget):
     def __init__(self,parent=None,item:QListWidgetItem=None):
         super(PropertyDockWidget, self).__init__(parent)

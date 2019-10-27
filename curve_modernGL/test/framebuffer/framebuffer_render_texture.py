@@ -5,7 +5,7 @@ from PyQt5.QtGui import *
 from model.trackBall import Trackball
 import sys
 import numpy as np
-import resources.resources
+from model.geometry.bezierPatch import BezierPatch
 class OpenGLWindow(QOpenGLWidget):
     OPENGL_NEED_UPDATE=pyqtSignal(bool)
     VIEWPORT_PERSPECTIVE=0
@@ -34,27 +34,9 @@ class OpenGLWindow(QOpenGLWidget):
             dummy.fill(Qt.green)
             buffer=dummy
         return buffer
-    def calculateFPS(self):
-        self.frameCount+=1
-        if self.frameTimer.elapsed()>=1000:
-            self.fps=self.frameCount/(self.frameTimer.elapsed()/1000.0)
-            self.frameCount=0
-            self.frameTimer.restart()
     def initializeGL(self) -> None:
         QOpenGLWidget.initializeGL(self)
-        #configure global opengl state
         glEnable(GL_DEPTH_TEST)
-        glDepthFunc(GL_LESS)
-        glEnable(GL_STENCIL_TEST)
-        glStencilFunc(GL_NOTEQUAL, 1, 0xFF)
-        glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE)
-        # -----------------------------
-        #constant
-        self.frameCount=0
-        self.frameTimer = QTime()
-        self.frameTimer.start()
-        self.fps=0
-        # -----------------------------
         glClearColor(0, 0, 0, 1.0)
         self.vertices=np.array([-0.5, -0.5, -0.5,  0.0, 0.0,
                                 0.5, -0.5, -0.5,  1.0, 0.0,
@@ -98,8 +80,8 @@ class OpenGLWindow(QOpenGLWidget):
                                 -0.5,  0.5,  0.5,  0.0, 0.0,
                                 -0.5,  0.5, -0.5,  0.0, 1.0],dtype="float32")
         self.program = QOpenGLShaderProgram()
-        self.program.addShaderFromSourceFile(QOpenGLShader.Vertex, ":CommonShader/cube.vert")
-        self.program.addShaderFromSourceFile(QOpenGLShader.Fragment, ":CommonShader/cube.frag")
+        self.program.addShaderFromSourceFile(QOpenGLShader.Vertex, ":/CommonShader/cube.vert")
+        self.program.addShaderFromSourceFile(QOpenGLShader.Fragment, ":/CommonShader/cube.frag")
         self.program.link()
         self.vao = QOpenGLVertexArrayObject()
         self.vao.create()
@@ -124,95 +106,139 @@ class OpenGLWindow(QOpenGLWidget):
         self.vbo.release()
         self.vao.release()
         self.program.release()
-        #stencil buffer
-        self.stencilProgram = QOpenGLShaderProgram()
-        self.stencilProgram.addShaderFromSourceFile(QOpenGLShader.Vertex, ":CommonShader/cube.vert")
-        self.stencilProgram.addShaderFromSourceFile(QOpenGLShader.Fragment, ":CommonShader/solid_color.frag")
-        self.stencilProgram.link()
-        self.vao.bind()
-        self.vbo.bind()
-        self.stencilProgram.enableAttributeArray(0)
-        self.stencilProgram.setAttributeBuffer(0, GL_FLOAT, 0, 3, 5 * self.vertices.itemsize)
-        self.stencilProgram.enableAttributeArray(1)
-        self.stencilProgram.setAttributeBuffer(1, GL_FLOAT, 3 * self.vertices.itemsize, 2, 5 * self.vertices.itemsize)
-        self.vbo.release()
-        self.vao.release()
-        self.stencilProgram.release()
 
-        size = np.random.randint(-5, 5, size=(100, 3))
-        self.transform = [QVector3D(i[0], i[1], i[2]) for i in size]
-    def paintGL(self) -> None:
-        #Transformation
-        Projection = self.setupProjectionMatrix()
-        View = self.setupViewMatrix()
-        #On screen rendering
-        glClearColor(0, 0, 0, 1.0)
-        glClear(GL_COLOR_BUFFER_BIT| GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT)
-        glViewport(0, 0, self.width(), self.height())
-        self.program.bind()
-        self.vbo.bind()
+        #picking program
+        self.pickingProgram = QOpenGLShaderProgram()
+        self.pickingProgram.addShaderFromSourceFile(QOpenGLShader.Vertex, ":CommonShader/picking.vert")
+        self.pickingProgram.addShaderFromSourceFile(QOpenGLShader.Fragment, ":CommonShader/picking.frag")
+        self.pickingProgram.link()
         self.vao.bind()
-        # 1st. render pass, draw objects as normal, writing to the stencil buffer
-        glStencilFunc(GL_ALWAYS, 1, 0xFF)
-        glStencilMask(0xFF)
-        for transform in self.transform:
-            Model = QMatrix4x4()
-            Model.translate(transform)
-            Model.rotate(30,transform)
-            MVP = Projection * View * Model
-            self.program.setUniformValue("MVP", MVP)
-            self.textureID.bind()
-            self.program.setUniformValue("texture1", 0)
-            glDrawArrays(GL_TRIANGLES, 0, self.vertices.shape[0] // 5)
-        # 2nd. render pass: now draw slightly scaled versions of the objects, this time disabling stencil writing.
-        #Because the stencil buffer is now filled with several 1s. The parts of the buffer that are 1 are not drawn, thus only drawing
-        #the objects' size differences, making it look like borders.
-        glStencilFunc(GL_NOTEQUAL, 1, 0xFF)
-        glStencilMask(0x00)
-        glDisable(GL_DEPTH_TEST)
-        scale_factor=1.1
-        self.stencilProgram.bind()
-        for transform in self.transform:
-            Model = QMatrix4x4()
-            Model.translate(transform)
-            Model.rotate(30, transform)
-            Model.scale(scale_factor)
-            MVP = Projection * View * Model
-            self.program.setUniformValue("MVP", MVP)
-            glDrawArrays(GL_TRIANGLES, 0, self.vertices.shape[0] // 5)
-        #calculate frame rate
-        self.calculateFPS()
+        self.vbo.bind()
+        self.pickingProgram.enableAttributeArray(0)
+        self.pickingProgram.setAttributeBuffer(0, GL_FLOAT, 0, 3, 5 * self.vertices.itemsize)
 
         self.vbo.release()
         self.vao.release()
         self.program.release()
-        self.stencilProgram.release()
-        glStencilMask(0xFF)
+        #The full screen quad
+        self.quadVertices=np.array([-1.0, -1.0, 0.0,0.0,0.0,
+                                    1.0, -1.0, 0.0,1.0,0.0,
+                                    1.0,  1.0, 0.0,1.0,1.0,
+                                    -1.0,  1.0, 0.0,0.0,1.0,],dtype="float32")
+
+        self.quadProgram = QOpenGLShaderProgram()
+        self.quadProgram.addShaderFromSourceFile(QOpenGLShader.Vertex, ":CommonShader/quad.vert")
+        self.quadProgram.addShaderFromSourceFile(QOpenGLShader.Fragment, ":CommonShader/quad.frag")
+        self.quadProgram.link()
+        self.quadVao = QOpenGLVertexArrayObject()
+        self.quadVao.create()
+        self.quadVao.bind()
+
+        self.quadVbo = QOpenGLBuffer(QOpenGLBuffer.VertexBuffer)
+        self.quadVbo.create()
+        self.quadVbo.bind()
+        self.quadVbo.setUsagePattern(QOpenGLBuffer.StaticDraw)
+        self.quadVbo.allocate(self.quadVertices, self.quadVertices.shape[0] * self.quadVertices.itemsize)
+
+        self.quadProgram.enableAttributeArray(0)
+        self.quadProgram.setAttributeBuffer(0, GL_FLOAT, 0, 3, 5* self.quadVertices.itemsize)
+        self.quadProgram.enableAttributeArray(1)
+        self.quadProgram.setAttributeBuffer(1, GL_FLOAT, 3* self.quadVertices.itemsize, 2, 5* self.quadVertices.itemsize)
+        self.quadVbo.release()
+        self.quadVao.release()
+        self.quadProgram.release()
+        # frame buffer
+        self.m_fbo = glGenFramebuffers(1)
+        glBindFramebuffer(GL_FRAMEBUFFER, self.m_fbo)
+        # Create the texture object for the primitive information buffer
+        self.m_pickingTexture = glGenTextures(1)
+        glBindTexture(GL_TEXTURE_2D, self.m_pickingTexture)
+        #Poor filtering. Needed
+        glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT)
+        glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT)
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR)
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR)
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB32F, self.width(), self.height(), 0, GL_RGB, GL_FLOAT, None)
+        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, self.m_pickingTexture, 0)
+        glBindTexture(GL_TEXTURE_2D, 0)
+
+        # Create the texture object for the depth buffer
+        self.m_depthTexture = glGenTextures(1)
+        glBindTexture(GL_TEXTURE_2D, self.m_depthTexture)
+        #Poor filtering. Needed
+        glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S,GL_REPEAT)
+        glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T,GL_REPEAT)
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR)
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR)
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT24, self.width(), self.height(), 0, GL_DEPTH_COMPONENT, GL_FLOAT,None)
+        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, self.m_depthTexture, 0)
+        glBindTexture(GL_TEXTURE_2D, 0)
+
+        self.rbo = glGenRenderbuffers(1)
+        glBindRenderbuffer(GL_RENDERBUFFER, self.rbo)
+        glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, self.width(), self.height())
+        glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, self.rbo)
+        glBindRenderbuffer(GL_RENDERBUFFER, 0)
+        DrawBuffers =[GL_COLOR_ATTACHMENT0]
+        glDrawBuffers(1, DrawBuffers)
+        if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE):
+            qDebug("ERROR::FRAMEBUFFER:: Framebuffer is not complete!")
+
+        glBindFramebuffer(GL_FRAMEBUFFER, 0)
+        #generate random transformation
+        size=np.random.randint(-5,5,size=(255,3))
+        self.transform=[QVector3D(i[0],i[1],i[2]) for i in size]
+    def paintGL(self) -> None:
+        #Transformation
+        Projection = self.setupProjectionMatrix()
+        View = self.setupViewMatrix()
+        Model = QMatrix4x4()
+        MVP = Projection * View * Model
+        #off screen FBO rendering
+        originalFBO = glGetIntegerv(GL_FRAMEBUFFER_BINDING)
+        glBindFramebuffer(GL_FRAMEBUFFER, self.m_fbo)
+        glClearColor(0, 0, 0, 1.0)
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
+        glViewport(0,0,self.width(),self.height())
         glEnable(GL_DEPTH_TEST)
-        # After painter start, opengl state will be changed to some state
-        painter = QPainter(self)
-        self.drawInstructions(painter)
-        painter.end()
-        #Restore to previous OpenGL state
-        glEnable(GL_DEPTH_TEST)
-        glDepthFunc(GL_LESS)
-        glEnable(GL_STENCIL_TEST)
-        glStencilFunc(GL_NOTEQUAL, 1, 0xFF)
-        glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE)
-        # -----------------------------
+        self.pickingProgram.bind()
+        self.vao.bind()
+        self.vbo.bind()
+        glBindFramebuffer(GL_DRAW_FRAMEBUFFER, self.m_fbo)
+        for i,transform in enumerate(self.transform):
+            Model = QMatrix4x4()
+            Model.translate(transform)
+            MVP = Projection * View * Model
+            self.pickingProgram.setUniformValue("MVP", MVP)
+            self.pickingProgram.setUniformValue("gDrawIndex",(i+1))
+            self.pickingProgram.setUniformValue("gObjectIndex", (i+1))
+            glDrawArrays(GL_TRIANGLES, 0, self.vertices.shape[0] // 5)
+        glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0)
+        self.pickingProgram.release()
+        self.vao.release()
+        self.vbo.release()
+        #On screen rendering
+        glBindFramebuffer(GL_FRAMEBUFFER, originalFBO)
+        glClearColor(0.1, 0.1, 0.1, 1.0)
+        glClear(GL_COLOR_BUFFER_BIT)
+        glViewport(0, 0, self.width(), self.height())
+        '''
+        Render fbo as a quad on screen
+        '''
+        self.quadProgram.bind()
+        self.quadVbo.bind()
+        self.quadVao.bind()
+        glBindTexture(GL_TEXTURE_2D,self.m_pickingTexture)
+        self.quadProgram.setUniformValue("renderedTexture", 0)
+        glDrawArrays(GL_TRIANGLE_FAN,0,self.quadVertices.shape[0]//5)
+        self.quadVao.release()
+        self.quadVbo.release()
+        self.quadProgram.release()
         self.update()
     def resizeGL(self, w: int, h: int) -> None:
         side = min(w, h)
         glViewport((w - h) // 2, (w - h) // 2, side,side)
-    def drawInstructions(self, painter):
-        # Draw operation instruction on the scrren
-        font = painter.font()
-        font.setPointSize(12)
-        painter.setFont(font)
-        painter.setPen(QPen(Qt.white))
-        instruction = "FPS {}".format(int(self.fps))
-        rect = QRect(10, 10, self.width() / 4, self.height() / 4)
-        painter.drawText(rect, Qt.AlignLeft | Qt.TextWordWrap, instruction)
+
     # -----------------------------Projection and View matrix -----------------------------------#
     def pixelPosToViewPos(self,p:QPointF):
         return QPointF(2*p.x()/self.width()-1.0,1.0-2.0*p.y()/self.height())
@@ -249,6 +275,8 @@ class OpenGLWindow(QOpenGLWidget):
         if a0.isAccepted():
             return
         if a0.buttons()&Qt.LeftButton:#Right click
+            pos=a0.windowPos()
+            self.ReadPixel(pos.x(),self.height()-pos.y())
             a0.accept()
 
         if (a0.modifiers()& Qt.ControlModifier)and(a0.buttons()&Qt.LeftButton): #Control+Left click
@@ -286,6 +314,15 @@ class OpenGLWindow(QOpenGLWidget):
             self.camera.moveZooming(a0.angleDelta().y())
             a0.accept()
         self.update()
+    def ReadPixel(self,x,y):
+        glBindFramebuffer(GL_READ_FRAMEBUFFER, self.m_fbo)
+        glReadBuffer(GL_COLOR_ATTACHMENT0)
+        # Pixel=(GLubyte* (3*self.width()*self.height()))(0)
+        color=glReadPixels(x, y, 1, 1, GL_RGB, GL_UNSIGNED_BYTE,None)
+        print("x:{},y:{}".format(x,y),color[0],color[1],color[2])
+        glReadBuffer(GL_NONE)
+        glBindFramebuffer(GL_READ_FRAMEBUFFER, 0)
+        return color
 # -----------------------------Debugging-----------------------------------#
 def qt_message_handler(mode, context, message):
     if mode == QtInfoMsg:

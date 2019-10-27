@@ -4,7 +4,7 @@ from OpenGL.GL import *
 from PyQt5.QtGui import QVector3D,QOpenGLBuffer,QOpenGLVertexArrayObject,QOpenGLShaderProgram,QOpenGLShader,QMatrix4x4,QOpenGLTexture
 import sys
 from view.SceneDockWidget import SceneDockWidget
-from model.SceneNode import AbstractSceneNode
+from model.geometry.SceneNode import AbstractSceneNode
 
 
 class BezierPatch(QListWidgetItem, AbstractSceneNode):

@@ -2,10 +2,10 @@ from PyQt5.QtGui import (QIcon, QColor)
 from view.GLWindow import *
 from view.SceneDockWidget import SceneDockWidget
 from view.PropertyDockWidget import PropertyDockWidget
-from model.bezier import Bezier
-from model.nurb import Nurbs
-from model.nurbPatch import NurbsPatch
-from model.bezierPatch import BezierPatch
+from model.geometry.bezier import Bezier
+from model.geometry.nurb import Nurbs
+from model.geometry.nurbPatch import NurbsPatch
+from model.geometry.bezierPatch import BezierPatch
 from controller import SceneManager
 
 

@@ -1,4 +1,4 @@
-from model.SceneNode import *
+from model.geometry.SceneNode import *
 """
     This controller updates the view on sceneDockWidget when scene nodes change
 """

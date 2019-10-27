@@ -3,6 +3,7 @@ from PyQt5.QtWidgets import *
 from PyQt5.QtGui import *
 import numpy as np
 from model.pickingTexture import *
+import resources.resources
 class AbstractSceneNode(QObject):
     def __init__(self):
         super(AbstractSceneNode, self).__init__()

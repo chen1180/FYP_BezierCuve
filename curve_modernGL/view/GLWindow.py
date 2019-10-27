@@ -1,8 +1,8 @@
 from builtins import super
 from model.trackBall import Trackball
-from model.planes import Quads
-from model.axis import Axis
-from model.nurbPatch import *
+from model.geometry.planes import Quads
+from model.geometry.axis import Axis
+from model.geometry.nurbPatch import *
 from model.pickingTexture import *
 from model.pickingEffect import *
 class OpenGLWindow(QOpenGLWidget):

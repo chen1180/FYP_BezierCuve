@@ -1,4 +1,4 @@
-from model.SceneNode import *
+from model.geometry.SceneNode import *
 
 class SceneObjects(QObject):
     sceneNodeAdded = pyqtSignal(QObject)

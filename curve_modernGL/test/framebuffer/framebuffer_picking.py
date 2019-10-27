@@ -5,7 +5,7 @@ from PyQt5.QtGui import *
 from model.trackBall import Trackball
 import sys
 import numpy as np
-from model.bezierPatch import BezierPatch
+from model.geometry.bezierPatch import BezierPatch
 class OpenGLWindow(QOpenGLWidget):
     OPENGL_NEED_UPDATE=pyqtSignal(bool)
     VIEWPORT_PERSPECTIVE=0
@@ -35,6 +35,7 @@ class OpenGLWindow(QOpenGLWidget):
                             QVector3D(1, -1.6, 0.2),
                             QVector3D(-1, -0.2, 0.5), QVector3D(-1, 0.1, 0.5), QVector3D(0, 0.1, 0.5),
                             QVector3D(1, -1.8, 0.5)])
+        self.pickedObject=[]
     def loadTexture(self,filePath:str):
         buffer=QImage()
         if buffer.load(filePath)==False:
@@ -45,7 +46,13 @@ class OpenGLWindow(QOpenGLWidget):
         return buffer
     def initializeGL(self) -> None:
         QOpenGLWidget.initializeGL(self)
+        # configure global opengl state
         glEnable(GL_DEPTH_TEST)
+        glDepthFunc(GL_LESS)
+        glEnable(GL_STENCIL_TEST)
+        glStencilFunc(GL_NOTEQUAL, 1, 0xFF)
+        glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE)
+        # -----------------------------
         glClearColor(0, 0, 0, 1.0)
         self.vertices=np.array([-0.5, -0.5, -0.5,  0.0, 0.0,
                                 0.5, -0.5, -0.5,  1.0, 0.0,
@@ -156,6 +163,21 @@ class OpenGLWindow(QOpenGLWidget):
         self.quadVbo.release()
         self.quadVao.release()
         self.quadProgram.release()
+        #stencil buffer program
+        # stencil buffer
+        self.stencilProgram = QOpenGLShaderProgram()
+        self.stencilProgram.addShaderFromSourceFile(QOpenGLShader.Vertex, ":CommonShader/cube.vert")
+        self.stencilProgram.addShaderFromSourceFile(QOpenGLShader.Fragment, ":CommonShader/solid_color.frag")
+        self.stencilProgram.link()
+        self.vao.bind()
+        self.vbo.bind()
+        self.stencilProgram.enableAttributeArray(0)
+        self.stencilProgram.setAttributeBuffer(0, GL_FLOAT, 0, 3, 5 * self.vertices.itemsize)
+        self.stencilProgram.enableAttributeArray(1)
+        self.stencilProgram.setAttributeBuffer(1, GL_FLOAT, 3 * self.vertices.itemsize, 2, 5 * self.vertices.itemsize)
+        self.vbo.release()
+        self.vao.release()
+        self.stencilProgram.release()
         # frame buffer
         self.m_fbo = glGenFramebuffers(1)
         glBindFramebuffer(GL_FRAMEBUFFER, self.m_fbo)
@@ -210,8 +232,8 @@ class OpenGLWindow(QOpenGLWidget):
         #off screen FBO rendering
         originalFBO = glGetIntegerv(GL_FRAMEBUFFER_BINDING)
         glBindFramebuffer(GL_FRAMEBUFFER, self.m_fbo)
-        glClearColor(0, 0, 0, 1.0)
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
+        glClearColor(1.0, 1.0, 1.0, 1.0)
+        glClear(GL_COLOR_BUFFER_BIT |GL_DEPTH_BUFFER_BIT |  GL_DEPTH_BUFFER_BIT)
         glEnable(GL_DEPTH_TEST)
         self.pickingProgram.bind()
         self.vao.bind()
@@ -222,12 +244,12 @@ class OpenGLWindow(QOpenGLWidget):
             Model.translate(transform)
             MVP = Projection * View * Model
             self.pickingProgram.setUniformValue("MVP", MVP)
-            self.pickingProgram.setUniformValue("gDrawIndex",(i+1))
-            self.pickingProgram.setUniformValue("gObjectIndex", (i+1))
+            self.pickingProgram.setUniformValue("gDrawIndex",(i))
+            self.pickingProgram.setUniformValue("gObjectIndex", (i))
             glDrawArrays(GL_TRIANGLES, 0, self.vertices.shape[0] // 5)
-        self.patch.setupMatrix(View,Model,Projection)
-        self.patch.setupCamera(self.camera.cameraPos)
-        self.patch.renderPicking(10,10)
+        # self.patch.setupMatrix(View,Model,Projection)
+        # self.patch.setupCamera(self.camera.cameraPos)
+        # self.patch.renderPicking(10,10)
         glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0)
         self.pickingProgram.release()
         self.vao.release()
@@ -238,22 +260,13 @@ class OpenGLWindow(QOpenGLWidget):
         glClearColor(0, 0, 0, 1.0)
         glClear(GL_COLOR_BUFFER_BIT)
         glViewport(0, 0, self.width(), self.height())
-        '''
-        Render fbo as a quad on screen
-        '''
-        # self.quadProgram.bind()
-        # self.quadVao.bind()
-        # self.quadVbo.bind()
-        # glBindTexture(GL_TEXTURE_2D,self.m_pickingTexture)
-        # self.quadProgram.setUniformValue("renderedTexture", 0)
-        # glDrawArrays(GL_TRIANGLE_FAN,0,self.quadVertices.shape[0]//5)
-        # self.quadVao.release()
-        # self.quadVbo.release()
-        # self.quadProgram.release()
+
         self.program.bind()
         self.vbo.bind()
         self.vao.bind()
-        for transform in self.transform:
+        glStencilFunc(GL_ALWAYS, 1, 0xFF)
+        glStencilMask(0xFF)
+        for i,transform in enumerate(self.transform):
             Model = QMatrix4x4()
             Model.translate(transform)
             MVP = Projection * View * Model
@@ -262,10 +275,25 @@ class OpenGLWindow(QOpenGLWidget):
             # glBindTexture(GL_TEXTURE_2D, self.m_pickingTexture)
             self.program.setUniformValue("texture1", 0)
             glDrawArrays(GL_TRIANGLES, 0, self.vertices.shape[0] // 5)
+        glStencilFunc(GL_NOTEQUAL, 1, 0xFF)
+        glStencilMask(0x00)
+        glDisable(GL_DEPTH_TEST)
+        self.stencilProgram.bind()
+        for i, transform in enumerate(self.transform):
+            if i in self.pickedObject:
+                Model = QMatrix4x4()
+                Model.translate(self.transform[i])
+                Model.scale(1.1)
+                MVP = Projection * View * Model
+                self.program.setUniformValue("MVP", MVP)
+                glDrawArrays(GL_TRIANGLES, 0, self.vertices.shape[0] // 5)
+        # Restore to previous OpenGL state
+        glStencilMask(0xFF)
+        glEnable(GL_DEPTH_TEST)
         # self.vao.release()
-        self.patch.setupMatrix(View, Model, Projection)
-        self.patch.setupCamera(self.camera.cameraPos)
-        self.patch.render()
+        # self.patch.setupMatrix(View, Model, Projection)
+        # self.patch.setupCamera(self.camera.cameraPos)
+        # self.patch.render()
         self.update()
     def resizeGL(self, w: int, h: int) -> None:
         side = min(w, h)
@@ -308,7 +336,13 @@ class OpenGLWindow(QOpenGLWidget):
             return
         if a0.buttons()&Qt.LeftButton:#Right click
             pos=a0.windowPos()
-            self.ReadPixel(pos.x(),self.height()-pos.y())
+            color=self.ReadPixel(pos.x(),self.height()-pos.y())
+            if color:
+                if color[0] not in self.pickedObject:
+                    self.pickedObject.append(color[0])
+                else:
+                    self.pickedObject.remove(color[0])
+            print(self.pickedObject)
             a0.accept()
 
         if (a0.modifiers()& Qt.ControlModifier)and(a0.buttons()&Qt.LeftButton): #Control+Left click
