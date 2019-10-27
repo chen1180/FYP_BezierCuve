@@ -5,7 +5,7 @@ from PyQt5.QtGui import *
 from model.trackBall import Trackball
 import sys
 import numpy as np
-import resources.resources
+from model.bezierPatch import BezierPatch
 class OpenGLWindow(QOpenGLWidget):
     OPENGL_NEED_UPDATE=pyqtSignal(bool)
     VIEWPORT_PERSPECTIVE=0
@@ -26,6 +26,15 @@ class OpenGLWindow(QOpenGLWidget):
         #default plane
         self.viewPortState=self.VIEWPORT_PERSPECTIVE
         self.viewPlane=self.VIEWPORT_XY_PLANE
+        self.patch = BezierPatch(None, "BeizerPatch",
+                           [QVector3D(-1, -0.5, -0.5), QVector3D(-1, 1, -0.5), QVector3D(0, 1, -0.5),
+                            QVector3D(1, -1, -0.5),
+                            QVector3D(-1, -0.2, -0.2), QVector3D(-1, 0.7, -0.2), QVector3D(0, 0.7, -0.2),
+                            QVector3D(1, -1.3, -0.2),
+                            QVector3D(-1, 0.1, 0.2), QVector3D(-1, 0.4, 0.2), QVector3D(0, 0.4, 0.2),
+                            QVector3D(1, -1.6, 0.2),
+                            QVector3D(-1, -0.2, 0.5), QVector3D(-1, 0.1, 0.5), QVector3D(0, 0.1, 0.5),
+                            QVector3D(1, -1.8, 0.5)])
     def loadTexture(self,filePath:str):
         buffer=QImage()
         if buffer.load(filePath)==False:
@@ -80,8 +89,8 @@ class OpenGLWindow(QOpenGLWidget):
                                 -0.5,  0.5,  0.5,  0.0, 0.0,
                                 -0.5,  0.5, -0.5,  0.0, 1.0],dtype="float32")
         self.program = QOpenGLShaderProgram()
-        self.program.addShaderFromSourceFile(QOpenGLShader.Vertex, ":CommonShader/cube.vert")
-        self.program.addShaderFromSourceFile(QOpenGLShader.Fragment, ":CommonShader/cube.frag")
+        self.program.addShaderFromSourceFile(QOpenGLShader.Vertex, ":/CommonShader/cube.vert")
+        self.program.addShaderFromSourceFile(QOpenGLShader.Fragment, ":/CommonShader/cube.frag")
         self.program.link()
         self.vao = QOpenGLVertexArrayObject()
         self.vao.create()
@@ -109,8 +118,8 @@ class OpenGLWindow(QOpenGLWidget):
 
         #picking program
         self.pickingProgram = QOpenGLShaderProgram()
-        self.pickingProgram.addShaderFromSourceFile(QOpenGLShader.Vertex, ":CommonShader/picking.vert")
-        self.pickingProgram.addShaderFromSourceFile(QOpenGLShader.Fragment, ":CommonShader/picking.frag")
+        self.pickingProgram.addShaderFromSourceFile(QOpenGLShader.Vertex, ":/CommonShader/picking.vert")
+        self.pickingProgram.addShaderFromSourceFile(QOpenGLShader.Fragment, ":/CommonShader/picking.frag")
         self.pickingProgram.link()
         self.vao.bind()
         self.vbo.bind()
@@ -127,8 +136,8 @@ class OpenGLWindow(QOpenGLWidget):
                                     -1.0,  1.0, 0.0,0.0,1.0,],dtype="float32")
 
         self.quadProgram = QOpenGLShaderProgram()
-        self.quadProgram.addShaderFromSourceFile(QOpenGLShader.Vertex, ":CommonShader/quad.vert")
-        self.quadProgram.addShaderFromSourceFile(QOpenGLShader.Fragment, ":CommonShader/quad.frag")
+        self.quadProgram.addShaderFromSourceFile(QOpenGLShader.Vertex, ":/CommonShader/quad.vert")
+        self.quadProgram.addShaderFromSourceFile(QOpenGLShader.Fragment, ":/CommonShader/quad.frag")
         self.quadProgram.link()
         self.quadVao = QOpenGLVertexArrayObject()
         self.quadVao.create()
@@ -189,8 +198,9 @@ class OpenGLWindow(QOpenGLWidget):
         size=np.random.randint(-5,5,size=(5,3))
         self.transform=[QVector3D(i[0],i[1],i[2]) for i in size]
         self.time=0
+        #custom shape
+        self.patch.initialize()
     def paintGL(self) -> None:
-
         #Transformation
         Projection = self.setupProjectionMatrix()
         View = self.setupViewMatrix()
@@ -212,9 +222,12 @@ class OpenGLWindow(QOpenGLWidget):
             Model.translate(transform)
             MVP = Projection * View * Model
             self.pickingProgram.setUniformValue("MVP", MVP)
-            self.pickingProgram.setUniformValue("gDrawIndex",(i+1)*20)
-            self.pickingProgram.setUniformValue("gObjectIndex", (i+1)*20)
+            self.pickingProgram.setUniformValue("gDrawIndex",(i+1))
+            self.pickingProgram.setUniformValue("gObjectIndex", (i+1))
             glDrawArrays(GL_TRIANGLES, 0, self.vertices.shape[0] // 5)
+        self.patch.setupMatrix(View,Model,Projection)
+        self.patch.setupCamera(self.camera.cameraPos)
+        self.patch.renderPicking(10,10)
         glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0)
         self.pickingProgram.release()
         self.vao.release()
@@ -222,7 +235,7 @@ class OpenGLWindow(QOpenGLWidget):
 
         #On screen rendering
         glBindFramebuffer(GL_FRAMEBUFFER, originalFBO)
-        glClearColor(1, 1, 1, 1.0)
+        glClearColor(0, 0, 0, 1.0)
         glClear(GL_COLOR_BUFFER_BIT)
         glViewport(0, 0, self.width(), self.height())
         '''
@@ -250,11 +263,13 @@ class OpenGLWindow(QOpenGLWidget):
             self.program.setUniformValue("texture1", 0)
             glDrawArrays(GL_TRIANGLES, 0, self.vertices.shape[0] // 5)
         # self.vao.release()
+        self.patch.setupMatrix(View, Model, Projection)
+        self.patch.setupCamera(self.camera.cameraPos)
+        self.patch.render()
         self.update()
     def resizeGL(self, w: int, h: int) -> None:
         side = min(w, h)
         glViewport((w - h) // 2, (w - h) // 2, side,side)
-
 
     # -----------------------------Projection and View matrix -----------------------------------#
     def pixelPosToViewPos(self,p:QPointF):

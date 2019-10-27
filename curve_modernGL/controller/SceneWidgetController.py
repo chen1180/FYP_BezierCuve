@@ -1,8 +1,3 @@
-from PyQt5.QtCore import *
-from PyQt5.QtWidgets import *
-from PyQt5.QtGui import *
-from controller.SceneManager import *
-from view.SceneDockWidget import *
 from model.SceneNode import *
 """
     This controller updates the view on sceneDockWidget when scene nodes change

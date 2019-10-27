@@ -1,12 +1,11 @@
-from PyQt5.QtWidgets import QListWidgetItem,QApplication
-from PyQt5.QtCore import Qt,qDebug
+from PyQt5.QtWidgets import QApplication
+from PyQt5.QtCore import qDebug
 from OpenGL.GL import *
-from PyQt5.QtGui import QVector3D,QOpenGLBuffer,QOpenGLVertexArrayObject,QOpenGLShaderProgram,QOpenGLShader,QMatrix4x4
+from PyQt5.QtGui import QVector3D,QOpenGLBuffer,QOpenGLVertexArrayObject,QOpenGLShaderProgram,QOpenGLShader
 import sys
-from view.SceneDockWidget import SceneDockWidget
 from model.SceneNode import AbstractSceneNode
-import numpy as np
-import resources.resources
+
+
 class Quads(AbstractSceneNode):
     def __init__(self,size:float,step:float):
         super(Quads, self).__init__()

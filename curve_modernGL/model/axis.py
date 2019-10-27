@@ -1,12 +1,11 @@
-from PyQt5.QtWidgets import QListWidgetItem,QApplication
-from PyQt5.QtCore import Qt,qDebug
+from PyQt5.QtWidgets import QApplication
+from PyQt5.QtCore import qDebug
 from OpenGL.GL import *
-from PyQt5.QtGui import QVector3D,QOpenGLBuffer,QOpenGLVertexArrayObject,QOpenGLShaderProgram,QOpenGLShader,QMatrix4x4
+from PyQt5.QtGui import QVector3D,QOpenGLBuffer,QOpenGLVertexArrayObject,QOpenGLShaderProgram,QOpenGLShader
 import sys
-from view.SceneDockWidget import SceneDockWidget
 from model.SceneNode import AbstractSceneNode
-import numpy as np
-import resources.resources
+
+
 class Axis(AbstractSceneNode):
     def __init__(self,size):
         super(Axis, self).__init__()
@@ -41,8 +40,8 @@ class Axis(AbstractSceneNode):
     def setupMainShaderProgram(self):
         #Bind Coordinate Vertices
         self.axisProgram = QOpenGLShaderProgram()
-        self.axisProgram.addShaderFromSourceFile(QOpenGLShader.Vertex, ":CommonShader/axis.vert")
-        self.axisProgram.addShaderFromSourceFile(QOpenGLShader.Fragment, ":CommonShader/axis.frag")
+        self.axisProgram.addShaderFromSourceFile(QOpenGLShader.Vertex, ":/CommonShader/axis.vert")
+        self.axisProgram.addShaderFromSourceFile(QOpenGLShader.Fragment, ":/CommonShader/axis.frag")
         self.axisProgram.link()
         qDebug(self.axisProgram.log())
         self.axisProgram.bind()

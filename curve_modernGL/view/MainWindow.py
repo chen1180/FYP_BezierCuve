@@ -1,8 +1,4 @@
-from PyQt5.QtCore import QDate, QFile, Qt, QTextStream
-from PyQt5.QtGui import (QFont, QIcon, QKeySequence, QTextCharFormat,QKeyEvent,
-        QTextCursor, QTextTableFormat,QVector3D,QColor)
-from PyQt5.QtPrintSupport import QPrintDialog, QPrinter
-from PyQt5.QtWidgets import *
+from PyQt5.QtGui import (QIcon, QColor)
 from view.GLWindow import *
 from view.SceneDockWidget import SceneDockWidget
 from view.PropertyDockWidget import PropertyDockWidget
@@ -10,7 +6,9 @@ from model.bezier import Bezier
 from model.nurb import Nurbs
 from model.nurbPatch import NurbsPatch
 from model.bezierPatch import BezierPatch
-from controller import SceneManager,PropertyWidgetController,SceneWidgetController
+from controller import SceneManager
+
+
 class MainWindow(QMainWindow):
     def __init__(self):
         super(MainWindow, self).__init__()

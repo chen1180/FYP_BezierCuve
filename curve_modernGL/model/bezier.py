@@ -5,7 +5,8 @@ from PyQt5.QtGui import QVector3D,QOpenGLBuffer,QOpenGLVertexArrayObject,QOpenGL
 import sys
 from view.SceneDockWidget import SceneDockWidget
 from model.SceneNode import AbstractSceneNode
-import resources.resources
+
+
 class Bezier(QListWidgetItem, AbstractSceneNode):
     def __init__(self,parent=None,name:str=None,data:QVector3D=None):
         super(Bezier, self).__init__()

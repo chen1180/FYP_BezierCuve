@@ -1,12 +1,6 @@
 from builtins import super
-from OpenGL.GL import *
-from PyQt5.QtCore import *
-from PyQt5.QtWidgets import *
-from PyQt5.QtGui import *
 from model.trackBall import Trackball
-import sys
 from model.planes import Quads
-from model.bezier import *
 from model.axis import Axis
 from model.nurbPatch import *
 from model.pickingTexture import *
@@ -41,23 +35,21 @@ class OpenGLWindow(QOpenGLWidget):
         QOpenGLWidget.initializeGL(self)
         glEnable(GL_DEPTH_TEST)
         glClearColor(0, 0, 0, 1.0)
-        self.pickingTexture.Init(self.width(),self.height())
         self.pickingEffect.Init()
+        self.pickingTexture.Init(self.width(),self.height())
         try:
             self.quads.initialize()
             self.axis.initialize()
         except Exception as e:
             print(e)
     def pickingPhase(self):
+        self.m_original_fbo = glGetIntegerv(GL_FRAMEBUFFER_BINDING)
         Projection = self.setupProjectionMatrix()
         View = self.setupViewMatrix()
         Model = QMatrix4x4()
         MVP = Projection * View * Model
-        print(glGetIntegerv(GL_DRAW_FRAMEBUFFER_BINDING))
-        originalFBO=glGetIntegerv(GL_FRAMEBUFFER_BINDING)
-
+        glBindFramebuffer(GL_FRAMEBUFFER, self.pickingTexture.m_fbo)
         self.pickingTexture.EnableWriting()
-        print(glGetIntegerv(GL_DRAW_FRAMEBUFFER_BINDING))
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
         self.pickingEffect.Enable()
         if self.scene:
@@ -68,6 +60,7 @@ class OpenGLWindow(QOpenGLWidget):
         self.pickingTexture.DisableWriting()
 
     def renderingPhase(self):
+        glBindFramebuffer(GL_FRAMEBUFFER,self.m_original_fbo)
         glViewport(0,0,self.width(),self.height())
         glClearColor(0,0,0,1)
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
@@ -75,16 +68,6 @@ class OpenGLWindow(QOpenGLWidget):
         View = self.setupViewMatrix()
         Model = QMatrix4x4()
         MVP = Projection * View * Model
-        # glViewport(self.width() - 100, self.height() - 100, 100, 100);
-        # try:
-        #     axisProjection=QMatrix4x4()
-        #     axisProjection.ortho(-1, 1, -1 ,1 , 0.1, 100)
-        #     axisView =self.setupViewMatrix(enableCameraPan=False)
-        #     self.axis.setupMatrix(axisView, Model, axisProjection)
-        #     self.axis.render()
-        # except Exception as e:
-        #     print(e)
-        # glViewport(0, 0, self.width(), self.height());
         try:
             self.quads.setupMatrix(View, Model, Projection)
             self.quads.render()
@@ -99,26 +82,11 @@ class OpenGLWindow(QOpenGLWidget):
     def paintGL(self) -> None:
         self.makeCurrent()
         self.pickingPhase()
-        # fbo=QOpenGLFramebufferObject(self.width(),self.height(),QOpenGLFramebufferObject.Depth)
-        # fbo.bind()
-        # fbo.addColorAttachment(self.width(),self.height(),1)
-        # fbo.release()
         self.renderingPhase()
-
         self.update()
     def resizeGL(self, w: int, h: int) -> None:
         side = min(w, h)
         glViewport((w - h) // 2, (w - h) // 2, side,side)
-    # -----------------------------OPENGL window 2D overpaint -----------------------------------#
-    # def paintEvent(self, e: QPaintEvent) -> None:
-    #     super(OpenGLWindow, self).paintEvent(e)
-    #     self.makeCurrent()
-    #     painter = QPainter(self)
-    #     painter.setRenderHint(QPainter.Antialiasing)
-    #     self.drawInstructions(painter)
-    #     painter.end()
-    #     self.doneCurrent()
-
     def drawInstructions(self, painter):
         if self.viewPortState==self.VIEWPORT_PERSPECTIVE:
             text = "Perspective"
@@ -204,11 +172,9 @@ class OpenGLWindow(QOpenGLWidget):
         super(OpenGLWindow, self).mousePressEvent(a0)
         if a0.isAccepted():
             return
-        if (a0.buttons()&Qt.LeftButton):
-            pos=self.pixelPosToViewPos(a0.windowPos())
-            print(a0.windowPos().x(),a0.windowPos().y())
-            pixel=self.pickingTexture.ReadPixel(a0.windowPos().x(),a0.windowPos().y())
-            print(pixel[0])
+        if a0.buttons() & Qt.LeftButton:  # Right click
+            pos = a0.windowPos()
+            self.pickingTexture.ReadPixel(pos.x(), self.height() - pos.y())
             a0.accept()
         if (a0.modifiers()& Qt.ControlModifier)and(a0.buttons()&Qt.LeftButton): #Control+Left click
             self.camera.pushRotation(self.pixelPosToViewPos(a0.windowPos()))

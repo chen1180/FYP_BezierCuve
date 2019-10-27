@@ -3,36 +3,51 @@ from PyQt5.QtCore import *
 from OpenGL.GL import *
 from PyQt5.QtGui import *
 import sys
-class PickingTexture(QObject):
+class PickingTexture(object):
     def __init__(self):
         self.m_fbo=None
         self.m_pickingTexture=None
         self.m_depthTexture=None
     def Init(self,WindowWidth,WindowHeight):
         #Create the FBO
-        self.origin_fbo=glGetIntegerv(GL_FRAMEBUFFER_BINDING)
-        self.m_fbo=glGenFramebuffers(1)
-        glBindFramebuffer(GL_FRAMEBUFFER,self.m_fbo)
-        #Create the texture object for the primitive information buffer
-        self.m_pickingTexture=glGenTextures(1)
-        glBindTexture(GL_TEXTURE_2D, self.m_pickingTexture)
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB32F, WindowWidth, WindowHeight, 0, GL_RGB, GL_FLOAT, None)
-        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, self.m_pickingTexture, 0)
-        #Create the texture object for the depth buffer
-        self.m_depthTexture=glGenTextures(1)
-        glBindTexture(GL_TEXTURE_2D, self.m_depthTexture)
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, WindowWidth, WindowHeight, 0, GL_DEPTH_COMPONENT, GL_FLOAT,None)
-        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, self.m_depthTexture, 0)
+        # frame buffer
 
-        glReadBuffer(GL_NONE)
-        glDrawBuffer(GL_COLOR_ATTACHMENT0)
-        #Verify that the FBO is correct
-        Status = glCheckFramebufferStatus(GL_FRAMEBUFFER)
-        if (Status != GL_FRAMEBUFFER_COMPLETE):
-            qDebug("B error, status:{}".format(Status))
-            return False
-        #Restore the default framebuffer
+        self.m_fbo = glGenFramebuffers(1)
+        glBindFramebuffer(GL_FRAMEBUFFER, self.m_fbo)
+        # Create the texture object for the primitive information buffer
+        self.m_pickingTexture = glGenTextures(1)
+        glBindTexture(GL_TEXTURE_2D, self.m_pickingTexture)
+        # Poor filtering. Needed
+        glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT)
+        glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT)
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR)
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR)
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB32F, WindowWidth,WindowHeight, 0, GL_RGB, GL_FLOAT, None)
+        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, self.m_pickingTexture, 0)
         glBindTexture(GL_TEXTURE_2D, 0)
+
+        # Create the texture object for the depth buffer
+        self.m_depthTexture = glGenTextures(1)
+        glBindTexture(GL_TEXTURE_2D, self.m_depthTexture)
+        # Poor filtering. Needed
+        glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT)
+        glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT)
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR)
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR)
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT24, WindowWidth,WindowHeight, 0, GL_DEPTH_COMPONENT,GL_FLOAT, None)
+        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, self.m_depthTexture, 0)
+        glBindTexture(GL_TEXTURE_2D, 0)
+
+        self.rbo = glGenRenderbuffers(1)
+        glBindRenderbuffer(GL_RENDERBUFFER, self.rbo)
+        glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, WindowWidth,WindowHeight)
+        glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, self.rbo)
+        glBindRenderbuffer(GL_RENDERBUFFER, 0)
+        DrawBuffers = [GL_COLOR_ATTACHMENT0]
+        glDrawBuffers(1, DrawBuffers)
+        if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE):
+            qDebug("ERROR::FRAMEBUFFER:: Framebuffer is not complete!")
+            return False
         glBindFramebuffer(GL_FRAMEBUFFER, 0)
         return True
     def EnableWriting(self):
@@ -43,13 +58,11 @@ class PickingTexture(QObject):
     def ReadPixel(self,x,y):
         glBindFramebuffer(GL_READ_FRAMEBUFFER, self.m_fbo)
         glReadBuffer(GL_COLOR_ATTACHMENT0)
-
-        Pixel=(GLuint*1)(1)
-        glReadPixels(x, y, 1, 1, GL_RGB, GL_FLOAT, Pixel)
+        color = glReadPixels(x, y, 1, 1, GL_RGB, GL_UNSIGNED_BYTE, None)
+        print("x:{},y:{}".format(x, y), color[0], color[1], color[2])
         glReadBuffer(GL_NONE)
-
         glBindFramebuffer(GL_READ_FRAMEBUFFER, 0)
-        return Pixel
+        return color
 
 
 #For debug purpose

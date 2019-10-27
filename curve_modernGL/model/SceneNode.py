@@ -43,6 +43,7 @@ class AbstractSceneNode(QObject):
         if self.m_shaderCompiled==False:
             self.setupMainShaderProgram()
             self.setupCommonShaderProgram()
+            self.setupPickingShaderProgram()
             self.m_shaderCompiled =True
     def updateVBO(self):
         # if vbo(vertices location) changed, then update vbo data
@@ -101,9 +102,12 @@ class AbstractSceneNode(QObject):
 
     def setupCommonShaderProgram(self):
         pass
-
+    def setupPickingShaderProgram(self):
+        pass
     def setupMainShaderProgram(self):
         pass
 
     def render(self):
+        pass
+    def renderPicking(self,pickIndex,drawIndex):
         pass

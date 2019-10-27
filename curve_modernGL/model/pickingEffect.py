@@ -3,7 +3,7 @@ from PyQt5.QtCore import *
 from OpenGL.GL import *
 from PyQt5.QtGui import *
 import sys
-class PickingEffect(QObject):
+class PickingEffect(object):
     def __init__(self):
         self.m_drawIndexLocation=0
         self.m_WVPLocation=0

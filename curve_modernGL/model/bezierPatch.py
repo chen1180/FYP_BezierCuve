@@ -5,8 +5,8 @@ from PyQt5.QtGui import QVector3D,QOpenGLBuffer,QOpenGLVertexArrayObject,QOpenGL
 import sys
 from view.SceneDockWidget import SceneDockWidget
 from model.SceneNode import AbstractSceneNode
-import numpy as np
-import resources.resources
+
+
 class BezierPatch(QListWidgetItem, AbstractSceneNode):
     def __init__(self,parent=None,name:str=None,data:QVector3D=None):
         super(BezierPatch, self).__init__()
@@ -65,6 +65,48 @@ class BezierPatch(QListWidgetItem, AbstractSceneNode):
         self.vbo.release()
         self.vao.release()
         self.commonProgram.release()
+    def setupPickingShaderProgram(self):
+        # patch vertices
+        self.pickingProgram = QOpenGLShaderProgram()
+        self.pickingProgram.addShaderFromSourceFile(QOpenGLShader.Vertex, ":Shaders/bezierPatch.vert")
+        self.pickingProgram.addShaderFromSourceFile(QOpenGLShader.TessellationEvaluation, ":Shaders/bezierPatch.tese")
+        self.pickingProgram.addShaderFromSourceFile(QOpenGLShader.Fragment, ":CommonShader/picking.frag")
+        self.pickingProgram.link()
+        if self.pickingProgram.log():
+            qDebug(self.pickingProgram.log())
+        self.pickingProgram.bind()
+        self.pickingProgram.setPatchVertexCount(16)
+        self.pickingProgram.setDefaultOuterTessellationLevels([self.resolution] * 4)
+        self.pickingProgram.setDefaultInnerTessellationLevels([self.resolution] * 2)
+        self.vao.bind()
+        self.vbo.bind()
+        self.pickingProgram.enableAttributeArray(0)
+        self.pickingProgram.setAttributeBuffer(0, GL_FLOAT, 0, 3)
+        self.vbo.release()
+        self.vao.release()
+        self.pickingProgram.release()
+    def renderPicking(self,pickIndex,drawIndex):
+        Model = QMatrix4x4()
+        Model.translate(self.transform)
+        self.model = Model * self.model
+        self.MVP = self.projection * self.view * Model
+        self.pickingProgram.bind()
+        self.pickingProgram.setPatchVertexCount(16)
+        self.pickingProgram.setDefaultOuterTessellationLevels([self.resolution] * 4)
+        self.pickingProgram.setDefaultInnerTessellationLevels([self.resolution] * 2)
+        self.vbo.bind()
+        # --------------------------------Transformation---------------------------------------
+        self.pickingProgram.setUniformValue("Model", self.model)
+        self.pickingProgram.setUniformValue("View", self.view)
+        self.pickingProgram.setUniformValue("Projection", self.projection)
+        # ---------------------------------Light---------------------------------------
+        self.pickingProgram.setUniformValue("lightPos", QVector3D(0, -2, -1))
+        #----------------------------------Indexing--------------------------------------------
+        self.pickingProgram.setUniformValue("gDrawIndex",drawIndex)
+        self.pickingProgram.setUniformValue("gObjectIndex", pickIndex)
+        self.vao.bind()
+        glDrawArrays(GL_PATCHES, 0, self.vertices.shape[0] // 3)
+
     def render(self):
         Model = QMatrix4x4()
         Model.translate(self.transform)
