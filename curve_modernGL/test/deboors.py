@@ -1,23 +1,29 @@
-import numpy as np
-import scipy.interpolate as interpolate
-import matplotlib.pyplot as plt
+from geomdl import BSpline
 
-x = np.array([ 0. ,  1.2,  1.9,  3.2,  4. ,  6.5,7])
-y = np.array([ 0. ,  2.3,  3. ,  4.3,  2.9,  3.1,5])
+# Create a BSpline surface instance (Bezier surface)
+surf = BSpline.Surface()
 
-t, c, k = interpolate.splrep(x, y, s=0, k=4)
-print('''\
-t: {}
-c: {}
-k: {}
-'''.format(t, c, k))
-N = 100
-xmin, xmax = x.min(), x.max()
-xx = np.linspace(xmin, xmax, N)
-spline = interpolate.BSpline(t, c, k, extrapolate=False)
+# Set degrees
+surf.degree_u = 3
+surf.degree_v = 2
 
-plt.plot(x, y, 'bo', label='Original points')
-plt.plot(xx, spline(xx), 'r', label='BSpline')
-plt.grid()
-plt.legend(loc='best')
-plt.show()
+# Set control points
+control_points = [[0, 0, 0], [0, 4, 0], [0, 8, -3],
+                  [2, 0, 6], [2, 4, 0], [2, 8, 0],
+                  [4, 0, 0], [4, 4, 0], [4, 8, 3],
+                  [6, 0, 0], [6, 4, -3], [6, 8, 0]]
+surf.set_ctrlpts(control_points, 4, 3)
+
+# Set knot vectors
+surf.knotvector_u = [0, 0, 0, 0, 1, 1, 1, 1]
+surf.knotvector_v = [0, 0, 0, 1, 1, 1]
+
+# Set evaluation delta (control the number of surface points)
+surf.delta = 0.05
+
+# Get surface points (the surface will be automatically evaluated)
+surf.tessellator
+surface_points = surf.evalpts
+
+for i in range(len(surface_points)):
+    print(surface_points[i])

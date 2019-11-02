@@ -15,7 +15,7 @@ out vec4 FragColor;
 void main()
 {
     //Ambient light
-    float ambientStrength=0.1;
+    float ambientStrength=1.0;
     vec3 ambient=ambientStrength*lightColor;
     //     vec3 result = ambient* objectColor;
     //Diffuse light
@@ -33,6 +33,6 @@ void main()
     if (wireFrameMode==true)
         result = objectColor;
     else
-        result =objectColor;
+        result = ambient*objectColor;
     FragColor = vec4(result,1.0);
 }

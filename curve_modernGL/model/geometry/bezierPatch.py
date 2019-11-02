@@ -85,6 +85,24 @@ class BezierPatch(QListWidgetItem, AbstractSceneNode):
         self.vbo.release()
         self.vao.release()
         self.pickingProgram.release()
+    def setupOutlineShaderProgram(self):
+        # stencil buffer
+        self.stencilProgram = QOpenGLShaderProgram()
+        self.stencilProgram.addShaderFromSourceFile(QOpenGLShader.Vertex, ":Shaders/bezierPatch.vert")
+        self.stencilProgram.addShaderFromSourceFile(QOpenGLShader.TessellationEvaluation, ":Shaders/bezierPatch.tese")
+        self.stencilProgram.addShaderFromSourceFile(QOpenGLShader.Fragment, ":CommonShader/solid_color.frag")
+        self.stencilProgram.link()
+        self.stencilProgram.bind()
+        self.stencilProgram.setPatchVertexCount(16)
+        self.stencilProgram.setDefaultOuterTessellationLevels([self.resolution] * 4)
+        self.stencilProgram.setDefaultInnerTessellationLevels([self.resolution] * 2)
+        self.vao.bind()
+        self.vbo.bind()
+        self.stencilProgram.enableAttributeArray(0)
+        self.stencilProgram.setAttributeBuffer(0, GL_FLOAT, 0, 3)
+        self.vbo.release()
+        self.vao.release()
+        self.stencilProgram.release()
     def renderPicking(self,pickIndex,drawIndex):
         Model = QMatrix4x4()
         Model.translate(self.transform)
@@ -106,7 +124,34 @@ class BezierPatch(QListWidgetItem, AbstractSceneNode):
         self.pickingProgram.setUniformValue("gObjectIndex", pickIndex)
         self.vao.bind()
         glDrawArrays(GL_PATCHES, 0, self.vertices.shape[0] // 3)
+        self.vbo.release()
+        self.vao.release()
+        self.pickingProgram.release()
+    def renderOutline(self):
+        self.stencilProgram.bind()
+        Model = QMatrix4x4()
+        Model.translate(self.transform)
+        self.model.scale(1.02)
+        self.model = Model * self.model
+        self.MVP = self.projection * self.view * Model
 
+        # --------------------------------Transformation---------------------------------------
+        self.stencilProgram.setUniformValue("Model", self.model)
+        self.stencilProgram.setUniformValue("View", self.view)
+        self.stencilProgram.setUniformValue("Projection", self.projection)
+        # ---------------------------------Light---------------------------------------
+        self.stencilProgram.setUniformValue("lightPos", QVector3D(0, -2, -1))
+        self.vbo.bind()
+        self.vao.bind()
+        if self.m_showWireframe:
+            glPolygonMode(GL_FRONT_AND_BACK, GL_LINE)
+            glDrawArrays(GL_PATCHES, 0, self.vertices.shape[0] // 3)
+            glPolygonMode(GL_FRONT_AND_BACK, GL_FILL)
+        else:
+            glDrawArrays(GL_PATCHES, 0, self.vertices.shape[0] // 3)
+        self.vbo.release()
+        self.vao.release()
+        self.stencilProgram.release()
     def render(self):
         Model = QMatrix4x4()
         Model.translate(self.transform)

@@ -53,6 +53,12 @@ class OpenGLWindow(QOpenGLWidget):
         glStencilFunc(GL_NOTEQUAL, 1, 0xFF)
         glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE)
         # -----------------------------
+        # constant
+        self.frameCount = 0
+        self.frameTimer = QTime()
+        self.frameTimer.start()
+        self.fps = 0
+        # -----------------------------
         glClearColor(0, 0, 0, 1.0)
         self.vertices=np.array([-0.5, -0.5, -0.5,  0.0, 0.0,
                                 0.5, -0.5, -0.5,  1.0, 0.0,
@@ -217,7 +223,7 @@ class OpenGLWindow(QOpenGLWidget):
 
         glBindFramebuffer(GL_FRAMEBUFFER, 0)
         #generate random transformation
-        size=np.random.randint(-5,5,size=(5,3))
+        size=np.random.randint(-5,5,size=(20,3))
         self.transform=[QVector3D(i[0],i[1],i[2]) for i in size]
         self.time=0
         #custom shape
@@ -247,9 +253,9 @@ class OpenGLWindow(QOpenGLWidget):
             self.pickingProgram.setUniformValue("gDrawIndex",(i))
             self.pickingProgram.setUniformValue("gObjectIndex", (i))
             glDrawArrays(GL_TRIANGLES, 0, self.vertices.shape[0] // 5)
-        # self.patch.setupMatrix(View,Model,Projection)
-        # self.patch.setupCamera(self.camera.cameraPos)
-        # self.patch.renderPicking(10,10)
+        self.patch.setupMatrix(View,Model,Projection)
+        self.patch.setupCamera(self.camera.cameraPos)
+        self.patch.renderPicking(21,21)
         glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0)
         self.pickingProgram.release()
         self.vao.release()
@@ -272,29 +278,62 @@ class OpenGLWindow(QOpenGLWidget):
             MVP = Projection * View * Model
             self.program.setUniformValue("MVP", MVP)
             self.textureID.bind()
-            # glBindTexture(GL_TEXTURE_2D, self.m_pickingTexture)
             self.program.setUniformValue("texture1", 0)
             glDrawArrays(GL_TRIANGLES, 0, self.vertices.shape[0] // 5)
+        self.program.release()
+        self.patch.setupMatrix(View, Model, Projection)
+        self.patch.setupCamera(self.camera.cameraPos)
+        self.patch.render()
         glStencilFunc(GL_NOTEQUAL, 1, 0xFF)
         glStencilMask(0x00)
         glDisable(GL_DEPTH_TEST)
         self.stencilProgram.bind()
+        self.vbo.bind()
+        self.vao.bind()
         for i, transform in enumerate(self.transform):
             if i in self.pickedObject:
                 Model = QMatrix4x4()
                 Model.translate(self.transform[i])
-                Model.scale(1.1)
+                Model.scale(1.4)
                 MVP = Projection * View * Model
-                self.program.setUniformValue("MVP", MVP)
+                self.stencilProgram.setUniformValue("MVP", MVP)
                 glDrawArrays(GL_TRIANGLES, 0, self.vertices.shape[0] // 5)
+        if 21 in self.pickedObject:
+            self.patch.setupMatrix(View, Model, Projection)
+            self.patch.setupCamera(self.camera.cameraPos)
+            self.patch.renderOutline()
         # Restore to previous OpenGL state
         glStencilMask(0xFF)
         glEnable(GL_DEPTH_TEST)
-        # self.vao.release()
-        # self.patch.setupMatrix(View, Model, Projection)
-        # self.patch.setupCamera(self.camera.cameraPos)
-        # self.patch.render()
+        # calculate frame rate
+        self.calculateFPS()
+        # After painter start, opengl state will be changed to some state
+        painter = QPainter(self)
+        self.drawFPS(painter)
+        painter.end()
+        # Restore to previous OpenGL state
+        glEnable(GL_DEPTH_TEST)
+        glDepthFunc(GL_LESS)
+        glEnable(GL_STENCIL_TEST)
+        glStencilFunc(GL_NOTEQUAL, 1, 0xFF)
+        glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE)
+        self.vao.release()
         self.update()
+    def drawFPS(self, painter):
+        # Draw operation instruction on the scrren
+        font = painter.font()
+        font.setPointSize(12)
+        painter.setFont(font)
+        painter.setPen(QPen(Qt.white))
+        instruction = "FPS {}".format(int(self.fps))
+        rect = QRect(10, 10, self.width() / 4, self.height() / 4)
+        painter.drawText(rect, Qt.AlignLeft | Qt.TextWordWrap, instruction)
+    def calculateFPS(self):
+        self.frameCount+=1
+        if self.frameTimer.elapsed()>=1000:
+            self.fps=self.frameCount/(self.frameTimer.elapsed()/1000.0)
+            self.frameCount=0
+            self.frameTimer.restart()
     def resizeGL(self, w: int, h: int) -> None:
         side = min(w, h)
         glViewport((w - h) // 2, (w - h) // 2, side,side)

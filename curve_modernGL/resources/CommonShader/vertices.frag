@@ -3,5 +3,5 @@ in vec3 fragmentColor;
 out vec3 outputColor;
 void main()
 {
-    outputColor =fragmentColor;
+    outputColor =vec3(1,1,1);
 }

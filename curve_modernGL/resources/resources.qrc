@@ -11,6 +11,12 @@
         <file>CommonShader/quad.frag</file>
         <file>CommonShader/quad.vert</file>
         <file>CommonShader/solid_color.frag</file>
+        <file>CommonShader/silhouette.geom</file>
+        <file>CommonShader/multiple_render_object.frag</file>
+        <file>CommonShader/explode.tesc</file>
+        <file>CommonShader/explode.tese</file>
+        <file>CommonShader/explode.geom</file>
+        <file>CommonShader/explode.vert</file>
         <file>Shaders/bezier.frag</file>
         <file>Shaders/bezier.vert</file>
         <file>Shaders/bezier.tese</file>
@@ -25,6 +31,10 @@
         <file>Shaders/nurbsPatch.frag</file>
         <file>Shaders/nurbsPatch.vert</file>
         <file>Shaders/nurbsPatch.tese</file>
+        <!--post processing-->
+        <file>post_processing/sobel.frag</file>
+        <file>post_processing/blur.frag</file>
+        <file>post_processing/color_picker.frag</file>
         <!--command icon-->
         <file>images/new.png</file>
         <file>images/print.png</file>

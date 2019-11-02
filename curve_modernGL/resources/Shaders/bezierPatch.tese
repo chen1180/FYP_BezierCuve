@@ -15,7 +15,6 @@ out vec3 FragPos;
 out vec3 LightPos;
 //Texture coordinate output
 out vec2 textureCoord;
-
 float Berstern(int i,float u)
 {
     vec4 c=vec4(1,3,3,1);
@@ -85,4 +84,5 @@ void main()
     textureCoord=vec2(u,v);
     //Fragment position in Projection space
     gl_Position = Projection*View*Model*p;
+
 }
